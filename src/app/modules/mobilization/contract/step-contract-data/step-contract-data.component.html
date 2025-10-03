@@ -1,0 +1,135 @@
+<div class="flex flex-wrap mx-2" *transloco="let trs" [formGroup]="contractDataForm">
+  <div class="w-full md:w-1/2 lg:w-1/3 px-2 my-2">
+    <mat-form-field class="w-full">
+      <mat-label>{{ trs("numero-contrato") }}</mat-label>
+      <input matInput [formControlName]="'code'" />
+    </mat-form-field>
+  </div>
+  <div class="w-full md:w-1/2 lg:w-1/3 px-2 my-2">
+    <mat-form-field class="w-full">
+      <mat-label>{{ trs("escopo") }}</mat-label>
+      <input matInput [formControlName]="'scope'" />
+    </mat-form-field>
+  </div>
+  <div class="w-full md:w-1/2 lg:w-1/3 px-2 my-2">
+    <mat-form-field class="w-full">
+      <mat-label>{{ trs("grau-risco") }}</mat-label>
+      <mat-select [formControlName]="'degreeRiskLevel'" [placeholder]="trs('selecione')" required>
+        <mat-option value="HIGH">{{ trs("grau-risco-alto") }}</mat-option>
+        <mat-option value="MEDIUM">{{ trs("grau-risco-medio") }}</mat-option>
+        <mat-option value="LOW">{{ trs("grau-risco-baixo") }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+  <div class="w-full md:w-1/2 lg:w-1/3 px-2 my-2">
+    <mat-form-field class="w-full">
+      <mat-label>{{ trs("data-reuniao-inicial") }}</mat-label>
+      <input matInput [matDatepicker]="dateInitialMet" [placeholder]="'99/99/9999'" [formControlName]="'dateInitialMet'"
+      inputmode="numeric"
+      mask="d0/M0/0000" />
+      <mat-datepicker-toggle matSuffix [for]="dateInitialMet"></mat-datepicker-toggle>
+      <mat-datepicker #dateInitialMet></mat-datepicker>
+    </mat-form-field>
+  </div>
+  <ng-container [formGroupName]="'vigence'">
+    <div class="w-full md:w-1/2 lg:w-1/3 px-2 my-2">
+      <mat-form-field class="w-full">
+        <mat-label>{{ trs("vigencia-inicio") }}</mat-label>
+        <input matInput [matDatepicker]="dateStartVigence" [placeholder]="'99/99/9999'" [formControlName]="'startAt'" 
+        inputmode="numeric"
+      mask="d0/M0/0000" />
+        <mat-datepicker-toggle matSuffix [for]="dateStartVigence"></mat-datepicker-toggle>
+        <mat-datepicker #dateStartVigence></mat-datepicker>
+      </mat-form-field>
+    </div>
+    <div class="w-full md:w-1/2 lg:w-1/3 px-2 my-2">
+      <mat-form-field class="w-full">
+        <mat-label>{{ trs("vigencia-fim") }}</mat-label>
+        <input matInput [matDatepicker]="dateEndingVigence" [placeholder]="'99/99/9999'" [formControlName]="'finishAt'" 
+        inputmode="numeric"
+      mask="d0/M0/0000" />
+        <mat-datepicker-toggle matSuffix [for]="dateEndingVigence"></mat-datepicker-toggle>
+        <mat-datepicker #dateEndingVigence></mat-datepicker>
+      </mat-form-field>
+    </div>
+  </ng-container>
+
+  <div class="w-full mb-2 border-t">
+    <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
+      {{ trs("painel-gestor-contrato") }}
+    </h1>
+  </div>
+
+  <ng-container [formGroupName]="'contractManager'">
+    <div class="w-full md:w-1/2 lg:w-1/3 px-2 my-2">
+      <mat-form-field class="w-full">
+        <mat-label>{{ trs("gestor-contrato-nome") }}</mat-label>
+        <input matInput [formControlName]="'name'" />
+        <mat-error>Campo obrigatório!</mat-error>
+        <mat-icon class="icon-size-5" matSuffix [svgIcon]="'heroicons_solid:user-circle'"></mat-icon>
+      </mat-form-field>
+    </div>
+    <div class="w-full md:w-1/2 lg:w-1/3 px-2 my-2">
+      <mat-form-field class="w-full">
+        <mat-label>E-mail</mat-label>
+        <input matInput type="email" [formControlName]="'email'" />
+        <mat-icon class="icon-size-5" matSuffix [svgIcon]="'heroicons_solid:user-circle'"></mat-icon>
+      </mat-form-field>
+    </div>
+    <div class="w-full md:w-1/2 lg:w-1/3 px-2 my-2">
+      <mat-form-field class="w-full">
+        <mat-label>Celular</mat-label>
+        <input matInput type="tel" mask="(00) 0 0000-0000" [formControlName]="'phoneNumber'" />
+        <mat-error>Campo obrigatório!</mat-error>
+        <mat-icon class="icon-size-5" matSuffix [svgIcon]="'heroicons_solid:user-circle'"></mat-icon>
+      </mat-form-field>
+    </div>
+  </ng-container>
+
+  <div class="w-full mb-2 border-t">
+    <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
+      {{ trs("painel-matrix-responsabilidade") }}
+    </h1>
+  </div>
+
+  <ng-container [formArrayName]="'matrixOfResponsability'">
+    <div class="w-full flex justify-start mb-2">
+      <button mat-flat-button color="primary" (click)="addResponsible()">{{ trs("adicionar") }}</button>
+    </div>
+
+    <ng-container *ngFor="let responsible of matrix().controls; let rowIndex = index">
+      <ng-container [formGroupName]="rowIndex">
+        <div class="w-full md:w-1/2 lg:w-1/4 px-2 my-2">
+          <mat-form-field class="w-full">
+            <mat-label>{{ trs("nome") }}</mat-label>
+            <input matInput [formControlName]="'name'" required />
+          </mat-form-field>
+        </div>
+        <div class="w-full md:w-1/2 lg:w-1/4 px-2 my-2">
+          <mat-form-field class="w-full">
+            <mat-label>{{ trs("recurso-funcao") }}</mat-label>
+            <input matInput [formControlName]="'function'" required />
+          </mat-form-field>
+        </div>
+        <div class="w-full md:w-1/2 lg:w-1/4 px-2 my-2">
+          <mat-form-field class="w-full">
+            <mat-label>{{ trs("email") }}</mat-label>
+            <input matInput [formControlName]="'email'" required />
+          </mat-form-field>
+        </div>
+        <div class="w-full md:w-1/2 lg:w-1/4 px-2 my-2 flex self-center justify-center">
+          <button mat-raised-button class="w-full md:w-1/2 lg:w-1/1 bg-warn text-white" (click)="removeResponsible(rowIndex)">
+            <mat-icon class="icon-5" [svgIcon]="'heroicons_solid:trash'"></mat-icon>
+          </button>
+        </div>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+
+  <div class="w-full my-10 border-t"></div>
+  <div class="flex flex-wrap">
+    <button class="px-8" mat-flat-button [color]="'primary'" type="button" matStepperNext>
+      {{ trs("proximo") }}
+    </button>
+  </div>
+</div>
