@@ -1,27 +1,90 @@
-# Fuse - Admin template and Starter project for Angular
+# HemolabSys - Sistema de Gerenciamento de laboratórios 🏥
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli)
+![Angular](https://img.shields.io/badge/Angular-17-red)
+![License](https://img.shields.io/badge/License-MIT-blue)
 
-## Development server
+Sistema completo para gerenciamento de um laboratório, desenvolvido com Angular 17 no frontend.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+## 🚀 Funcionalidades
 
-## Code scaffolding
+- ✅ Cadastro completo de usuários
+- 📋 Listagem com paginação
+- 🔍 Busca por ID, e-mail ou CPF
+- ✏️ Atualização de dados
+- 🗑️ Exclusão de registros
+- 💡 Ativação/desativação de usuários
+- 🔒 Autenticação e autorização
+- 📱 Interface responsiva
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+## 🛠️ Tecnologias Utilizadas
 
-## Build
+### Frontend (Em desenvolvimento)
+- Angular 17
+- Angular Material
+- TypeScript
+- SCSS
+- Jasmine/Karma
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+## 📋 Pré-requisitos
 
-## Running unit tests
+- Node.js 18 ou superior (para o frontend)
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+## 🔧 Instalação e Execução
 
-## Running end-to-end tests
+### Frontend
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice.  To use this command, you need to first add a package that implements end-to-end testing capabilities.
+1. Clone o repositório
+```bash
+git clone https://github.com/<seu-usuario-github>/hemolabsys-frontend
+cd hemolabsys-frontend
+```
 
-## Further help
+2. Compile o projeto
+```bash
+npm install
+```
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+3. Execute a aplicação
+```bash
+npm run start
+```
+
+A aplicação estará disponível em `http://localhost:4200`
+
+
+## 📦 Deploy
+
+O projeto está configurado para deploy em serviços gratuitos:
+- Backend: Railway/Render
+- Frontend: Vercel/Netlify
+- Banco de dados: Railway PostgreSQL
+
+## 🤝 Contribuindo
+
+1. Faça o fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+## 📝 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+## ✨ Próximos Passos
+
+- [ ] Implementação do frontend em Angular 17
+- [ ] Autenticação JWT
+- [ ] Perfis de usuário (admin/user)
+- [ ] Dashboard com métricas
+- [ ] Integração com serviços externos
+- [ ] Containerização com Docker
+
+## 👥 Autores
+
+* **Vinicius Prado** - *Trabalho inicial* - [dev-vinicius-prado](https://github.com/dev-vinicius-prado/)
+
+## 📬 Contato
+
+Link do projeto: [https://github.com/dev-vinicius-prado/crud-lab-user](https://github.com/dev-vinicius-prado/crud-lab-user)
+****
