@@ -7,7 +7,7 @@ Sistema completo para gerenciamento de um laboratório, desenvolvido com Angular
 
 ## 🛠️ Guia de engenharia de software
 
-- [ENGINEERING_GUIDELINE.md](ENGINEERING_GUIDELINE.md)
+- [ENGINEERING_GUIDELINE.md](/src/docs/ENGINEERING_GUIDELINE.md)
 
 ## 🚀 Funcionalidades
 
