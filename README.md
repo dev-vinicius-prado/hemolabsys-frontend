@@ -5,6 +5,10 @@
 
 Sistema completo para gerenciamento de um laboratório, desenvolvido com Angular 17 no frontend.
 
+## 🛠️ Guia de engenharia de software
+
+- [ENGINEERING_GUIDELINE.md](ENGINEERING_GUIDELINE.md)
+
 ## 🚀 Funcionalidades
 
 - ✅ Cadastro completo de usuários
