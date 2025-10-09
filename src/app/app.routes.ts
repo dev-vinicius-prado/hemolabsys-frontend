@@ -80,6 +80,7 @@ export const appRoutes: Route[] = [
             {path: 'rotina', loadChildren: () => import('app/modules/admin/example/example.routes')},
             {path: 'relatorio', loadChildren: () => import('app/modules/admin/example/example.routes')},
             {path: 'estoque', loadChildren: () => import('app/modules/admin/example/example.routes')},
+            {path: 'fornecedor', loadChildren: () => import('app/modules/admin/example/example.routes')},
             {path: 'financeiro', loadChildren: () => import('app/modules/admin/example/example.routes')},
             {path: 'clinica', loadChildren: () => import('app/modules/admin/example/example.routes')},
             {path: 'integracao', loadChildren: () => import('app/modules/admin/example/example.routes')},

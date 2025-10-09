@@ -26,8 +26,7 @@ export const defaultNavigation: FuseNavigationItem[] = [
         ],
     },
     {
-        id   : 'financeiro',
-        title: 'Financeiro',
+        id   : 'financeiro', title: 'Financeiro',
         type : 'basic',
         icon: 'heroicons_outline:banknotes',
         link : '/financeiro'
