@@ -12,14 +12,14 @@ import { LayoutComponent } from 'app/layout/layout.component';
 export const appRoutes: Route[] = [
 
     // Redirect empty path to '/example'
-    {path: '', pathMatch : 'full', redirectTo: 'example'},
+    {path: '', pathMatch : 'full', redirectTo: 'dashboard'},
 
     // Redirect signed-in user to the '/example'
     //
     // After the user signs in, the sign-in page will redirect the user to the 'signed-in-redirect'
     // path. Below is another redirection for that path to redirect the user to the desired
     // location. This is a small convenience to keep all main routes together here on this file.
-    {path: 'signed-in-redirect', pathMatch : 'full', redirectTo: 'example'},
+    {path: 'signed-in-redirect', pathMatch : 'full', redirectTo: 'dashboard'},
 
     // Auth routes for guests
     {
@@ -76,14 +76,12 @@ export const appRoutes: Route[] = [
             initialData: initialDataResolver
         },
         children: [
-            {path: 'example', loadChildren: () => import('app/modules/admin/example/example.routes')},
-            {path: 'rotina', loadChildren: () => import('app/modules/admin/example/example.routes')},
-            {path: 'relatorio', loadChildren: () => import('app/modules/admin/example/example.routes')},
-            {path: 'estoque', loadChildren: () => import('app/modules/admin/example/example.routes')},
-            {path: 'financeiro', loadChildren: () => import('app/modules/admin/example/example.routes')},
-            {path: 'clinica', loadChildren: () => import('app/modules/admin/example/example.routes')},
-            {path: 'integracao', loadChildren: () => import('app/modules/admin/example/example.routes')},
-            {path: 'preferencias', loadChildren: () => import('app/modules/admin/example/example.routes')},
+            { path: 'dashboard', loadChildren: () => import('app/modules/admin/dashboard/dashboard.routes') },
+            { path: 'produtos', loadChildren: () => import('app/modules/admin/example/example.routes') },
+            { path: 'entradas', loadChildren: () => import('app/modules/admin/example/example.routes') },
+            { path: 'saidas', loadChildren: () => import('app/modules/admin/example/example.routes') },
+            { path: 'relatorios', loadChildren: () => import('app/modules/admin/example/example.routes') },
+            { path: 'preferencias', loadChildren: () => import('app/modules/admin/example/example.routes') },
         ]
     },
 ];
