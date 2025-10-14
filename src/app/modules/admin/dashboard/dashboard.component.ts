@@ -5,27 +5,7 @@ import {
     OnInit,
 } from '@angular/core';
 import { NgForOf } from '@angular/common';
-
-interface Metric {
-    title: string;
-    value: string;
-    status: string;
-    icon: string;
-}
-
-interface Alert {
-    message: string;
-    details: string;
-    statusIcon: string;
-}
-
-interface Product {
-    name: string;
-    currentQuantity: number;
-    minQuantity: number;
-    status: string;
-    statusIcon: string;
-}
+import { Metric, Alert, Product } from 'app/core/dashboard/dashboard.types';
 
 @Component({
     selector: 'dashboard',
