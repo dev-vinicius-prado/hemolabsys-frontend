@@ -12,13 +12,21 @@ export const defaultNavigation: FuseNavigationItem[] = [
     {
         id   : 'estoque',
         title: 'Estoque',
-        type : 'basic',
+        type : 'collapsable',
         icon: 'heroicons_outline:archive-box-arrow-down',
-        link : '/estoque'
+        link : '/estoque',
+        children: [
+            {
+                id   : 'fornecedor',
+                title: 'Fornecedores',
+                type : 'basic',
+                link : '/fornecedor',
+                icon : 'heroicons_outline:home-modern'
+            },
+        ],
     },
     {
-        id   : 'financeiro',
-        title: 'Financeiro',
+        id   : 'financeiro', title: 'Financeiro',
         type : 'basic',
         icon: 'heroicons_outline:banknotes',
         link : '/financeiro'
