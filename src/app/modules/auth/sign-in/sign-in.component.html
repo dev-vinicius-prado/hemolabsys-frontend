@@ -43,11 +43,12 @@
             <form
                 class="mt-8"
                 [formGroup]="signInForm"
-                #signInNgForm="ngForm">
+                #signInNgForm="ngForm"
+                *transloco="let trs">
 
                 <!-- Email field -->
                 <mat-form-field class="w-full">
-                    <mat-label>Email</mat-label>
+                    <mat-label>{{trs('email')}}</mat-label>
                     <input
                         id="email"
                         matInput
