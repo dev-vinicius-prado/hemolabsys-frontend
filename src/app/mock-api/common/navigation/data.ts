@@ -3,43 +3,43 @@ import { FuseNavigationItem } from '@fuse/components/navigation';
 
 export const defaultNavigation: FuseNavigationItem[] = [
     {
-        id   : 'rotina',
-        title: 'Rotina',
+        id   : 'dashboard',
+        title: 'Dashboard',
         type : 'basic',
-        icon: 'heroicons_outline:pencil-square',
-        link : '/rotina'
+        icon: 'heroicons_outline:chart-pie',
+        link : '/dashboard'
     },
     {
-        id   : 'estoque',
-        title: 'Estoque',
+        id   : 'produtos',
+        title: 'Produtos',
         type : 'basic',
         icon: 'heroicons_outline:archive-box-arrow-down',
-        link : '/estoque'
+        link : '/produtos'
     },
     {
-        id   : 'financeiro',
-        title: 'Financeiro',
+        id   : 'entradas',
+        title: 'Entradas',
         type : 'basic',
-        icon: 'heroicons_outline:banknotes',
-        link : '/financeiro'
+        icon: 'heroicons_outline:arrow-down-on-square',
+        link : '/entradas'
     },
     {
-        id   : 'clinica',
-        title: 'Clínica',
+        id   : 'saidas',
+        title: 'Saídas',
         type : 'basic',
-        icon: 'heroicons_outline:beaker',
-        link : '/clinica'
+        icon: 'heroicons_outline:arrow-up-on-square',
+        link : '/saidas'
     },
     {
-        id   : 'integracao',
-        title: 'Integração',
+        id   : 'relatorios',
+        title: 'Relatórios',
         type : 'basic',
-        icon: 'heroicons_outline:arrow-path-rounded-square',
-        link : '/integracao'
+        icon: 'heroicons_outline:document-chart-bar',
+        link : '/relatorios'
     },
     {
         id   : 'configuracao',
-        title: 'Configuracoes',
+        title: 'Configurações',
         type : 'collapsable',
         icon : 'heroicons_outline:adjustments-horizontal',
         children: [
