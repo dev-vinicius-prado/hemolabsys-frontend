@@ -1,11 +1,11 @@
-+-------------------------------[HEADER: Produtos > Lista | Novo Produto ➕ | Filtro: Setor ▼]-------------------------------+
++-------------------------------[HEADER: Insumos > Lista | Novo Insumo ➕ | Filtro: Setor ▼]-------------------------------+
 |                                                                                                                           |
 | [SIDEBAR]                  | [CONTENT]                                                                                    |
-| Dashboard                   | [TABELA PRODUTOS]                                                                           |
-| Produtos *                  | +----------+--------------------+----------+----------+-----------------+----------+        |
+| Dashboard                   | [TABELA INSUMOS]                                                                           |
+| Insumos *                  | +----------+--------------------+----------+----------+-----------------+----------+        |
 | Entradas                    | | Código  | Descrição          | Marca    | Setor   | Unid. Med. | Lote?   | Ações    |     |
 | ...                         | +----------+--------------------+----------+----------+-----------------+----------+        |
-|                            | | PROD001 | Reagente Hemograma | Roche    | Bioquim.| Unid.      | Sim      | [✏️][👁️][🗑️] ||
+|                            | | INSUMO001 | Reagente Hemograma | Roche    | Bioquim.| Unid.      | Sim      | [✏️][👁️][🗑️] ||
 |                            | +----------+--------------------+----------+----------+-----------------+----------+         |
 |                            | [Search: _____ | Checkboxes □ | Export CSV]                                                  |
 |                            |                                                                                              |

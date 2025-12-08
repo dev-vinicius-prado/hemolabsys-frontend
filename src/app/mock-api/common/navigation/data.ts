@@ -10,11 +10,11 @@ export const defaultNavigation: FuseNavigationItem[] = [
         link : '/dashboard'
     },
     {
-        id   : 'produtos',
-        title: 'Produtos',
+        id   : 'insumos',
+        title: 'Insumos',
         type : 'basic',
-        icon: 'heroicons_outline:archive-box-arrow-down',
-        link : '/produtos'
+        icon: 'heroicons_outline:archive-box',
+        link : '/insumos'
     },
     {
         id   : 'entradas',
@@ -49,6 +49,27 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 type : 'basic',
                 link : '/preferencias',
                 icon : 'heroicons_outline:cog-6-tooth'
+            },
+            {
+                id   : 'marca',
+                title: 'Marcas',
+                type : 'basic',
+                link : '/marca',
+                icon : 'heroicons_outline:tag'
+            },
+            {
+                id   : 'setor',
+                title: 'Setores',
+                type : 'basic',
+                link : '/setor',
+                icon : 'heroicons_outline:building-office'
+            },
+            {
+                id   : 'tipo-embalagem',
+                title: 'Tipos de Embalagem',
+                type : 'basic',
+                link : '/tipo-embalagem',
+                icon : 'heroicons_outline:cube'
             },
         ],
     }

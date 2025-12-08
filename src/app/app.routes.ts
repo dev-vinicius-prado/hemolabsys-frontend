@@ -77,7 +77,10 @@ export const appRoutes: Route[] = [
         },
         children: [
             { path: 'dashboard', loadChildren: () => import('app/modules/admin/dashboard/dashboard.routes') },
-            { path: 'produtos', loadChildren: () => import('app/modules/admin/example/example.routes') },
+            { path: 'insumos', loadChildren: () => import('app/modules/admin/insumos/insumos.routes') },
+            { path: 'marca', loadChildren: () => import('app/modules/admin/marca/marca.routes') },
+            { path: 'setor', loadChildren: () => import('app/modules/admin/setor/setor.routes') },
+            { path: 'tipo-embalagem', loadChildren: () => import('app/modules/admin/tipo-embalagem/tipo-embalagem.routes') },
             { path: 'entradas', loadChildren: () => import('app/modules/admin/example/example.routes') },
             { path: 'saidas', loadChildren: () => import('app/modules/admin/example/example.routes') },
             { path: 'relatorios', loadChildren: () => import('app/modules/admin/example/example.routes') },
