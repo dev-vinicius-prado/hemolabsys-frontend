@@ -3,13 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/api/api.service';
 import { BehaviorSubject, combineLatest, map } from 'rxjs';
-
-interface Marca {
-    id: number;
-    nome: string;
-   // dataAtualizacao: Date;
-   // usuario: number; // id_usuario
-}
+import { CreateMarcaDTO, UpdateMarcaDTO, MarcaResponseDTO } from '../../../core/models/basic-catalog.types';
 
 @Component({
     selector: 'marca',
@@ -25,7 +19,7 @@ export class MarcaComponent {
     private readonly usuarioLogadoId = 1;
     private readonly api = inject(ApiService);
     // Estado reativo
-    private readonly marcasSubject = new BehaviorSubject<Marca[]>([]);
+    private readonly marcasSubject = new BehaviorSubject<MarcaResponseDTO[]>([]);
     readonly marcas$ = this.marcasSubject.asObservable();
 
     private readonly searchSubject = new BehaviorSubject<string>('');
@@ -45,19 +39,18 @@ export class MarcaComponent {
     }
     selectedIds = new Set<number>();
     mode: 'list' | 'create' | 'edit' | 'view' = 'list';
-    form: Partial<Marca> = {};
+    form: Partial<MarcaResponseDTO> = {};
 
     ngOnInit(): void {
         this.loadMarcas();
     }
 
     private loadMarcas(): void {
-        this.api.list<Marca>('marcas').subscribe({
+        this.api.list<MarcaResponseDTO>('marcas').subscribe({
             next: (data) => {
                 this.marcasSubject.next(data || []);
             },
             error: () => {
-                // Fallback simples em caso de API indisponível
                 this.marcasSubject.next([
                     { id: 1, nome: 'Acme' },
                     { id: 2, nome: 'Globex' },
@@ -71,17 +64,17 @@ export class MarcaComponent {
         this.form = { id: this.nextId(), nome: '' };
     }
 
-    editar(m: Marca): void {
+    editar(m: MarcaResponseDTO): void {
         this.mode = 'edit';
         this.form = { ...m };
     }
 
-    visualizar(m: Marca): void {
+    visualizar(m: MarcaResponseDTO): void {
         this.mode = 'view';
         this.form = { ...m };
     }
 
-    excluir(m: Marca): void {
+    excluir(m: MarcaResponseDTO): void {
         this.api.remove('marcas', m.id).subscribe({
             next: () => {
                 const next = this.marcasSubject.value.filter(x => x.id !== m.id);
@@ -98,47 +91,38 @@ export class MarcaComponent {
     }
 
     salvar(): void {
-        if (!this.form.nome) {
-            return;
-        }
-        const now = new Date();
-        const record: Marca = {
-            id: this.form.id ?? this.nextId(),
-            nome: this.form.nome,
-
-        };
-
-        const isEdit = this.marcasSubject.value.some(x => x.id === record.id);
+        if (!this.form.nome) return;
+        const isEdit = this.form.id !== undefined && this.marcasSubject.value.some(x => x.id === this.form.id);
 
         if (isEdit) {
-            this.api.update<Marca>('marcas', record.id, record).subscribe({
+            const record: UpdateMarcaDTO = { id: this.form.id as number, nome: this.form.nome };
+            this.api.update<MarcaResponseDTO>('marcas', record.id, record).subscribe({
                 next: (updated) => {
-                    const current = this.marcasSubject.value;
-                    const idx = current.findIndex(x => x.id === record.id);
-                    current[idx] = updated ?? record;
-                    this.marcasSubject.next([...current]);
+                    const list = this.marcasSubject.value.map(x => x.id === updated.id ? updated : x);
+                    this.marcasSubject.next(list);
                     this.cancelar();
                 },
                 error: () => {
-                    const current = this.marcasSubject.value;
-                    const idx = current.findIndex(x => x.id === record.id);
-                    current[idx] = record;
-                    this.marcasSubject.next([...current]);
+                    const recordFallback: MarcaResponseDTO = { id: this.form.id as number, nome: this.form.nome };
+                    const list = this.marcasSubject.value.map(x => x.id === recordFallback.id ? recordFallback : x);
+                    this.marcasSubject.next(list);
                     this.cancelar();
-                },
+                }
             });
         } else {
-            this.api.create<Marca>('marcas', record).subscribe({
+            const record: CreateMarcaDTO = { nome: this.form.nome };
+            this.api.create<MarcaResponseDTO>('marcas', record).subscribe({
                 next: (created) => {
-                    const next = [...this.marcasSubject.value, created ?? record];
-                    this.marcasSubject.next(next);
+                    const list = [...this.marcasSubject.value, created];
+                    this.marcasSubject.next(list);
                     this.cancelar();
                 },
                 error: () => {
-                    const next = [...this.marcasSubject.value, record];
-                    this.marcasSubject.next(next);
+                    const recordFallback: MarcaResponseDTO = { id: this.nextId(), nome: this.form.nome };
+                    const list = [...this.marcasSubject.value, recordFallback];
+                    this.marcasSubject.next(list);
                     this.cancelar();
-                },
+                }
             });
         }
     }

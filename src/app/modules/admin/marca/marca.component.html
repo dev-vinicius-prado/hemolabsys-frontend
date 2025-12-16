@@ -66,7 +66,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let m of (filteredMarcas$ | async)" class="hover:bg-gray-50">
+              <tr *ngFor="let m of filteredMarcas" class="hover:bg-gray-50">
                 <td class="px-4 py-3 border-b"><input type="checkbox" [checked]="selectedIds.has(m.id)" (change)="toggleSelection(m.id, $event.target.checked)" /></td>
                 <td class="px-4 py-3 border-b">{{ m.id }}</td>
                 <td class="px-4 py-3 border-b">{{ m.nome }}</td>
@@ -81,7 +81,7 @@
               </tr>
             </tbody>
           </table>
-          <div class="p-4 text-sm text-secondary">Total: {{ (filteredMarcas$ | async)?.length || 0 }}</div>
+          <div class="p-4 text-sm text-secondary">Total: {{ filteredMarcas.length }}</div>
         </div>
       </div>
     </div>

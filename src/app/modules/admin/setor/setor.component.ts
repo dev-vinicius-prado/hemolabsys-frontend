@@ -1,15 +1,10 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { BehaviorSubject, combineLatest, map } from 'rxjs';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ApiService } from '../../../core/api/api.service';
-
-interface Setor {
-    idSetor: number;
-    nomeSetor: string;
-    dataAtualizacao: Date;
-    usuario: number; // id_usuario
-}
+import { TranslocoModule, TranslocoService } from '@ngneat/transloco';
+import { CreateSetorDTO, UpdateSetorDTO, SetorResponseDTO } from '../../../core/models/basic-catalog.types';
 
 @Component({
     selector: 'setor',
@@ -18,144 +13,107 @@ interface Setor {
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, ReactiveFormsModule, TranslocoModule],
 })
 export class SetorComponent {
-    private readonly usuarioLogadoId = 1;
+    private readonly api = inject(ApiService);
+    private readonly fb = inject(FormBuilder);
+    private readonly snackBar = inject(MatSnackBar);
+    private readonly transloco = inject(TranslocoService);
 
-    // Estado reativo
-    setors$ = new BehaviorSubject<Setor[]>([]);
-    searchTerm$ = new BehaviorSubject<string>('');
-    searchTerm = '';
+    // Signals para estado
+    setores = signal<SetorResponseDTO[]>([]);
+    search = signal('');
+    selectedIds = signal<Set<number>>(new Set());
+    mode = signal<'list' | 'create' | 'edit' | 'view'>('list');
 
-    // UI state
-    selectedIds = new Set<number>();
-    mode: 'list' | 'create' | 'edit' | 'view' = 'list';
-    form: Partial<Setor> = {};
+    form: FormGroup = this.fb.group({
+        id: [null],
+        nome: ['', Validators.required],
+    });
 
-    // Lista filtrada
-    filteredSetores$ = combineLatest([this.setors$, this.searchTerm$]).pipe(
-        map(([list, term]) => {
-            const t = (term ?? '').trim().toLowerCase();
-            if (!t) return list;
-            return list.filter(s => s.nomeSetor.toLowerCase().includes(t));
-        })
-    );
+    filteredSetores = computed(() => {
+        const term = this.search().trim().toLowerCase();
+        return term ? this.setores().filter(s => s.nome.toLowerCase().includes(term)) : this.setores();
+    });
 
-    constructor(private readonly api: ApiService) {}
-
-    ngOnInit(): void {
+    constructor() {
         this.loadSetores();
     }
 
-    private loadSetores(): void {
-        this.api.list<Setor>('setores').subscribe({
-            next: (data) => {
-                // Garantir campos esperados
-                const normalized = (data ?? []).map((s: any) => ({
-                    idSetor: s.idSetor ?? s.id ?? s.id_setor,
-                    nomeSetor: s.nomeSetor ?? s.nome ?? s.nome_setor,
-                    dataAtualizacao: s.dataAtualizacao ? new Date(s.dataAtualizacao) : new Date(),
-                    usuario: s.usuario ?? this.usuarioLogadoId,
-                } as Setor));
-                this.setors$.next(normalized);
-            },
-            error: () => {
-                // Fallback local (mantém experiência)
-                this.setors$.next([
-                    { idSetor: 1, nomeSetor: 'Hemocentro', dataAtualizacao: new Date(), usuario: this.usuarioLogadoId },
-                    { idSetor: 2, nomeSetor: 'Laboratório', dataAtualizacao: new Date(), usuario: this.usuarioLogadoId },
-                ]);
-            }
+    loadSetores(): void {
+        this.api.list<SetorResponseDTO>('/setores').subscribe({
+            next: data => this.setores.set(data),
+            error: err => this.showError('Erro ao carregar setores: ' + err.message),
         });
     }
 
     novo(): void {
-        this.mode = 'create';
-        this.form = { idSetor: this.nextId(), nomeSetor: '' };
+        this.form.reset();
+        this.mode.set('create');
     }
 
-    editar(s: Setor): void {
-        this.mode = 'edit';
-        this.form = { ...s };
+    editar(setor: SetorResponseDTO): void {
+        this.form.patchValue(setor);
+        this.mode.set('edit');
     }
 
-    visualizar(s: Setor): void {
-        this.mode = 'view';
-        this.form = { ...s };
-    }
-
-    excluir(s: Setor): void {
-        this.api.remove('setores', s.idSetor).subscribe({
-            next: () => {
-                const updated = this.setors$.value.filter(x => x.idSetor !== s.idSetor);
-                this.setors$.next(updated);
-                this.selectedIds.delete(s.idSetor);
-            },
-            error: () => {
-                const updated = this.setors$.value.filter(x => x.idSetor !== s.idSetor);
-                this.setors$.next(updated);
-                this.selectedIds.delete(s.idSetor);
-            }
-        });
+    visualizar(setor: SetorResponseDTO): void {
+        this.form.patchValue(setor);
+        this.form.disable(); // Read-only
+        this.mode.set('view');
     }
 
     salvar(): void {
-        if (!this.form.idSetor || !this.form.nomeSetor) {
-            return;
-        }
-        const now = new Date();
-        const record: Setor = {
-            idSetor: this.form.idSetor,
-            nomeSetor: this.form.nomeSetor,
-            dataAtualizacao: now,
-            usuario: this.usuarioLogadoId,
-        };
-        const exists = this.setors$.value.some(x => x.idSetor === record.idSetor);
-        const op$ = exists
-            ? this.api.update('setores', record.idSetor, record)
-            : this.api.create('setores', record);
+        if (this.form.invalid) return;
 
-        op$.subscribe({
-            next: (res: any) => {
-                const payload = {
-                    idSetor: res?.idSetor ?? record.idSetor,
-                    nomeSetor: res?.nomeSetor ?? record.nomeSetor,
-                    dataAtualizacao: res?.dataAtualizacao ? new Date(res.dataAtualizacao) : now,
-                    usuario: res?.usuario ?? record.usuario,
-                } as Setor;
-                const list = this.setors$.value.slice();
-                const idx = list.findIndex(x => x.idSetor === payload.idSetor);
-                if (idx > -1) list[idx] = payload; else list.push(payload);
-                this.setors$.next(list);
-                this.cancelar();
-            },
-            error: () => {
-                const list = this.setors$.value.slice();
-                const idx = list.findIndex(x => x.idSetor === record.idSetor);
-                if (idx > -1) list[idx] = record; else list.push(record);
-                this.setors$.next(list);
-                this.cancelar();
-            }
-        });
+        const data: CreateSetorDTO | UpdateSetorDTO = this.form.value;
+
+        if (this.mode() === 'edit') {
+            const updateData = data as UpdateSetorDTO;
+            this.api.update<SetorResponseDTO>('/setores', updateData.id, updateData).subscribe({
+                next: () => { this.loadSetores(); this.cancelar(); },
+                error: err => this.showError('Erro ao atualizar: ' + err.message),
+            });
+        } else {
+            this.api.create<SetorResponseDTO>('/setores', data).subscribe({
+                next: () => { this.loadSetores(); this.cancelar(); },
+                error: err => this.showError('Erro ao criar: ' + err.message),
+            });
+        }
+    }
+
+    excluir(setor: SetorResponseDTO): void {
+        if (confirm(this.transloco.translate('confirm.excluir', { nome: setor.nome }))) {
+            this.api.remove('/setores', setor.id).subscribe({
+                next: () => this.loadSetores(),
+                error: err => this.showError('Erro ao excluir: ' + err.message),
+            });
+        }
     }
 
     cancelar(): void {
-        this.mode = 'list';
-        this.form = {};
+        this.mode.set('list');
+        this.form.enable();
+        this.form.reset();
     }
 
     toggleSelection(id: number, checked: boolean): void {
-        if (checked) this.selectedIds.add(id); else this.selectedIds.delete(id);
+        this.selectedIds.update(set => {
+            checked ? set.add(id) : set.delete(id);
+            return new Set(set);
+        });
     }
 
     exportCsv(): void {
-        const term = this.searchTerm.trim().toLowerCase();
-        const list = this.setors$.value.filter(s => s.nomeSetor.toLowerCase().includes(term));
-        const rows = [['idSetor', 'nomeSetor', 'dataAtualizacao', 'usuario'], ...list.map(s => [
-            String(s.idSetor), s.nomeSetor, s.dataAtualizacao.toISOString(), String(s.usuario),
-        ])];
-        const csv = rows.map(r => r.join(',')).join('\n');
+        const header = ['ID', 'Nome'];
+        const rows = this.filteredSetores().map(s => [
+            String(s.id),
+            s.nome,
+        ]);
+        const csv = [header, ...rows]
+            .map(r => r.map(v => '"' + String(v).replaceAll('"', '""') + '"').join(','))
+            .join('\n');
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -165,7 +123,7 @@ export class SetorComponent {
         URL.revokeObjectURL(url);
     }
 
-    private nextId(): number {
-        return (this.setors$.value.at(-1)?.idSetor ?? 0) + 1;
+    private showError(message: string): void {
+        this.snackBar.open(message, 'OK', { duration: 5000, panelClass: ['error-snackbar'] });
     }
 }

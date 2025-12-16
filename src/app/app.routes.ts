@@ -1,4 +1,3 @@
-import { CompanyComponent } from 'app/modules/registrations/company/company.component';
 import { Route } from '@angular/router';
 import { initialDataResolver } from 'app/app.resolvers';
 import { AuthGuard } from 'app/core/auth/guards/auth.guard';
@@ -61,9 +60,9 @@ export const appRoutes: Route[] = [
         data: {
             layout: 'empty'
         },
-        children: [
-            {path: 'home', loadChildren: () => import('app/modules/landing/home/home.routes')},
-        ]
+        // children: [
+        //     {path: 'home', loadChildren: () => import('app/modules/landing/home/home.routes')},
+        // ]
     },
 
     // Admin routes
@@ -81,10 +80,10 @@ export const appRoutes: Route[] = [
             { path: 'marca', loadChildren: () => import('app/modules/admin/marca/marca.routes') },
             { path: 'setor', loadChildren: () => import('app/modules/admin/setor/setor.routes') },
             { path: 'tipo-embalagem', loadChildren: () => import('app/modules/admin/tipo-embalagem/tipo-embalagem.routes') },
-            { path: 'entradas', loadChildren: () => import('app/modules/admin/example/example.routes') },
-            { path: 'saidas', loadChildren: () => import('app/modules/admin/example/example.routes') },
-            { path: 'relatorios', loadChildren: () => import('app/modules/admin/example/example.routes') },
-            { path: 'preferencias', loadChildren: () => import('app/modules/admin/example/example.routes') },
+            // { path: 'entradas', loadChildren: () => import('app/modules/admin/entradas/entradas.routes') },
+            // { path: 'saidas', loadChildren: () => import('app/modules/admin/saidas/saidas.routes') },
+            // { path: 'relatorios', loadChildren: () => import('app/modules/admin/relatorios/relatorios.routes') },
+            // { path: 'preferencias', loadChildren: () => import('app/modules/admin/preferencias/preferencias.routes') },
         ]
     },
 ];

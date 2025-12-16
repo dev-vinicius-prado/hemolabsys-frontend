@@ -1,15 +1,27 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    ViewEncapsulation,
+    inject,
+    signal,
+    computed,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { BehaviorSubject, combineLatest, map } from 'rxjs';
+import {
+    FormBuilder,
+    FormGroup,
+    FormsModule,
+    ReactiveFormsModule,
+    Validators,
+} from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ApiService } from '../../../core/api/api.service';
-
-interface TipoEmbalagem {
-    idTipo_embalagem: number;
-    descricaoTipoEmbalagem: string;
-    dataAtualizacao: Date;
-    usuario: number; // id_usuario
-}
+import { TranslocoModule, TranslocoService } from '@ngneat/transloco';
+import {
+    CreateTipoEmbalagemDTO,
+    UpdateTipoEmbalagemDTO,
+    TipoEmbalagemResponseDTO,
+} from '../../../core/models/basic-catalog.types';
 
 @Component({
     selector: 'tipo-embalagem',
@@ -18,142 +30,145 @@ interface TipoEmbalagem {
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, ReactiveFormsModule, TranslocoModule],
 })
 export class TipoEmbalagemComponent {
-    private readonly usuarioLogadoId = 1;
+    private readonly api = inject(ApiService);
+    private readonly fb = inject(FormBuilder);
+    private readonly snackBar = inject(MatSnackBar);
+    private readonly transloco = inject(TranslocoService);
 
-    // Estado reativo
-    tipos$ = new BehaviorSubject<TipoEmbalagem[]>([]);
-    searchTerm$ = new BehaviorSubject<string>('');
-    searchTerm = '';
+    // Signals para estado
+    tiposEmbalagem = signal<TipoEmbalagemResponseDTO[]>([]);
+    search = signal('');
+    selectedIds = signal<Set<number>>(new Set());
+    mode = signal<'list' | 'create' | 'edit' | 'view'>('list');
 
-    // UI state
-    selectedIds = new Set<number>();
-    mode: 'list' | 'create' | 'edit' | 'view' = 'list';
-    form: Partial<TipoEmbalagem> = {};
+    form: FormGroup = this.fb.group({
+        id: [null],
+        descricao: ['', Validators.required],
+    });
 
-    // Lista filtrada
-    filteredTipos$ = combineLatest([this.tipos$, this.searchTerm$]).pipe(
-        map(([list, term]) => {
-            const t = (term ?? '').trim().toLowerCase();
-            if (!t) return list;
-            return list.filter(x => x.descricaoTipoEmbalagem.toLowerCase().includes(t));
-        })
-    );
+    filteredTiposEmbalagem = computed(() => {
+        const term = this.search().trim().toLowerCase();
+        return term
+            ? this.tiposEmbalagem().filter((t) =>
+                  t.descricao.toLowerCase().includes(term)
+              )
+            : this.tiposEmbalagem();
+    });
 
-    constructor(private readonly api: ApiService) {}
-
-    ngOnInit(): void {
-        this.loadTipos();
+    constructor() {
+        this.loadTiposEmbalagem();
     }
 
-    private loadTipos(): void {
-        this.api.list<TipoEmbalagem>('tipos-embalagem').subscribe({
-            next: (data) => {
-                const normalized = (data ?? []).map((t: any) => ({
-                    idTipo_embalagem: t.idTipo_embalagem ?? t.id ?? t.id_tipo_embalagem,
-                    descricaoTipoEmbalagem: t.descricaoTipoEmbalagem ?? t.descricao ?? t.descricao_tipo_embalagem,
-                    dataAtualizacao: t.dataAtualizacao ? new Date(t.dataAtualizacao) : new Date(),
-                    usuario: t.usuario ?? this.usuarioLogadoId,
-                } as TipoEmbalagem));
-                this.tipos$.next(normalized);
-            },
-            error: () => {
-                this.tipos$.next([
-                    { idTipo_embalagem: 1, descricaoTipoEmbalagem: 'Caixa', dataAtualizacao: new Date(), usuario: this.usuarioLogadoId },
-                    { idTipo_embalagem: 2, descricaoTipoEmbalagem: 'Frasco', dataAtualizacao: new Date(), usuario: this.usuarioLogadoId },
-                ]);
-            }
+    loadTiposEmbalagem(): void {
+        this.api.list<TipoEmbalagemResponseDTO>('/tipos-embalagem').subscribe({
+            next: (data) => this.tiposEmbalagem.set(data),
+            error: (err) =>
+                this.showError(
+                    'Erro ao carregar tipos de embalagem: ' + err.message
+                ),
         });
     }
 
     novo(): void {
-        this.mode = 'create';
-        this.form = { idTipo_embalagem: this.nextId(), descricaoTipoEmbalagem: '' };
+        this.form.reset();
+        this.mode.set('create');
     }
 
-    editar(t: TipoEmbalagem): void {
-        this.mode = 'edit';
-        this.form = { ...t };
+    editar(tipoEmbalagem: TipoEmbalagemResponseDTO): void {
+        this.form.patchValue(tipoEmbalagem);
+        this.mode.set('edit');
     }
 
-    visualizar(t: TipoEmbalagem): void {
-        this.mode = 'view';
-        this.form = { ...t };
-    }
-
-    excluir(t: TipoEmbalagem): void {
-        this.api.remove('tipos-embalagem', t.idTipo_embalagem).subscribe({
-            next: () => {
-                const updated = this.tipos$.value.filter(x => x.idTipo_embalagem !== t.idTipo_embalagem);
-                this.tipos$.next(updated);
-                this.selectedIds.delete(t.idTipo_embalagem);
-            },
-            error: () => {
-                const updated = this.tipos$.value.filter(x => x.idTipo_embalagem !== t.idTipo_embalagem);
-                this.tipos$.next(updated);
-                this.selectedIds.delete(t.idTipo_embalagem);
-            }
-        });
+    visualizar(tipoEmbalagem: TipoEmbalagemResponseDTO): void {
+        this.form.patchValue(tipoEmbalagem);
+        this.form.disable(); // Read-only
+        this.mode.set('view');
     }
 
     salvar(): void {
-        if (!this.form.idTipo_embalagem || !this.form.descricaoTipoEmbalagem) {
-            return;
-        }
-        const now = new Date();
-        const record: TipoEmbalagem = {
-            idTipo_embalagem: this.form.idTipo_embalagem,
-            descricaoTipoEmbalagem: this.form.descricaoTipoEmbalagem,
-            dataAtualizacao: now,
-            usuario: this.usuarioLogadoId,
-        };
-        const exists = this.tipos$.value.some(x => x.idTipo_embalagem === record.idTipo_embalagem);
-        const op$ = exists
-            ? this.api.update('tipos-embalagem', record.idTipo_embalagem, record)
-            : this.api.create('tipos-embalagem', record);
+        if (this.form.invalid) return;
 
-        op$.subscribe({
-            next: (res: any) => {
-                const payload = {
-                    idTipo_embalagem: res?.idTipo_embalagem ?? record.idTipo_embalagem,
-                    descricaoTipoEmbalagem: res?.descricaoTipoEmbalagem ?? record.descricaoTipoEmbalagem,
-                    dataAtualizacao: res?.dataAtualizacao ? new Date(res.dataAtualizacao) : now,
-                    usuario: res?.usuario ?? record.usuario,
-                } as TipoEmbalagem;
-                const list = this.tipos$.value.slice();
-                const idx = list.findIndex(x => x.idTipo_embalagem === payload.idTipo_embalagem);
-                if (idx > -1) list[idx] = payload; else list.push(payload);
-                this.tipos$.next(list);
-                this.cancelar();
-            },
-            error: () => {
-                const list = this.tipos$.value.slice();
-                const idx = list.findIndex(x => x.idTipo_embalagem === record.idTipo_embalagem);
-                if (idx > -1) list[idx] = record; else list.push(record);
-                this.tipos$.next(list);
-                this.cancelar();
-            }
-        });
+        const data: CreateTipoEmbalagemDTO | UpdateTipoEmbalagemDTO = {
+            ...this.form.value,
+            usuario: 'admin', // Substituir pelo usuário logado
+            dataAtualizacao: new Date().toISOString(),
+        };
+
+        if (this.mode() === 'edit') {
+            const updateData = data as UpdateTipoEmbalagemDTO;
+            this.api
+                .update<TipoEmbalagemResponseDTO>(
+                    '/tipos-embalagem',
+                    updateData.id,
+                    updateData
+                )
+                .subscribe({
+                    next: () => {
+                        this.loadTiposEmbalagem();
+                        this.cancelar();
+                    },
+                    error: (err) =>
+                        this.showError('Erro ao atualizar: ' + err.message),
+                });
+        } else {
+            this.api
+                .create<TipoEmbalagemResponseDTO>('/tipos-embalagem', data)
+                .subscribe({
+                    next: () => {
+                        this.loadTiposEmbalagem();
+                        this.cancelar();
+                    },
+                    error: (err) =>
+                        this.showError('Erro ao criar: ' + err.message),
+                });
+        }
+    }
+
+    excluir(tipoEmbalagem: TipoEmbalagemResponseDTO): void {
+        if (
+            confirm(
+                this.transloco.translate('confirm.excluir', {
+                    nome: tipoEmbalagem.descricao,
+                })
+            )
+        ) {
+            this.api.remove('/tipos-embalagem', tipoEmbalagem.id).subscribe({
+                next: () => this.loadTiposEmbalagem(),
+                error: (err) =>
+                    this.showError('Erro ao excluir: ' + err.message),
+            });
+        }
     }
 
     cancelar(): void {
-        this.mode = 'list';
-        this.form = {};
+        this.mode.set('list');
+        this.form.enable();
+        this.form.reset();
     }
 
     toggleSelection(id: number, checked: boolean): void {
-        if (checked) this.selectedIds.add(id); else this.selectedIds.delete(id);
+        this.selectedIds.update((set) => {
+            checked ? set.add(id) : set.delete(id);
+            return new Set(set);
+        });
     }
 
     exportCsv(): void {
-        const term = this.searchTerm.trim().toLowerCase();
-        const list = this.tipos$.value.filter(t => t.descricaoTipoEmbalagem.toLowerCase().includes(term));
-        const rows = [['idTipo_embalagem', 'descricaoTipoEmbalagem', 'dataAtualizacao', 'usuario'], ...list.map(t => [
-            String(t.idTipo_embalagem), t.descricaoTipoEmbalagem, t.dataAtualizacao.toISOString(), String(t.usuario),
-        ])];
-        const csv = rows.map(r => r.join(',')).join('\n');
+        const header = ['ID', 'Descrição'];
+        const rows = this.filteredTiposEmbalagem().map((t) => [
+            String(t.id),
+            t.descricao,
+        ]);
+        const csv = [header, ...rows]
+            .map((r) =>
+                r
+                    .map((v) => '"' + String(v).replaceAll('"', '""') + '"')
+                    .join(',')
+            )
+            .join('\n');
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -163,7 +178,10 @@ export class TipoEmbalagemComponent {
         URL.revokeObjectURL(url);
     }
 
-    private nextId(): number {
-        return (this.tipos$.value.at(-1)?.idTipo_embalagem ?? 0) + 1;
+    private showError(message: string): void {
+        this.snackBar.open(message, 'OK', {
+            duration: 5000,
+            panelClass: ['error-snackbar'],
+        });
     }
 }
