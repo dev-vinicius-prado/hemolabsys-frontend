@@ -47,6 +47,7 @@ export interface UpdateMarcaDTO {
 }
 
 export interface MarcaResponseDTO {
+  audityInfo: any;
   id: number;
   nome: string;
 }

@@ -1,12 +1,8 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { ApiService } from '../../../core/api/api.service';
-import { TranslocoModule, TranslocoService } from '@ngneat/transloco';
-import { SetorResponseDTO } from 'app/core/models';
+import { FormsModule } from '@angular/forms';
 
-interface InsumoResponseDTO {
+interface Insumo {
     id: number;
     codigo: string;
     descricao: string;
@@ -15,20 +11,6 @@ interface InsumoResponseDTO {
     tipoEmbalagem: string;
     unidadeMedida: string;
     lote: boolean;
-}
-
-interface CreateInsumoDTO {
-    codigo: string;
-    descricao: string;
-    marca: string;
-    setor: string;
-    tipoEmbalagem: string;
-    unidadeMedida: string;
-    lote: boolean;
-}
-
-interface UpdateInsumoDTO extends CreateInsumoDTO {
-    id: number;
 }
 
 @Component({
@@ -38,126 +20,151 @@ interface UpdateInsumoDTO extends CreateInsumoDTO {
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, FormsModule, ReactiveFormsModule, TranslocoModule],
+    imports: [CommonModule, FormsModule],
 })
 export class InsumosComponent {
-    private readonly api = inject(ApiService);
-    private readonly fb = inject(FormBuilder);
-    private readonly snackBar = inject(MatSnackBar);
-    private readonly transloco = inject(TranslocoService);
+    constructor(private _changeDetectorRef: ChangeDetectorRef) {}
+    // Dados simulados
+    insumos: Insumo[] = [
+        {
+            id: 1,
+            codigo: 'INSUMO001',
+            descricao: 'Reagente Hemograma',
+            marca: 'Roche',
+            setor: 'Bioquímica',
+            tipoEmbalagem: 'Caixa',
+            unidadeMedida: 'Unid.',
+            lote: true,
+        },
+    ];
 
-    // Signals para estado
-    insumos = signal<InsumoResponseDTO[]>([]);
-    setores = signal<SetorResponseDTO[]>([]);
-    search = signal('');
-    setorFiltro = signal('');
-    selectedIds = signal<Set<number>>(new Set());
-    mode = signal<'list' | 'create' | 'edit' | 'view'>('list');
+    // Estado de UI
+    search = '';
+    setorFiltro = '';
+    selectedIds = new Set<number>();
 
-    form: FormGroup = this.fb.group({
-        id: [null],
-        codigo: ['', Validators.required],
-        descricao: ['', Validators.required],
-        marca: ['', Validators.required],
-        setor: ['', Validators.required],
-        tipoEmbalagem: ['', Validators.required],
-        unidadeMedida: ['Unid.', Validators.required],
-        lote: [false],
-    });
+    formVisible = false;
+    viewOnly = false;
+    editingId: number | null = null;
 
-    filteredInsumos = computed(() => {
-        const term = this.search().trim().toLowerCase();
-        const setor = this.setorFiltro().toLowerCase();
-        return this.insumos().filter(i => {
-            const matchesSearch = term
+    form: Partial<Insumo> = {
+        codigo: '',
+        descricao: '',
+        marca: '',
+        setor: '',
+        tipoEmbalagem: '',
+        unidadeMedida: 'Unid.',
+        lote: false,
+    };
+
+    get setores(): string[] {
+        const s = Array.from(new Set(this.insumos.map(i => i.setor))).sort();
+        return s.length ? s : ['Bioquímica', 'Hematologia', 'Microbiologia'];
+    }
+
+    get marcas(): string[] {
+        const m = Array.from(new Set(this.insumos.map(i => i.marca))).sort();
+        return m.length ? m : ['Roche', 'Abbott', 'Siemens'];
+    }
+
+    get tiposEmbalagem(): string[] {
+        const t = Array.from(new Set(this.insumos.map(i => i.tipoEmbalagem))).sort();
+        return t.length ? t : ['Caixa', 'Frasco', 'Saco'];
+    }
+
+    get filteredInsumos(): Insumo[] {
+        return this.insumos.filter(i => {
+            const matchesSearch = this.search
                 ? (i.codigo + ' ' + i.descricao + ' ' + i.marca + ' ' + i.setor)
                       .toLowerCase()
-                      .includes(term)
+                      .includes(this.search.toLowerCase())
                 : true;
-            const matchesSetor = setor ? i.setor.toLowerCase() === setor : true;
+            const matchesSetor = this.setorFiltro ? i.setor === this.setorFiltro : true;
             return matchesSearch && matchesSetor;
         });
-    });
-
-    constructor() {
-        this.loadInsumos();
-        this.loadSetores();
     }
 
-    loadInsumos(): void {
-        this.api.list<InsumoResponseDTO>('/insumos').subscribe({
-            next: data => this.insumos.set(data),
-            error: err => this.showError('Erro ao carregar insumos: ' + err.message),
-        });
+    toggleSelect(id: number): void {
+        if (this.selectedIds.has(id)) {
+            this.selectedIds.delete(id);
+        } else {
+            this.selectedIds.add(id);
+        }
     }
 
-    loadSetores(): void {
-        this.api.list<SetorResponseDTO>('/setores').subscribe({
-            next: data => this.setores.set(data),
-            error: err => this.showError('Erro ao carregar setores: ' + err.message),
-        });
+    novoInsumo(): void {
+        this.viewOnly = false;
+        this.editingId = null;
+        this.formVisible = true;
+        this.form = {
+            codigo: '',
+            descricao: '',
+            marca: '',
+            setor: '',
+            tipoEmbalagem: '',
+            unidadeMedida: 'Unid.',
+            lote: false,
+        };
     }
 
-    novo(): void {
-        this.form.reset();
-        this.mode.set('create');
+    editar(insumo: Insumo): void {
+        this.viewOnly = false;
+        this.editingId = insumo.id;
+        this.formVisible = true;
+        this.form = { ...insumo };
     }
 
-    editar(insumo: InsumoResponseDTO): void {
-        this.form.patchValue(insumo);
-        this.mode.set('edit');
+    visualizar(insumo: Insumo): void {
+        this.viewOnly = true;
+        this.editingId = insumo.id;
+        this.formVisible = true;
+        this.form = { ...insumo };
     }
 
-    visualizar(insumo: InsumoResponseDTO): void {
-        this.form.patchValue(insumo);
-        this.form.disable(); // Read-only
-        this.mode.set('view');
+    excluir(insumo: Insumo): void {
+        if (confirm(`Excluir ${insumo.descricao}?`)) {
+            this.insumos = this.insumos.filter(i => i.id !== insumo.id);
+            this.selectedIds.delete(insumo.id);
+        }
     }
 
     salvar(): void {
-        if (this.form.invalid) return;
-
-        const data: CreateInsumoDTO | UpdateInsumoDTO = this.form.value;
-
-        if (this.mode() === 'edit') {
-            const updateData = data as UpdateInsumoDTO;
-            this.api.update<InsumoResponseDTO>('/insumos', updateData.id, updateData).subscribe({
-                next: () => { this.loadInsumos(); this.cancelar(); },
-                error: err => this.showError('Erro ao atualizar: ' + err.message),
-            });
+        if (this.viewOnly) {
+            this.cancelar();
+            return;
+        }
+        const isEdit = this.editingId !== null;
+        if (isEdit) {
+            this.insumos = this.insumos.map(i => (i.id === this.editingId ? { ...i, ...(this.form as Insumo) } : i));
         } else {
-            this.api.create<InsumoResponseDTO>('/insumos', data).subscribe({
-                next: () => { this.loadInsumos(); this.cancelar(); },
-                error: err => this.showError('Erro ao criar: ' + err.message),
-            });
+            const nextId = (this.insumos.at(-1)?.id ?? 0) + 1;
+            this.insumos = [
+                ...this.insumos,
+                {
+                    id: nextId,
+                    codigo: this.form.codigo || `INS-${nextId}`,
+                    descricao: this.form.descricao || '',
+                    marca: this.form.marca || '',
+                    setor: this.form.setor || '',
+                    tipoEmbalagem: this.form.tipoEmbalagem || '',
+                    unidadeMedida: this.form.unidadeMedida || 'Unid.',
+                    lote: !!this.form.lote,
+                },
+            ];
         }
-    }
-
-    excluir(insumo: InsumoResponseDTO): void {
-        if (confirm(this.transloco.translate('confirm.excluir', { nome: insumo.descricao }))) {
-            this.api.remove('/insumos', insumo.id).subscribe({
-                next: () => this.loadInsumos(),
-                error: err => this.showError('Erro ao excluir: ' + err.message),
-            });
-        }
+        this.cancelar();
     }
 
     cancelar(): void {
-        this.mode.set('list');
-        this.form.enable();
-        this.form.reset();
-    }
-
-    toggleSelection(id: number, checked: boolean): void {
-        this.selectedIds.update(set => {
-            checked ? set.add(id) : set.delete(id);
-            return new Set(set);
-        });
+        this.formVisible = false;
+        this.viewOnly = false;
+        this.editingId = null;
+        this._changeDetectorRef.markForCheck();
     }
 
     exportCsv(): void {
         const header = ['Código', 'Descrição', 'Marca', 'Setor', 'Tipo Emb.', 'Unid. Med.', 'Lote?'];
-        const rows = this.filteredInsumos().map(i => [
+        const rows = this.filteredInsumos.map(i => [
             i.codigo,
             i.descricao,
             i.marca,
@@ -176,9 +183,5 @@ export class InsumosComponent {
         a.download = 'insumos.csv';
         a.click();
         URL.revokeObjectURL(url);
-    }
-
-    private showError(message: string): void {
-        this.snackBar.open(message, 'OK', { duration: 5000, panelClass: ['error-snackbar'] });
     }
 }

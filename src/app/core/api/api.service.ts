@@ -66,6 +66,12 @@ export class ApiService {
     return this._http.post<T>(url, body);
   }
 
+  // Create: POST /{path}
+  post<T>(path: string, body: unknown): Observable<T> {
+    const url = this._resolveUrl(path);
+    return this._http.post<T>(url, body);
+  }
+
   // Update: PUT /{path}/{id}
   update<T>(path: string, id: Id, body: unknown): Observable<T> {
     const url = this._resolveUrl(`${path}/${id}`);

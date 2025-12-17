@@ -38,19 +38,14 @@
               <label class="block text-sm text-secondary mb-1">Nome</label>
               <input class="w-full px-3 py-2 rounded-lg border" type="text" [(ngModel)]="form.nome" [readonly]="mode === 'view'" />
             </div>
-            <!-- Campos de auditoria como readonly no modo view -->
-            <div *ngIf="mode === 'view'">
-              <label class="block text-sm text-secondary mb-1">Data Atualização</label>
-              <input class="w-full px-3 py-2 rounded-lg border bg-gray-100" [value]="form.dataAtualizacao | date:'short'" readonly />
-            </div>
-            <div *ngIf="mode === 'view'">
-              <label class="block text-sm text-secondary mb-1">Usuário</label>
-              <input class="w-full px-3 py-2 rounded-lg border bg-gray-100" [value]="form.usuario" readonly />
-            </div>
+
           </div>
           <div class="mt-6 flex gap-3">
             <button *ngIf="mode !== 'view'" class="px-4 py-2 rounded-lg bg-primary-500 text-white hover:bg-primary-600" (click)="salvar()">Salvar</button>
             <button class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200" (click)="cancelar()">Fechar</button>
+          </div>
+          <div *ngIf="mode === 'view'" class="flex justify-end text-sm text-secondary mt-4">
+           {{ form.audityInfo || 'N/A' }}
           </div>
         </div>
 
@@ -66,7 +61,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let m of filteredMarcas" class="hover:bg-gray-50">
+              <tr *ngFor="let m of (filteredMarcas$ | async)" class="hover:bg-gray-50">
                 <td class="px-4 py-3 border-b"><input type="checkbox" [checked]="selectedIds.has(m.id)" (change)="toggleSelection(m.id, $event.target.checked)" /></td>
                 <td class="px-4 py-3 border-b">{{ m.id }}</td>
                 <td class="px-4 py-3 border-b">{{ m.nome }}</td>
@@ -80,8 +75,17 @@
                 </td>
               </tr>
             </tbody>
+            <ng-container *ngIf="(filteredMarcas$ | async)?.length === 0">
+              <tfoot>
+                <tr>
+                  <td colspan="4" class="text-center py-4 text-secondary">
+                    Nenhum registro cadastrado
+                  </td>
+                </tr>
+              </tfoot>
+            </ng-container>
           </table>
-          <div class="p-4 text-sm text-secondary">Total: {{ filteredMarcas.length }}</div>
+          <div class="p-4 text-sm text-secondary">Total: {{ (filteredMarcas$ | async)?.length || 0 }}</div>
         </div>
       </div>
     </div>

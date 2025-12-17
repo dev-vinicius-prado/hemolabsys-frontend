@@ -3,12 +3,13 @@ import { inject, Injectable } from '@angular/core';
 import { AuthUtils } from 'app/core/auth/auth.utils';
 import { UserService } from 'app/core/user/user.service';
 import { catchError, Observable, of, switchMap, throwError } from 'rxjs';
+import { ApiService } from '../api/api.service';
 
 @Injectable({providedIn: 'root'})
 export class AuthService
 {
     private _authenticated: boolean = false;
-    private _httpClient = inject(HttpClient);
+    private _apiService = inject(ApiService);
     private _userService = inject(UserService);
 
     // -----------------------------------------------------------------------------------------------------
@@ -39,7 +40,7 @@ export class AuthService
      */
     forgotPassword(email: string): Observable<any>
     {
-        return this._httpClient.post('api/auth/forgot-password', email);
+        return this._apiService.post('auth/forgot-password', email);
     }
 
     /**
@@ -49,7 +50,7 @@ export class AuthService
      */
     resetPassword(password: string): Observable<any>
     {
-        return this._httpClient.post('api/auth/reset-password', password);
+        return this._apiService.post('auth/reset-password', password);
     }
 
     /**
@@ -65,11 +66,11 @@ export class AuthService
             return throwError('User is already logged in.');
         }
 
-        return this._httpClient.post('api/auth/sign-in', credentials).pipe(
+        return this._apiService.post('auth/authenticate', credentials).pipe(
             switchMap((response: any) =>
             {
                 // Store the access token in the local storage
-                this.accessToken = response.accessToken;
+                this.accessToken = response.token;
 
                 // Set the authenticated flag to true
                 this._authenticated = true;
@@ -89,7 +90,7 @@ export class AuthService
     signInUsingToken(): Observable<any>
     {
         // Sign in using the token
-        return this._httpClient.post('api/auth/sign-in-with-token', {
+        return this._apiService.post('auth/sign-in-with-token', {
             accessToken: this.accessToken,
         }).pipe(
             catchError(() =>
@@ -106,9 +107,9 @@ export class AuthService
                 // in using the token, you should generate a new one on the server
                 // side and attach it to the response object. Then the following
                 // piece of code can replace the token with the refreshed one.
-                if ( response.accessToken )
+                if ( response.token )
                 {
-                    this.accessToken = response.accessToken;
+                    this.accessToken = response.token;
                 }
 
                 // Set the authenticated flag to true
@@ -145,7 +146,7 @@ export class AuthService
      */
     signUp(user: { name: string; email: string; password: string; company: string }): Observable<any>
     {
-        return this._httpClient.post('api/auth/sign-up', user);
+        return this._apiService.post('auth/sign-up', user);
     }
 
     /**
@@ -155,7 +156,7 @@ export class AuthService
      */
     unlockSession(credentials: { email: string; password: string }): Observable<any>
     {
-        return this._httpClient.post('api/auth/unlock-session', credentials);
+        return this._apiService.post('auth/unlock-session', credentials);
     }
 
     /**
