@@ -2,15 +2,17 @@
 
 // Re-exportar todos os tipos
 export * from './auth.types';
-export * from './basic-catalog.types';
-export * from './fornecedor.types';
-export * from './insumo.types';
 export * from './estoque.types';
 export * from './lote.types';
 export * from './aprovacao.types';
 export * from './dashboard.types';
 export * from './relatorio.types';
-
+export * from './insumo.catalog.types';
+export * from './fornecedor.catalog.types';
+export * from './almoxarifado-catalog.types';
+export * from './setor.catalog.types';
+export * from './unidade-medida.catalog.types';
+export * from './tipo-embalagem.catalog.types';
 // Tipos utilitários
 export interface PageableResponse<T> {
   content: T[];

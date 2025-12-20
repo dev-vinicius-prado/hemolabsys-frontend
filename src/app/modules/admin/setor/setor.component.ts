@@ -52,7 +52,7 @@ export class SetorComponent {
         this.api.list<Setor>('setores').subscribe({
             next: (data) => {
                 // Garantir campos esperados
-                const normalized = (data ?? []).map((s: any) => ({
+                const normalized = ((data as any)?.content ?? data ?? []).map((s: any) => ({
                     idSetor: s.idSetor ?? s.id ?? s.id_setor,
                     nomeSetor: s.nomeSetor ?? s.nome ?? s.nome_setor,
                     dataAtualizacao: s.dataAtualizacao ? new Date(s.dataAtualizacao) : new Date(),

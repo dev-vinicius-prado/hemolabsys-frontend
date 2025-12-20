@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/api/api.service';
 import { BehaviorSubject, combineLatest, map } from 'rxjs';
-import { MarcaResponseDTO } from '../../../core/models/basic-catalog.types';
+import { MarcaResponseDTO } from 'app/core/models/marca.catalog.types';
 
 @Component({
     selector: 'marca',

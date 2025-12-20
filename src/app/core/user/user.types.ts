@@ -5,4 +5,9 @@ export interface User
     email: string;
     avatar?: string;
     status?: string;
+    birthDate: string;
+    phoneNumber: string;
+    createdAt: string;
+    updatedAt: string;
+    active: boolean;
 }

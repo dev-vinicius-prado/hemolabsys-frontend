@@ -17,19 +17,26 @@ export interface ContactDTO {
   cellPhone?: string;
 }
 
-export interface CreateFornecedorDTO {
-  name: string;
+export interface FornecedorCreateDTO {
+  nome: string;
   cnpj: string;
-  address: AddressDTO;
-  contact: ContactDTO;
+//   address: AddressDTO;
+//   contact: ContactDTO;
 }
 
 export interface FornecedorResponseDTO {
   id: number;
-  name: string;
+  nome: string;
   cnpj: string;
-  address: AddressDTO;
-  contact: ContactDTO;
-  createdAt: string;
-  updatedAt: string;
+//   address: AddressDTO;
+//   contact: ContactDTO;
+audityInfo: string;
+}
+export interface FornecedorUpdateDTO {
+  id: number;
+  nome: string;
+  cnpj: string;
+//   address: AddressDTO;
+//   contact: ContactDTO;
+audityInfo: string;
 }

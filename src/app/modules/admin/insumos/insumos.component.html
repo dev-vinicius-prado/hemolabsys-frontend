@@ -23,13 +23,7 @@
             <label class="block text-md font-bold text-secondary mb-1">Pesquisa</label>
             <input class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none" [(ngModel)]="search" placeholder="Buscar por código, descrição, marca..." />
           </div>
-          <div class="w-full sm:w-64">
-            <label class="block text-md font-bold text-secondary mb-1">Filtro: Setor</label>
-            <select class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none" [(ngModel)]="setorFiltro">
-              <option value="">Todos</option>
-              <option *ngFor="let s of setores" [value]="s">{{ s }}</option>
-            </select>
-          </div>
+
         </div>
 
         <!-- Formulário de criação/edição/visualização -->
@@ -45,33 +39,33 @@
               <input class="w-full px-3 py-2 rounded-lg border" [(ngModel)]="form.descricao" [readonly]="viewOnly" />
             </div>
             <div>
+              <label class="block text-sm text-secondary mb-1">Quantidade</label>
+              <input type="number" class="w-full px-3 py-2 rounded-lg border" [(ngModel)]="form.quantidade" [readonly]="viewOnly" />
+            </div>
+            <div>
+              <label class="block text-sm text-secondary mb-1">Fornecedor</label>
+              <select class="w-full px-3 py-2 rounded-lg border" [(ngModel)]="form.fornecedorId" [disabled]="viewOnly">
+                <option value="">Selecione...</option>
+                <option *ngFor="let f of (fornecedores$ | async)" [value]="f.id">{{ f.nome }}</option>
+              </select>
+            </div>
+            <div>
               <label class="block text-sm text-secondary mb-1">Marca</label>
-              <select class="w-full px-3 py-2 rounded-lg border" [(ngModel)]="form.marca" [disabled]="viewOnly">
+              <select class="w-full px-3 py-2 rounded-lg border" [(ngModel)]="form.marcaId" [disabled]="viewOnly">
                 <option value="">Selecione...</option>
-                <option *ngFor="let m of marcas" [value]="m">{{ m }}</option>
+                <option *ngFor="let m of (marcas$ | async)" [value]="m.id">{{ m.name }}</option>
               </select>
             </div>
             <div>
-              <label class="block text-sm text-secondary mb-1">Setor</label>
-              <select class="w-full px-3 py-2 rounded-lg border" [(ngModel)]="form.setor" [disabled]="viewOnly">
+              <label class="block text-sm text-secondary mb-1">Almoxarifado</label>
+              <select class="w-full px-3 py-2 rounded-lg border" [(ngModel)]="form.almoxarifadoId" [disabled]="viewOnly">
                 <option value="">Selecione...</option>
-                <option *ngFor="let s of setores" [value]="s">{{ s }}</option>
+                <option *ngFor="let a of (almoxarifados$ | async)" [value]="a.id">{{ a.name }}</option>
               </select>
-            </div>
-            <div>
-              <label class="block text-sm text-secondary mb-1">Tipo de Embalagem</label>
-              <select class="w-full px-3 py-2 rounded-lg border" [(ngModel)]="form.tipoEmbalagem" [disabled]="viewOnly">
-                <option value="">Selecione...</option>
-                <option *ngFor="let t of tiposEmbalagem" [value]="t">{{ t }}</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm text-secondary mb-1">Unid. Medida</label>
-              <input class="w-full px-3 py-2 rounded-lg border" [(ngModel)]="form.unidadeMedida" [readonly]="viewOnly" />
             </div>
             <div class="flex items-center gap-2 mt-6">
-              <input type="checkbox" [(ngModel)]="form.lote" [disabled]="viewOnly" />
-              <span>Lote?</span>
+              <input type="checkbox" [(ngModel)]="form.loteObrigatorio" [disabled]="viewOnly" />
+              <span>Lote Obrigatório?</span>
             </div>
           </div>
           <div class="mt-6 flex gap-3">
@@ -79,8 +73,7 @@
             <button class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200" (click)="cancelar()">Fechar</button>
           </div>
           <div *ngIf="viewOnly" class="flex justify-end text-sm text-secondary mt-4">
-            Última modificação por: {{ form.usuario?.nome || 'N/A' }} em {{ form.dataAtualizacao | date:"dd/MM/yyyy 'às' HH:mm" }}.
-
+            Última modificação por: {{ form.updatedBy || 'N/A' }} em {{ form.updatedAt | date:"dd/MM/yyyy 'às' HH:mm" }}.
           </div>
         </div>
 
@@ -92,24 +85,24 @@
                 <th class="px-4 py-3 border-b">Sel.</th>
                 <th class="px-4 py-3 border-b">Código</th>
                 <th class="px-4 py-3 border-b">Descrição</th>
+                <th class="px-4 py-3 border-b">Quantidade</th>
+                <th class="px-4 py-3 border-b">Fornecedor</th>
                 <th class="px-4 py-3 border-b">Marca</th>
-                <th class="px-4 py-3 border-b">Setor</th>
-                <th class="px-4 py-3 border-b">Tipo Emb.</th>
-                <th class="px-4 py-3 border-b">Unid. Med.</th>
-                <th class="px-4 py-3 border-b">Lote?</th>
+                <th class="px-4 py-3 border-b">Almoxarifado</th>
+
                 <th class="px-4 py-3 border-b">Ações</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let i of filteredInsumos" class="hover:bg-gray-50">
+              <tr *ngFor="let i of (filteredInsumos$ | async)" class="hover:bg-gray-50">
                 <td class="px-4 py-3 border-b"><input type="checkbox" [checked]="selectedIds.has(i.id)" (change)="toggleSelect(i.id)" /></td>
                 <td class="px-4 py-3 border-b">{{ i.codigo }}</td>
                 <td class="px-4 py-3 border-b">{{ i.descricao }}</td>
-                <td class="px-4 py-3 border-b">{{ i.marca }}</td>
-                <td class="px-4 py-3 border-b">{{ i.setor }}</td>
-                <td class="px-4 py-3 border-b">{{ i.tipoEmbalagem }}</td>
-                <td class="px-4 py-3 border-b">{{ i.unidadeMedida }}</td>
-                <td class="px-4 py-3 border-b">{{ i.lote ? 'Sim' : 'Não' }}</td>
+                <td class="px-4 py-3 border-b">{{ i.quantidade }}</td>
+                <td class="px-4 py-3 border-b">{{ i.fornecedorName }}</td>
+                <td class="px-4 py-3 border-b">{{ i.marcaName }}</td>
+                <td class="px-4 py-3 border-b">{{ i.almoxarifadoName }}</td>
+
                 <td class="px-4 py-3 border-b">
                   <div class="flex gap-2">
                     <button class="px-2 py-1 rounded bg-gray-100 hover:bg-gray-200" (click)="editar(i)" title="Editar">✏️</button>
@@ -119,17 +112,17 @@
                 </td>
               </tr>
             </tbody>
-            <ng-container *ngIf="filteredInsumos.length === 0">
+            <ng-container *ngIf="(filteredInsumos$ | async)?.length === 0">
               <tfoot>
                 <tr>
-                  <td colspan="9" class="text-center py-4 text-secondary">
+                  <td colspan="12" class="text-center py-4 text-secondary">
                     Nenhum registro cadastrado
                   </td>
                 </tr>
               </tfoot>
             </ng-container>
           </table>
-          <div class="p-4 text-sm text-secondary">Total: {{ filteredInsumos.length }}</div>
+          <div class="p-4 text-sm text-secondary">Total: {{ (filteredInsumos$ | async)?.length || 0 }}</div>
         </div>
       </div>
     </div>
