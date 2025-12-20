@@ -85,7 +85,7 @@ export class ApiService {
   }
 
   // Delete: DELETE /{path}/{id}
-  remove(path: string, id: Id, params?: Record<string, unknown>): Observable<boolean> {
+  remove<T>(path: string, id: Id, params?: Record<string, unknown>): Observable<boolean> {
     const url = this._resolveUrl(`${path}/${id}`);
     const httpParams = this._toParams(params);
     return this._http.delete<boolean>(url, { params: httpParams });

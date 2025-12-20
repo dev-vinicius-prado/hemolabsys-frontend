@@ -6,11 +6,11 @@ export interface MarcaCreateDTO {
 export interface MarcaUpdateDTO {
     id: number;
     nome: string;
-    audityInfo: string;
+    auditInfo: string;
 }
 
 export interface MarcaResponseDTO {
     id: number;
     nome: string;
-    audityInfo: string;
+    auditInfo: string;
 }

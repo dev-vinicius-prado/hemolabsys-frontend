@@ -30,7 +30,7 @@ export interface FornecedorResponseDTO {
   cnpj: string;
 //   address: AddressDTO;
 //   contact: ContactDTO;
-audityInfo: string;
+auditInfo: string;
 }
 export interface FornecedorUpdateDTO {
   id: number;
@@ -38,5 +38,5 @@ export interface FornecedorUpdateDTO {
   cnpj: string;
 //   address: AddressDTO;
 //   contact: ContactDTO;
-audityInfo: string;
+auditInfo: string;
 }

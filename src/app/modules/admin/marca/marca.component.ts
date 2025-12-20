@@ -65,15 +65,15 @@ export class MarcaComponent {
                     data?.map((x) => ({
                         id: x.id,
                         nome: x.nome,
-                        audityInfo: x.audityInfo,
+                        auditInfo: x.auditInfo,
                     })) || []
                 );
             },
             error: () => {
                 // Fallback simples em caso de API indisponível
                 this.marcasSubject.next([
-                    { id: 1, nome: 'Acme', audityInfo: 'N/A' },
-                    { id: 2, nome: 'Globex', audityInfo: 'N/A' },
+                    { id: 1, nome: 'Acme', auditInfo: 'N/A' },
+                    { id: 2, nome: 'Globex', auditInfo: 'N/A' },
                 ]);
             },
         });
@@ -81,7 +81,7 @@ export class MarcaComponent {
 
     novo(): void {
         this.mode = 'create';
-        this.form = { id: this.nextId(), nome: '', audityInfo: 'N/A' };
+        this.form = { id: this.nextId(), nome: '', auditInfo: 'N/A' };
     }
 
     editar(m: MarcaResponseDTO): void {
@@ -122,7 +122,7 @@ export class MarcaComponent {
         const record: MarcaResponseDTO = {
             id: this.form.id ?? this.nextId(),
             nome: this.form.nome,
-            audityInfo: this.form.audityInfo,
+            auditInfo: this.form.auditInfo,
         };
 
         const isEdit = this.marcasSubject.value.some((x) => x.id === record.id);

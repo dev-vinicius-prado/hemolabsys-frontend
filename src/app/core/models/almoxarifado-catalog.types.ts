@@ -4,5 +4,5 @@ export interface AlmoxarifadoCreateDTO {
 export interface AlmoxarifadoResponseDTO {
   id: number;
   nome: string;
-  audityInfo: string;
+  auditInfo: string;
 }

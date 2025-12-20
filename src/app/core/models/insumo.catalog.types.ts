@@ -28,5 +28,5 @@ export interface InsumoResponseDTO {
     tipoEmbalagemName?: string;
     unidadeMedidaId?: number;
     unidadeMedidaName?: string;
-    audityInfo: any;
+    auditInfo: any;
 }

@@ -6,11 +6,11 @@ export interface SetorCreateDTO {
 export interface SetorUpdateDTO {
   id: number;
   nome: string;
-  audityInfo: string;
+  auditInfo: string;
 }
 
 export interface SetorResponseDTO {
   id: number;
   nome: string;
-  audityInfo: string;
+  auditInfo: string;
 }

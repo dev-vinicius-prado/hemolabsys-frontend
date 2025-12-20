@@ -8,11 +8,11 @@ export interface TipoEmbalagemCreateDTO {
 export interface TipoEmbalagemUpdateDTO {
   id: number;
   descricao: string;
-  audityInfo: any;
+  auditInfo: any;
 }
 
 export interface TipoEmbalagemResponseDTO {
   id: number;
   descricao: string;
-  audityInfo: any;
+  auditInfo: any;
 }

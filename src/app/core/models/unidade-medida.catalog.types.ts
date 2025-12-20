@@ -6,5 +6,5 @@ export interface UnidadeMedidaCreateDTO {
 export interface UnidadeMedidaResponseDTO {
   id: number;
   descricao: string;
-  audityInfo: any;
+  auditInfo: any;
 }
