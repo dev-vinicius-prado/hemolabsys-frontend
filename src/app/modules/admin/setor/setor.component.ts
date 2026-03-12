@@ -3,13 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BehaviorSubject, combineLatest, map } from 'rxjs';
 import { ApiService } from '../../../core/api/api.service';
-
-interface Setor {
-    idSetor: number;
-    nomeSetor: string;
-    dataAtualizacao: Date;
-    usuario: number; // id_usuario
-}
+import { PageableResponse, SetorCreateDTO, SetorResponseDTO, SetorUpdateDTO } from 'app/core/models';
 
 @Component({
     selector: 'setor',
@@ -21,24 +15,22 @@ interface Setor {
     imports: [CommonModule, FormsModule],
 })
 export class SetorComponent {
-    private readonly usuarioLogadoId = 1;
-
     // Estado reativo
-    setors$ = new BehaviorSubject<Setor[]>([]);
+    setors$ = new BehaviorSubject<SetorResponseDTO[]>([]);
     searchTerm$ = new BehaviorSubject<string>('');
     searchTerm = '';
 
     // UI state
     selectedIds = new Set<number>();
     mode: 'list' | 'create' | 'edit' | 'view' = 'list';
-    form: Partial<Setor> = {};
+    form: Partial<SetorCreateDTO & { id?: number }> = {};
 
     // Lista filtrada
     filteredSetores$ = combineLatest([this.setors$, this.searchTerm$]).pipe(
         map(([list, term]) => {
             const t = (term ?? '').trim().toLowerCase();
             if (!t) return list;
-            return list.filter(s => s.nomeSetor.toLowerCase().includes(t));
+            return list.filter(s => s.nome.toLowerCase().includes(t));
         })
     );
 
@@ -49,92 +41,75 @@ export class SetorComponent {
     }
 
     private loadSetores(): void {
-        this.api.list<Setor>('setores').subscribe({
+        this.api.get<PageableResponse<SetorResponseDTO>>('setores', { size: 1000 }).subscribe({
             next: (data) => {
-                // Garantir campos esperados
-                const normalized = ((data as any)?.content ?? data ?? []).map((s: any) => ({
-                    idSetor: s.idSetor ?? s.id ?? s.id_setor,
-                    nomeSetor: s.nomeSetor ?? s.nome ?? s.nome_setor,
-                    dataAtualizacao: s.dataAtualizacao ? new Date(s.dataAtualizacao) : new Date(),
-                    usuario: s.usuario ?? this.usuarioLogadoId,
-                } as Setor));
-                this.setors$.next(normalized);
+                this.setors$.next(data?.content ?? []);
             },
             error: () => {
-                // Fallback local (mantém experiência)
-                this.setors$.next([
-                    { idSetor: 1, nomeSetor: 'Hemocentro', dataAtualizacao: new Date(), usuario: this.usuarioLogadoId },
-                    { idSetor: 2, nomeSetor: 'Laboratório', dataAtualizacao: new Date(), usuario: this.usuarioLogadoId },
-                ]);
+                this.setors$.next([]);
             }
         });
     }
 
     novo(): void {
         this.mode = 'create';
-        this.form = { idSetor: this.nextId(), nomeSetor: '' };
+        this.form = { ativo: true, empresaId: 1, nome: '', descricao: '' };
     }
 
-    editar(s: Setor): void {
+    editar(s: SetorResponseDTO): void {
         this.mode = 'edit';
         this.form = { ...s };
     }
 
-    visualizar(s: Setor): void {
+    visualizar(s: SetorResponseDTO): void {
         this.mode = 'view';
         this.form = { ...s };
     }
 
-    excluir(s: Setor): void {
-        this.api.remove('setores', s.idSetor).subscribe({
+    excluir(s: SetorResponseDTO): void {
+        this.api.remove('setores', s.id).subscribe({
             next: () => {
-                const updated = this.setors$.value.filter(x => x.idSetor !== s.idSetor);
+                const updated = this.setors$.value.filter(x => x.id !== s.id);
                 this.setors$.next(updated);
-                this.selectedIds.delete(s.idSetor);
+                this.selectedIds.delete(s.id);
             },
             error: () => {
-                const updated = this.setors$.value.filter(x => x.idSetor !== s.idSetor);
+                const updated = this.setors$.value.filter(x => x.id !== s.id);
                 this.setors$.next(updated);
-                this.selectedIds.delete(s.idSetor);
+                this.selectedIds.delete(s.id);
             }
         });
     }
 
     salvar(): void {
-        if (!this.form.idSetor || !this.form.nomeSetor) {
+        if (!this.form.nome || !this.form.empresaId) {
             return;
         }
-        const now = new Date();
-        const record: Setor = {
-            idSetor: this.form.idSetor,
-            nomeSetor: this.form.nomeSetor,
-            dataAtualizacao: now,
-            usuario: this.usuarioLogadoId,
+        const isEdit = this.mode === 'edit' && !!this.form.id;
+
+        const createDto: SetorCreateDTO = {
+            ativo: this.form.ativo ?? true,
+            descricao: this.form.descricao,
+            empresaId: this.form.empresaId,
+            nome: this.form.nome,
         };
-        const exists = this.setors$.value.some(x => x.idSetor === record.idSetor);
-        const op$ = exists
-            ? this.api.update('setores', record.idSetor, record)
-            : this.api.create('setores', record);
+
+        const op$ = isEdit
+            ? this.api.update<SetorResponseDTO>('setores', this.form.id!, {
+                ...createDto,
+                id: this.form.id!,
+            } as SetorUpdateDTO)
+            : this.api.create<SetorResponseDTO>('setores', createDto);
 
         op$.subscribe({
-            next: (res: any) => {
-                const payload = {
-                    idSetor: res?.idSetor ?? record.idSetor,
-                    nomeSetor: res?.nomeSetor ?? record.nomeSetor,
-                    dataAtualizacao: res?.dataAtualizacao ? new Date(res.dataAtualizacao) : now,
-                    usuario: res?.usuario ?? record.usuario,
-                } as Setor;
+            next: (payload) => {
                 const list = this.setors$.value.slice();
-                const idx = list.findIndex(x => x.idSetor === payload.idSetor);
+                const idx = list.findIndex(x => x.id === payload.id);
                 if (idx > -1) list[idx] = payload; else list.push(payload);
                 this.setors$.next(list);
                 this.cancelar();
             },
             error: () => {
-                const list = this.setors$.value.slice();
-                const idx = list.findIndex(x => x.idSetor === record.idSetor);
-                if (idx > -1) list[idx] = record; else list.push(record);
-                this.setors$.next(list);
                 this.cancelar();
             }
         });
@@ -152,9 +127,9 @@ export class SetorComponent {
 
     exportCsv(): void {
         const term = this.searchTerm.trim().toLowerCase();
-        const list = this.setors$.value.filter(s => s.nomeSetor.toLowerCase().includes(term));
-        const rows = [['idSetor', 'nomeSetor', 'dataAtualizacao', 'usuario'], ...list.map(s => [
-            String(s.idSetor), s.nomeSetor, s.dataAtualizacao.toISOString(), String(s.usuario),
+        const list = this.setors$.value.filter(s => s.nome.toLowerCase().includes(term));
+        const rows = [['id', 'nome', 'empresaId', 'ativo'], ...list.map(s => [
+            String(s.id), s.nome, String(s.empresaId), String(s.ativo),
         ])];
         const csv = rows.map(r => r.join(',')).join('\n');
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -164,9 +139,5 @@ export class SetorComponent {
         a.download = 'setores.csv';
         a.click();
         URL.revokeObjectURL(url);
-    }
-
-    private nextId(): number {
-        return (this.setors$.value.at(-1)?.idSetor ?? 0) + 1;
     }
 }

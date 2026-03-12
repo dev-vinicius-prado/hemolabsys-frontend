@@ -12,7 +12,9 @@ import { BehaviorSubject, combineLatest, map, startWith, tap } from 'rxjs';
 
 import {
     InsumoResponseDTO,
-    CreateInsumoDTO,
+    InsumoCreateDTO,
+    InsumoUpdateDTO,
+    Categoria,
 } from 'app/core/models/insumo.catalog.types';
 import { InsumosDataService } from './services/insumos-data.service';
 import { DependenciesService } from './services/dependencies.service';
@@ -46,9 +48,6 @@ export class InsumosComponent implements OnInit {
     readonly search$ = this.searchSubject.asObservable();
 
     readonly fornecedores$ = this.dependenciesService.fornecedores$;
-    readonly marcas$ = this.dependenciesService.marcas$;
-    readonly almoxarifados$ = this.dependenciesService.almoxarifados$;
-    readonly tiposEmbalagem$ = this.dependenciesService.tiposEmbalagem$;
     readonly unidadesMedida$ = this.dependenciesService.unidadesMedida$;
 
     selectedIds = new Set<number>();
@@ -56,11 +55,22 @@ export class InsumosComponent implements OnInit {
     viewOnly = false;
     editingId: number | null = null;
 
-    form: CreateInsumoDTO = {
+    form: {
+        categoria: Categoria;
+        codigo: string;
+        descricao: string;
+        perecivel: boolean;
+        loteObrigatorio: boolean;
+        fornecedorId: number | null;
+        unidadeMedidaId: number | null;
+    } = {
+        categoria: 'OUTROS',
         codigo: '',
         descricao: '',
-        quantidade: 0,
+        perecivel: false,
         loteObrigatorio: false,
+        fornecedorId: null,
+        unidadeMedidaId: null,
     };
 
     constructor() {}
@@ -81,11 +91,9 @@ export class InsumosComponent implements OnInit {
                 (i) =>
                     i.codigo.toLowerCase().includes(s) ||
                 i.descricao.toLowerCase().includes(s) ||
-                i.fornecedorName.toLowerCase().includes(s) ||
-                i.marcaName.toLowerCase().includes(s) ||
-                i.almoxarifadoName.toLowerCase().includes(s) ||
-                i.tipoEmbalagemName.toLowerCase().includes(s) ||
-                i.unidadeMedidaName.toLowerCase().includes(s)
+                (i.categoria ?? '').toLowerCase().includes(s) ||
+                (i.unidadeMedida?.descricao ?? '').toLowerCase().includes(s) ||
+                (i.fornecedores ?? []).some((f) => (f.nome ?? '').toLowerCase().includes(s))
             );
         }),
         tap(() => {
@@ -102,20 +110,22 @@ export class InsumosComponent implements OnInit {
         }
     }
 
+    formatFornecedores(insumo: InsumoResponseDTO): string {
+        return (insumo.fornecedores ?? []).map((f) => f.nome).filter(Boolean).join(' | ');
+    }
+
     novoInsumo(): void {
         this.viewOnly = false;
         this.editingId = null;
         this.formVisible = true;
         this.form = {
+            categoria: 'OUTROS',
             codigo: '',
             descricao: '',
-            quantidade: 0,
-            fornecedorId: undefined,
-            marcaId: undefined,
-            almoxarifadoId: undefined,
-            tipoEmbalagemId: undefined,
-            unidadeMedidaId: undefined,
+            perecivel: false,
             loteObrigatorio: false,
+            fornecedorId: null,
+            unidadeMedidaId: null,
         };
     }
 
@@ -124,15 +134,13 @@ export class InsumosComponent implements OnInit {
         this.editingId = insumo.id;
         this.formVisible = true;
         this.form = {
+            categoria: insumo.categoria,
             codigo: insumo.codigo,
             descricao: insumo.descricao,
             loteObrigatorio: insumo.loteObrigatorio,
-            quantidade: insumo.quantidade,
-            fornecedorId: insumo.fornecedorId,
-            marcaId: insumo.marcaId,
-            almoxarifadoId: insumo.almoxarifadoId,
-            tipoEmbalagemId: insumo.tipoEmbalagemId,
-            unidadeMedidaId: insumo.unidadeMedidaId,
+            perecivel: insumo.perecivel,
+            fornecedorId: (insumo.fornecedores ?? [])[0]?.id ?? null,
+            unidadeMedidaId: insumo.unidadeMedida?.id ?? null,
         };
     }
 
@@ -141,15 +149,13 @@ export class InsumosComponent implements OnInit {
         this.editingId = insumo.id;
         this.formVisible = true;
         this.form = {
+            categoria: insumo.categoria,
             codigo: insumo.codigo,
             descricao: insumo.descricao,
             loteObrigatorio: insumo.loteObrigatorio,
-            quantidade: insumo.quantidade,
-            fornecedorId: insumo.fornecedorId,
-            marcaId: insumo.marcaId,
-            almoxarifadoId: insumo.almoxarifadoId,
-            tipoEmbalagemId: insumo.tipoEmbalagemId,
-            unidadeMedidaId: insumo.unidadeMedidaId,
+            perecivel: insumo.perecivel,
+            fornecedorId: (insumo.fornecedores ?? [])[0]?.id ?? null,
+            unidadeMedidaId: insumo.unidadeMedida?.id ?? null,
         };
     }
 
@@ -167,20 +173,25 @@ export class InsumosComponent implements OnInit {
         }
         const isEdit = this.editingId !== null;
 
-        const insumoData = {
+        if (!this.form.codigo || !this.form.descricao || !this.form.categoria) {
+            return;
+        }
+        if (!this.form.fornecedorId || !this.form.unidadeMedidaId) {
+            return;
+        }
+
+        const baseDto: InsumoCreateDTO = {
+            categoria: this.form.categoria,
             codigo: this.form.codigo,
             descricao: this.form.descricao,
+            fornecedorIds: [this.form.fornecedorId],
             loteObrigatorio: this.form.loteObrigatorio,
-            quantidade: this.form.quantidade,
-            fornecedorId: this.form.fornecedorId,
-            marcaId: this.form.marcaId,
-            almoxarifadoId: this.form.almoxarifadoId,
-            tipoEmbalagemId: this.form.tipoEmbalagemId,
+            perecivel: this.form.perecivel,
             unidadeMedidaId: this.form.unidadeMedidaId,
         };
 
         if (isEdit) {
-            const updateDto: CreateInsumoDTO = { ...insumoData };
+            const updateDto: InsumoUpdateDTO = { ...baseDto, id: this.editingId! };
             this.insumosDataService
             .updateInsumo(this.editingId!, updateDto)
             .subscribe({
@@ -195,8 +206,7 @@ export class InsumosComponent implements OnInit {
                 },
             });
         } else {
-            const createDto: CreateInsumoDTO = { ...insumoData };
-            this.insumosDataService.createInsumo(createDto).subscribe({
+            this.insumosDataService.createInsumo(baseDto).subscribe({
                 next: () => {
                     this.formVisible = false;
                     this._changeDetectorRef.markForCheck();
@@ -223,23 +233,19 @@ exportCsv(): void {
         const header = [
             'Código',
             'Descrição',
-            'Quantidade',
-            'Fornecedor',
-            'Marca',
-            'Almoxarifado',
-            'Tipo Emb.',
-            'Unid. Med.',
+            'Categoria',
+            'Perecível?',
+            'Fornecedores',
+            'Unid. Medida',
             'Lote Obrigatório?',
         ];
         const rows = filtered.map((i) => [
             i.codigo,
             i.descricao,
-            i.quantidade,
-            i.fornecedorName,
-            i.marcaName,
-            i.almoxarifadoName,
-            i.tipoEmbalagemName,
-            i.unidadeMedidaName,
+            i.categoria,
+            i.perecivel ? 'Sim' : 'Não',
+            (i.fornecedores ?? []).map((f) => f.nome).join(' | '),
+            i.unidadeMedida?.descricao ?? '',
             i.loteObrigatorio ? 'Sim' : 'Não',
         ]);
         const csv = [header, ...rows]

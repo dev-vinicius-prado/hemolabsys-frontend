@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { ApiService } from '../../../../core/api/api.service';
-import { CreateInsumoDTO, InsumoResponseDTO } from 'app/core/models';
+import { InsumoCreateDTO, InsumoResponseDTO, InsumoUpdateDTO, PageableResponse } from 'app/core/models';
 
 @Injectable({
   providedIn: 'root'
@@ -15,13 +15,13 @@ export class InsumosDataService {
   constructor() { }
 
   loadInsumos(): void {
-    this.api.list<InsumoResponseDTO>('insumos').subscribe({
-      next: (data) => this._insumosSubject.next(data || []),
+    this.api.get<PageableResponse<InsumoResponseDTO>>('insumos', { size: 1000 }).subscribe({
+      next: (page) => this._insumosSubject.next(page?.content || []),
       error: (err) => console.error('Erro ao carregar insumos', err)
     });
   }
 
-  createInsumo(insumo: CreateInsumoDTO): Observable<InsumoResponseDTO> {
+  createInsumo(insumo: InsumoCreateDTO): Observable<InsumoResponseDTO> {
     return this.api.create<InsumoResponseDTO>('insumos', insumo).pipe(
       tap((newInsumo) => {
         const currentInsumos = this._insumosSubject.getValue();
@@ -30,7 +30,7 @@ export class InsumosDataService {
     );
   }
 
-  updateInsumo(id: number, insumo: CreateInsumoDTO): Observable<InsumoResponseDTO> {
+  updateInsumo(id: number, insumo: InsumoUpdateDTO): Observable<InsumoResponseDTO> {
     return this.api.update<InsumoResponseDTO>('insumos', id, insumo).pipe(
       tap((updatedInsumo) => {
         const currentInsumos = this._insumosSubject.getValue();

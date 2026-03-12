@@ -1,0 +1,61 @@
+<div class="flex flex-col flex-auto items-center sm:justify-center min-w-0 md:p-8">
+    <div class="flex flex-col sm:w-full md:w-8/12 lg:w-6/12 xl:w-4/12 p-6 sm:p-8 md:p-10 rounded-2xl shadow-2xl bg-card">
+        <div class="w-full flex flex-col sm:flex-row items-center justify-between">
+            <div class="text-4xl font-extrabold tracking-tight leading-none">Registro de Saída de Insumos</div>
+        </div>
+
+        <form class="flex flex-col mt-8" [formGroup]="saidaForm" (ngSubmit)="submitSaida()">
+            <mat-horizontal-stepper #stepper>
+                <mat-step [stepControl]="saidaForm.get('insumoLoteId')">
+                    <ng-template matStepLabel>Selecionar Insumo e Lote</ng-template>
+                    <mat-form-field class="fuse-mat-no-subscript w-full">
+                        <mat-label>Insumo e Lote</mat-label>
+                        <mat-select [formControlName]="'insumoLoteId'" (selectionChange)="onInsumoLoteSaidaSelect($event.value)">
+                            <mat-option *ngFor="let lote of (insumosLotesSaida$ | async)" [value]="lote">
+                                {{ lote.nomeInsumo }} - {{ lote.numeroLote }} (Disp: {{ lote.quantidadeDisponivel }})
+                            </mat-option>
+                        </mat-select>
+                        <mat-error *ngIf="saidaForm.get('insumoLoteId')?.hasError('required')">
+                            Insumo e Lote são obrigatórios.
+                        </mat-error>
+                    </mat-form-field>
+                    <div>
+                        <button mat-button matStepperNext>Próximo</button>
+                    </div>
+                </mat-step>
+
+                <mat-step [stepControl]="saidaForm.get('quantidade')">
+                    <ng-template matStepLabel>Informar Quantidade e Solicitante</ng-template>
+                    <mat-form-field class="fuse-mat-no-subscript w-full">
+                        <mat-label>Quantidade</mat-label>
+                        <input matInput [formControlName]="'quantidade'" type="number" min="1">
+                        <mat-error *ngIf="saidaForm.get('quantidade')?.hasError('required')">
+                            Quantidade é obrigatória.
+                        </mat-error>
+                        <mat-error *ngIf="saidaForm.get('quantidade')?.hasError('min')">
+                            A quantidade deve ser no mínimo 1.
+                        </mat-error>
+                        <mat-error *ngIf="saidaForm.get('quantidade')?.hasError('max')">
+                            Quantidade excede o disponível ({{ selectedInsumoLoteSaida?.quantidadeDisponivel }}).
+                        </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field class="fuse-mat-no-subscript w-full mt-4">
+                        <mat-label>Solicitante</mat-label>
+                        <input matInput [formControlName]="'solicitante'">
+                        <mat-error *ngIf="saidaForm.get('solicitante')?.hasError('required')">
+                            Solicitante é obrigatório.
+                        </mat-error>
+                    </mat-form-field>
+
+                    <div>
+                        <button mat-button matStepperPrevious>Voltar</button>
+                        <button class="fuse-mat-button-large" mat-flat-button [color]="'primary'" [disabled]="saidaForm.invalid" type="submit">
+                            Registrar Saída
+                        </button>
+                    </div>
+                </mat-step>
+            </mat-horizontal-stepper>
+        </form>
+    </div>
+</div>

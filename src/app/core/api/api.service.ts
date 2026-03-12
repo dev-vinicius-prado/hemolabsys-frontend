@@ -1,13 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
+import { environment } from 'app/environments/environment';
 
 type Id = string | number;
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly _http = inject(HttpClient);
-  private readonly _baseUrl = 'http://localhost:8080/api';
+  private readonly _baseUrl = environment.apiUrl;
 
   private _resolveUrl(path: string): string {
     const isAbsolute = /^https?:\/\//i.test(path);
@@ -88,7 +89,9 @@ export class ApiService {
   remove<T>(path: string, id: Id, params?: Record<string, unknown>): Observable<boolean> {
     const url = this._resolveUrl(`${path}/${id}`);
     const httpParams = this._toParams(params);
-    return this._http.delete<boolean>(url, { params: httpParams });
+    return this._http.delete(url, { params: httpParams, observe: 'response' }).pipe(
+      map((response) => response.ok)
+    );
   }
 }
 

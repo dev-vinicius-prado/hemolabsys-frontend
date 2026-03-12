@@ -3,6 +3,8 @@ import { initialDataResolver } from 'app/app.resolvers';
 import { AuthGuard } from 'app/core/auth/guards/auth.guard';
 import { NoAuthGuard } from 'app/core/auth/guards/noAuth.guard';
 import { LayoutComponent } from 'app/layout/layout.component';
+import { EntradaComponent } from 'app/modules/admin/entradas/entrada.component';
+import { SaidaComponent } from 'app/modules/admin/saidas/saida.component';
 
 
 // @formatter:off
@@ -80,8 +82,8 @@ export const appRoutes: Route[] = [
             { path: 'marca', loadChildren: () => import('app/modules/admin/marca/marca.routes') },
             { path: 'setor', loadChildren: () => import('app/modules/admin/setor/setor.routes') },
             { path: 'tipo-embalagem', loadChildren: () => import('app/modules/admin/tipo-embalagem/tipo-embalagem.routes') },
-            // { path: 'entradas', loadChildren: () => import('app/modules/admin/entradas/entradas.routes') },
-            // { path: 'saidas', loadChildren: () => import('app/modules/admin/saidas/saidas.routes') },
+            { path: 'entradas', component: EntradaComponent },
+            { path: 'saidas', component: SaidaComponent },
             // { path: 'relatorios', loadChildren: () => import('app/modules/admin/relatorios/relatorios.routes') },
             // { path: 'preferencias', loadChildren: () => import('app/modules/admin/preferencias/preferencias.routes') },
         ]

@@ -1,32 +1,37 @@
-// insumo-catalog.types.ts
+import { FornecedorResponseDTO } from './fornecedor.catalog.types';
+import { UnidadeMedidaResponseDTO } from './unidade-medida.catalog.types';
 
-export interface CreateInsumoDTO {
-    codigo: string;
-    descricao: string;
-    loteObrigatorio: boolean;
-    quantidade: number; // BigDecimal convertido para number
-    fornecedorId?: number;
-    marcaId?: number;
-    almoxarifadoId?: number;
-    tipoEmbalagemId?: number;
-    unidadeMedidaId?: number;
+export type Categoria = 'ADMINISTRATIVO' | 'COLETA' | 'EXAME' | 'LIMPEZA' | 'PROTECAO' | 'OUTROS';
+
+export interface InsumoCreateDTO {
+  categoria: Categoria;
+  codigo: string;
+  descricao: string;
+  fornecedorIds: number[];
+  loteObrigatorio: boolean;
+  perecivel: boolean;
+  unidadeMedidaId: number;
+}
+
+export interface InsumoUpdateDTO {
+  id: number;
+  categoria: Categoria;
+  codigo: string;
+  descricao: string;
+  fornecedorIds: number[];
+  loteObrigatorio: boolean;
+  perecivel: boolean;
+  unidadeMedidaId: number;
 }
 
 export interface InsumoResponseDTO {
-    id: number;
-    codigo: string;
-    descricao: string;
-    loteObrigatorio: boolean;
-    quantidade: number;
-    fornecedorId?: number;
-    fornecedorName?: string;
-    marcaId?: number;
-    marcaName?: string;
-    almoxarifadoId?: number;
-    almoxarifadoName?: string;
-    tipoEmbalagemId?: number;
-    tipoEmbalagemName?: string;
-    unidadeMedidaId?: number;
-    unidadeMedidaName?: string;
-    auditInfo: any;
+  auditInfo?: string;
+  categoria: Categoria;
+  codigo: string;
+  descricao: string;
+  fornecedores: FornecedorResponseDTO[];
+  id: number;
+  loteObrigatorio: boolean;
+  perecivel: boolean;
+  unidadeMedida: UnidadeMedidaResponseDTO;
 }

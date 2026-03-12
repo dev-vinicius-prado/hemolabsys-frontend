@@ -6,6 +6,7 @@ import { FornecedorResponseDTO } from '../../../../core/models/fornecedor.catalo
 import { MarcaResponseDTO } from '../../../../core/models/marca.catalog.types';
 import { TipoEmbalagemResponseDTO } from '../../../../core/models/tipo-embalagem.catalog.types';
 import { UnidadeMedidaResponseDTO } from '../../../../core/models/unidade-medida.catalog.types';
+import { PageableResponse } from 'app/core/models';
 
 @Injectable({
   providedIn: 'root'
@@ -37,8 +38,8 @@ export class DependenciesService {
   }
 
   loadFornecedores(): void {
-    this.api.list<FornecedorResponseDTO>('fornecedores').subscribe({
-      next: (data) => this._fornecedoresSubject.next(data || []),
+    this.api.get<PageableResponse<FornecedorResponseDTO>>('fornecedores', { size: 1000 }).subscribe({
+      next: (page) => this._fornecedoresSubject.next(page?.content || []),
       error: (err) => console.error('Erro ao carregar fornecedores', err)
     });
   }
@@ -51,8 +52,8 @@ export class DependenciesService {
   }
 
   loadAlmoxarifados(): void {
-    this.api.list<AlmoxarifadoResponseDTO>('almoxarifados').subscribe({
-      next: (data) => this._almoxarifadosSubject.next(data || []),
+    this.api.get<PageableResponse<AlmoxarifadoResponseDTO>>('almoxarifados', { size: 1000 }).subscribe({
+      next: (page) => this._almoxarifadosSubject.next(page?.content || []),
       error: (err) => console.error('Erro ao carregar almoxarifados', err)
     });
   }
@@ -65,8 +66,8 @@ export class DependenciesService {
   }
 
   loadUnidadesMedida(): void {
-    this.api.list<UnidadeMedidaResponseDTO>('unidades-medida').subscribe({
-      next: (data) => this._unidadesMedidaSubject.next(data || []),
+    this.api.get<PageableResponse<UnidadeMedidaResponseDTO>>('unidades-medida', { size: 1000 }).subscribe({
+      next: (page) => this._unidadesMedidaSubject.next(page?.content || []),
       error: (err) => console.error('Erro ao carregar unidades de medida', err)
     });
   }

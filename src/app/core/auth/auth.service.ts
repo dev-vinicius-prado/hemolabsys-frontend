@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { AuthUtils } from 'app/core/auth/auth.utils';
+import { User } from 'app/core/user/user.types';
 import { UserService } from 'app/core/user/user.service';
 import { catchError, Observable, of, switchMap, throwError } from 'rxjs';
 import { ApiService } from '../api/api.service';
@@ -76,7 +77,7 @@ export class AuthService
                 this._authenticated = true;
 
                 // Store the user on the user service
-                this._userService.user = response.user;
+                this._userService.user = this._toUser(response.user);
 
                 // Return a new observable with the response
                 return of(response);
@@ -116,7 +117,7 @@ export class AuthService
                 this._authenticated = true;
 
                 // Store the user on the user service
-                this._userService.user = response.user;
+                this._userService.user = this._toUser(response.user);
 
                 // Return true
                 return of(true);
@@ -146,7 +147,7 @@ export class AuthService
      */
     signUp(user: { name: string; email: string; password: string; company: string }): Observable<any>
     {
-        return this._apiService.post('auth/sign-up', user);
+        return this._apiService.post('auth/register', user);
     }
 
     /**
@@ -184,5 +185,25 @@ export class AuthService
 
         // If the access token exists, and it didn't expire, sign in using it
         return this.signInUsingToken();
+    }
+
+    private _toUser(dto: any): User
+    {
+        const id = dto?.id !== undefined && dto?.id !== null ? String(dto.id) : '';
+        const name = dto?.nome ?? dto?.name ?? '';
+        const email = dto?.email ?? '';
+        const phoneNumber = dto?.telefone ?? dto?.phoneNumber ?? '';
+        const active = dto?.ativo ?? dto?.active ?? true;
+
+        return {
+            id,
+            name,
+            email,
+            phoneNumber,
+            birthDate: dto?.birthDate ?? '',
+            createdAt: dto?.createdAt ?? '',
+            updatedAt: dto?.updatedAt ?? '',
+            active,
+        };
     }
 }
