@@ -44,7 +44,12 @@ export class ApiService {
   list<T>(path: string, params?: Record<string, unknown>): Observable<T[]> {
     const url = this._resolveUrl(path);
     const httpParams = this._toParams(params);
-    return this._http.get<T[]>(url, { params: httpParams });
+    return this._http.get<any>(url, { params: httpParams }).pipe(
+      map((response) => {
+        const data = response?.content ?? response ?? [];
+        return Array.isArray(data) ? (data as T[]) : [];
+      })
+    );
   }
 
   // Get single resource: GET /{path}/{id}

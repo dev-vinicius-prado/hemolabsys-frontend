@@ -3,9 +3,14 @@ import {
     Component,
     ViewEncapsulation,
     OnInit,
+    inject,
+    ChangeDetectorRef,
 } from '@angular/core';
-import { NgForOf } from '@angular/common';
+import { NgForOf, NgIf, DatePipe } from '@angular/common';
 import { Metric, Alert, Product } from 'app/core/dashboard/dashboard.types';
+import { EstoqueService } from './services/estoque.service';
+import { EstoqueLoteResponseDTO } from 'app/core/models/lote.types';
+import { EstoqueTotalResponseDTO } from 'app/core/models/estoque.types';
 
 @Component({
     selector: 'dashboard',
@@ -13,60 +18,69 @@ import { Metric, Alert, Product } from 'app/core/dashboard/dashboard.types';
     templateUrl: './dashboard.component.html',
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [NgForOf],
+    imports: [NgForOf, NgIf, DatePipe],
 })
 export class DashboardComponent implements OnInit {
+    private estoqueService = inject(EstoqueService);
+    private cdr = inject(ChangeDetectorRef);
+
     metrics: Metric[] = [];
     alerts: Alert[] = [];
     products: Product[] = [];
 
-    /**
-     * Constructor
-     */
     constructor() {}
 
     ngOnInit(): void {
+        this.loadDashboardData();
+    }
+
+    private loadDashboardData(): void {
+        this.estoqueService.getAlertasVencimento(30).subscribe({
+            next: (lotes: EstoqueLoteResponseDTO[]) => {
+                this.alerts = lotes.map(lote => ({
+                    message: `${lote.insumoNome} - Lote ${lote.codigoLote}`,
+                    details: `Vence em: ${lote.dataValidade}`,
+                    statusIcon: '🔴'
+                }));
+                this.cdr.markForCheck();
+            }
+        });
+
+        this.estoqueService.getAlertasBaixoEstoque().subscribe({
+            next: (items: EstoqueTotalResponseDTO[]) => {
+                this.products = items.map(item => ({
+                    name: item.insumoNome,
+                    currentQuantity: item.quantidadeTotal,
+                    minQuantity: item.estoqueMinimo,
+                    status: item.status,
+                    statusIcon: item.status === 'CRITICO' ? '🔴' : '🟠'
+                }));
+
+                this.updateMetrics(items.length);
+                this.cdr.markForCheck();
+            }
+        });
+    }
+
+    private updateMetrics(criticalItemsCount: number): void {
         this.metrics = [
             {
                 title: 'Estoque Total',
-                value: '1.250 itens',
+                value: '---',
                 status: 'OK',
                 icon: '🟢',
             },
             {
                 title: 'Itens Críticos',
-                value: '15 (Alerta!)',
-                status: 'Ação Necessária',
-                icon: '🔴',
+                value: `${criticalItemsCount} (Baixo/Crítico)`,
+                status: criticalItemsCount > 0 ? 'Ação Necessária' : 'OK',
+                icon: criticalItemsCount > 0 ? '🔴' : '🟢',
             },
             {
                 title: 'Consumo Hoje',
-                value: '120 unid.',
-                status: 'Mini-Chart (placeholder)',
+                value: '---',
+                status: 'Atualizado',
                 icon: '📈',
-            },
-        ];
-
-        this.alerts = [
-            {
-                message: 'Reagente Hemograma: Baixo (5 unid.)',
-                details: 'Validade: 10 dias',
-                statusIcon: '🔴',
-            },
-            {
-                message: 'Pipetas: Expirado #ABC123',
-                details: 'Ação: Descartar',
-                statusIcon: '🔴',
-            },
-        ];
-
-        this.products = [
-            {
-                name: 'Kit Glic.',
-                currentQuantity: 50,
-                minQuantity: 20,
-                status: 'OK',
-                statusIcon: '🟢',
             },
         ];
     }

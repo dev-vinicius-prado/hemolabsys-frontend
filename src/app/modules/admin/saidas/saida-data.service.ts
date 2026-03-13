@@ -19,18 +19,19 @@ export class SaidaDataService {
     constructor() { }
 
     createSaida(saida: CreateSaidaDTO): Observable<SaidaResponseDTO> {
-        return this.api.create<SaidaResponseDTO>('saidas', saida).pipe(
-            tap(() => this.getInsumosLotesDisponiveisParaSaida().subscribe()) // Atualiza a lista após a criação
+        return this.api.create<SaidaResponseDTO>('movimentacoes/saida', saida).pipe(
+             tap(() => {
+                 // Refresh list if params are available, otherwise just clear
+                 this._insumosLotesSaida.next([]);
+             })
         );
     }
 
-    getInsumosLotesDisponiveisParaSaida(): Observable<InsumoLoteSaidaResponseDTO[]> {
-        const obs = this.api.list<InsumoLoteSaidaResponseDTO>(
-            'insumos-lotes-disponiveis-saida'
+    getInsumosLotesDisponiveisParaSaida(insumoId: number, almoxarifadoId: number): Observable<InsumoLoteSaidaResponseDTO[]> {
+        return this.api.list<InsumoLoteSaidaResponseDTO>(
+            `estoque/lotes?insumoId=${insumoId}&almoxarifadoId=${almoxarifadoId}`
         ).pipe(
             tap(insumosLotes => this._insumosLotesSaida.next(insumosLotes))
         );
-        obs.subscribe();
-        return obs;
     }
 }

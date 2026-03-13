@@ -34,15 +34,12 @@ export interface LoteResponseDTO {
   updatedAt: string;
 }
 
-export interface ItemEstoqueResponseDTO {
-  id: number;
+export interface EstoqueLoteResponseDTO {
+  estoqueLoteId: number;
   loteId: number;
-  loteCodigo: string;
-  insumoId: number;
-  insumoDescricao: string;
-  setorId: number;
-  setorNome: string;
+  codigoLote: string;
+  insumoNome: string;
+  almoxarifadoNome: string;
   dataValidade: string;
   quantidade: number;
-  status: 'DISPONIVEL' | 'RESERVADO' | 'VENCIDO' | 'BAIXADO';
 }

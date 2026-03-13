@@ -47,3 +47,13 @@ export interface MovimentacaoResponseDTO {
   dataValidade?: string;
   motivo?: string;
 }
+
+export interface EstoqueTotalResponseDTO {
+  insumoId: number;
+  insumoNome: string;
+  almoxarifadoNome: string;
+  quantidadeTotal: number;
+  estoqueMinimo: number;
+  estoqueMaximo: number;
+  status: 'OK' | 'BAIXO' | 'CRITICO';
+}

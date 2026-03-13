@@ -10,19 +10,19 @@ export interface SaidaResponseDTO {
 
 export interface CreateSaidaDTO {
     insumoId: number;
-    loteId: number;
+    almoxarifadoId: number;
+    codigoLote: string;
     quantidade: number;
-    usuarioRegistroId?: number;
     solicitante: string;
+    motivo?: string;
 }
 
 export interface InsumoLoteSaidaResponseDTO {
-    id: number;
-    insumoId: number;
-    nomeInsumo: string;
-    numeroLote: string;
+    estoqueLoteId: number;
+    loteId: number;
+    insumoNome: string;
+    codigoLote: string;
     dataValidade: string;
-    quantidadeDisponivel: number;
-    almoxarifadoId: number;
+    quantidade: number;
     almoxarifadoNome: string;
 }
