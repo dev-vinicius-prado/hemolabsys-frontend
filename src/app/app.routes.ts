@@ -82,6 +82,7 @@ export const appRoutes: Route[] = [
             { path: 'marca', loadChildren: () => import('app/modules/admin/marca/marca.routes') },
             { path: 'setor', loadChildren: () => import('app/modules/admin/setor/setor.routes') },
             { path: 'tipo-embalagem', loadChildren: () => import('app/modules/admin/tipo-embalagem/tipo-embalagem.routes') },
+            { path: 'movimentacoes', loadChildren: () => import('app/modules/admin/movimentacoes/movimentacoes.routes') },
             { path: 'entradas', component: EntradaComponent },
             { path: 'saidas', component: SaidaComponent },
             // { path: 'relatorios', loadChildren: () => import('app/modules/admin/relatorios/relatorios.routes') },

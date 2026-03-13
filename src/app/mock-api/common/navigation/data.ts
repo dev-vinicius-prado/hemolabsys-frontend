@@ -31,6 +31,13 @@ export const defaultNavigation: FuseNavigationItem[] = [
         link : '/saidas'
     },
     {
+        id   : 'movimentacao',
+        title: 'Movimentações',
+        type : 'basic',
+        icon: 'heroicons_outline:arrow-path',
+        link : '/movimentacoes'
+    },
+    {
         id   : 'relatorios',
         title: 'Relatórios',
         type : 'basic',
