@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BehaviorSubject, combineLatest, map, startWith, tap } from 'rxjs';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 import {
     InsumoResponseDTO,
@@ -26,12 +27,13 @@ import { DependenciesService } from './services/dependencies.service';
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, MatSnackBarModule],
 })
 export class InsumosComponent implements OnInit {
     private _changeDetectorRef = inject(ChangeDetectorRef);
     private insumosDataService = inject(InsumosDataService);
     private dependenciesService = inject(DependenciesService);
+    private _snackBar = inject(MatSnackBar);
 
     // Estado reativo para filtros
     private readonly searchSubject = new BehaviorSubject<string>('');
@@ -161,8 +163,21 @@ export class InsumosComponent implements OnInit {
 
     excluir(insumo: InsumoResponseDTO): void {
         if (confirm(`Excluir ${insumo.descricao}?`)) {
-            this.insumosDataService.deleteInsumo(insumo.id);
-            this.selectedIds.delete(insumo.id);
+            this.insumosDataService.deleteInsumo(insumo.id).subscribe({
+                next: () => {
+                    this._snackBar.open('Insumo excluído com sucesso!', 'OK', {
+                        duration: 5000,
+                        panelClass: ['success-snackbar'],
+                    });
+                    this.selectedIds.delete(insumo.id);
+                },
+                error: (err) => {
+                    this._snackBar.open(`Erro ao excluir insumo: ${err.message}`, 'Fechar', {
+                        duration: 5000,
+                        panelClass: ['error-snackbar'],
+                    });
+                },
+            });
         }
     }
 
@@ -196,28 +211,40 @@ export class InsumosComponent implements OnInit {
             .updateInsumo(this.editingId!, updateDto)
             .subscribe({
                 next: () => {
+                    this._snackBar.open('Insumo atualizado com sucesso!', 'OK', {
+                        duration: 5000,
+                        panelClass: ['success-snackbar'],
+                    });
                     this.formVisible = false;
                     this._changeDetectorRef.markForCheck();
                     this.cancelar();
                 },
                 error: (err) => {
-                    console.error('Erro ao atualizar insumo:', err);
-                    // Optionally, show an error message to the user
+                    this._snackBar.open(`Erro ao atualizar insumo: ${err.message}`, 'Fechar', {
+                        duration: 5000,
+                        panelClass: ['error-snackbar'],
+                    });
                 },
             });
         } else {
             this.insumosDataService.createInsumo(baseDto).subscribe({
                 next: () => {
+                    this._snackBar.open('Insumo criado com sucesso!', 'OK', {
+                        duration: 5000,
+                        panelClass: ['success-snackbar'],
+                    });
                     this.formVisible = false;
                     this._changeDetectorRef.markForCheck();
                     this.cancelar();
                 },
                 error: (err) => {
-                    console.error('Erro ao criar insumo:', err);
-                    // Optionally, show an error message to the user
+                    this._snackBar.open(`Erro ao criar insumo: ${err.message}`, 'Fechar', {
+                        duration: 5000,
+                        panelClass: ['error-snackbar'],
+                    });
                 },
             });
-}
+        }
     }
 
 cancelar(): void {

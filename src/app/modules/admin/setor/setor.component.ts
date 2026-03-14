@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, ChangeDetectorRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BehaviorSubject, combineLatest, map } from 'rxjs';
 import { ApiService } from '../../../core/api/api.service';
 import { PageableResponse, SetorCreateDTO, SetorResponseDTO, SetorUpdateDTO } from 'app/core/models';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
     selector: 'setor',
@@ -12,7 +13,7 @@ import { PageableResponse, SetorCreateDTO, SetorResponseDTO, SetorUpdateDTO } fr
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, MatSnackBarModule],
 })
 export class SetorComponent {
     // Estado reativo
@@ -33,6 +34,8 @@ export class SetorComponent {
             return list.filter(s => s.nome.toLowerCase().includes(t));
         })
     );
+
+    private readonly _snackBar = inject(MatSnackBar);
 
     constructor(private readonly api: ApiService, private _changeDetectorRef: ChangeDetectorRef) {}
 
@@ -67,18 +70,25 @@ export class SetorComponent {
     }
 
     excluir(s: SetorResponseDTO): void {
-        this.api.remove('setores', s.id).subscribe({
-            next: () => {
-                const updated = this.setors$.value.filter(x => x.id !== s.id);
-                this.setors$.next(updated);
-                this.selectedIds.delete(s.id);
-            },
-            error: () => {
-                const updated = this.setors$.value.filter(x => x.id !== s.id);
-                this.setors$.next(updated);
-                this.selectedIds.delete(s.id);
-            }
-        });
+        if (confirm(`Excluir setor ${s.nome}?`)) {
+            this.api.remove('setores', s.id).subscribe({
+                next: () => {
+                    this._snackBar.open('Setor excluído com sucesso!', 'OK', {
+                        duration: 5000,
+                        panelClass: ['success-snackbar'],
+                    });
+                    const updated = this.setors$.value.filter(x => x.id !== s.id);
+                    this.setors$.next(updated);
+                    this.selectedIds.delete(s.id);
+                },
+                error: (err) => {
+                    this._snackBar.open(`Erro ao excluir setor: ${err.message}`, 'Fechar', {
+                        duration: 5000,
+                        panelClass: ['error-snackbar'],
+                    });
+                }
+            });
+        }
     }
 
     salvar(): void {
@@ -103,14 +113,21 @@ export class SetorComponent {
 
         op$.subscribe({
             next: (payload) => {
+                this._snackBar.open(`Setor ${isEdit ? 'atualizado' : 'criado'} com sucesso!`, 'OK', {
+                    duration: 5000,
+                    panelClass: ['success-snackbar'],
+                });
                 const list = this.setors$.value.slice();
                 const idx = list.findIndex(x => x.id === payload.id);
                 if (idx > -1) list[idx] = payload; else list.push(payload);
                 this.setors$.next(list);
                 this.cancelar();
             },
-            error: () => {
-                this.cancelar();
+            error: (err) => {
+                this._snackBar.open(`Erro ao salvar setor: ${err.message}`, 'Fechar', {
+                    duration: 5000,
+                    panelClass: ['error-snackbar'],
+                });
             }
         });
     }

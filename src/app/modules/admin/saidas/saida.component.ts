@@ -20,6 +20,7 @@ import { DependenciesService } from '../insumos/services/dependencies.service';
 import { InsumosDataService } from '../insumos/services/insumos-data.service';
 import { AlmoxarifadoResponseDTO } from 'app/core/models/almoxarifado-catalog.types';
 import { InsumoResponseDTO } from 'app/core/models';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'saida',
@@ -45,6 +46,7 @@ export class SaidaComponent implements OnInit {
     private insumosDataService = inject(InsumosDataService);
     private formBuilder = inject(FormBuilder);
     private snackBar = inject(MatSnackBar);
+    private router = inject(Router);
 
     saidaForm!: FormGroup;
     insumosLotesSaida$: Observable<InsumoLoteSaidaResponseDTO[]> | undefined;
@@ -104,14 +106,18 @@ export class SaidaComponent implements OnInit {
 
         this.saidaDataService.createSaida(saidaDTO)
             .subscribe({
-                next: (response) => {
-                    this.snackBar.open('Saída registrada com sucesso!', 'Fechar', { duration: 3000 });
-                    this.saidaForm.reset();
-                    this.selectedInsumoLoteSaida = undefined;
-                    this.lotesDisponiveis = [];
+                next: () => {
+                    this.snackBar.open('Saída registrada com sucesso!', 'OK', {
+                        duration: 5000,
+                        panelClass: ['success-snackbar'],
+                    });
+                    this.router.navigate(['/movimentacoes']);
                 },
                 error: (err) => {
-                    this.snackBar.open(`Erro ao registrar saída: ${err.message}`, 'Fechar', { duration: 5000 });
+                    this.snackBar.open(`Erro ao registrar saída: ${err.message}`, 'Fechar', {
+                        duration: 5000,
+                        panelClass: ['error-snackbar']
+                    });
                 }
             });
     }

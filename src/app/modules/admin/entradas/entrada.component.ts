@@ -7,6 +7,7 @@ import {
     ViewEncapsulation,
 } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { EntradaDataService } from './entrada-data.service';
 import {
     AlmoxarifadoOptionDTO,
@@ -43,6 +44,7 @@ export class EntradaComponent implements OnInit {
     private entradaDataService = inject(EntradaDataService);
     private formBuilder = inject(FormBuilder);
     private snackBar = inject(MatSnackBar);
+    private router = inject(Router);
 
     entradaForm!: FormGroup;
     insumos$!: Observable<InsumoOptionDTO[]>;
@@ -103,11 +105,17 @@ export class EntradaComponent implements OnInit {
         this.entradaDataService.createEntrada(payload)
             .subscribe({
                 next: () => {
-                    this.snackBar.open('Entrada registrada com sucesso!', 'Fechar', { duration: 3000 });
-                    this.entradaForm.reset();
+                    this.snackBar.open('Entrada registrada com sucesso!', 'OK', {
+                        duration: 5000,
+                        panelClass: ['success-snackbar'],
+                    });
+                    this.router.navigate(['/movimentacoes']);
                 },
                 error: (err) => {
-                    this.snackBar.open(`Erro ao registrar entrada: ${err.message}`, 'Fechar', { duration: 5000 });
+                    this.snackBar.open(`Erro ao registrar entrada: ${err.message}`, 'Fechar', {
+                        duration: 5000,
+                        panelClass: ['error-snackbar']
+                    });
                 }
             });
     }

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BehaviorSubject, combineLatest, map } from 'rxjs';
 import { ApiService } from 'app/core/api/api.service';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 type SituacaoAprovacao = 'PENDENTE' | 'APROVADO_COORDENADOR' | 'APROVADO_GERENTE' | 'REJEITADO';
 
@@ -28,11 +29,12 @@ interface MovimentacaoAprovacaoDTO {
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, MatSnackBarModule],
 })
 export class MovimentacoesComponent {
     private readonly api = inject(ApiService);
     private readonly cdr = inject(ChangeDetectorRef);
+    private readonly snackBar = inject(MatSnackBar);
 
     private readonly itemsSubject = new BehaviorSubject<MovimentacaoAprovacaoDTO[]>([]);
     readonly items$ = this.itemsSubject.asObservable();
@@ -103,7 +105,17 @@ export class MovimentacoesComponent {
     aprovar(item: MovimentacaoAprovacaoDTO, isGerente: boolean): void {
         this.api.post(`movimentacoes/${item.id}/aprovar?isGerente=${isGerente ? 'true' : 'false'}`, {}).subscribe({
             next: () => {
+                this.snackBar.open('Movimentação aprovada com sucesso!', 'OK', {
+                    duration: 5000,
+                    panelClass: ['success-snackbar'],
+                });
                 this.reload();
+            },
+            error: (err) => {
+                this.snackBar.open(`Erro ao aprovar movimentação: ${err.message}`, 'Fechar', {
+                    duration: 5000,
+                    panelClass: ['error-snackbar'],
+                });
             }
         });
     }
@@ -113,7 +125,17 @@ export class MovimentacoesComponent {
         if (motivo) {
             this.api.post(`movimentacoes/${item.id}/rejeitar?motivo=${encodeURIComponent(motivo)}`, {}).subscribe({
                 next: () => {
+                    this.snackBar.open('Movimentação rejeitada.', 'OK', {
+                        duration: 5000,
+                        panelClass: ['success-snackbar'],
+                    });
                     this.reload();
+                },
+                error: (err) => {
+                    this.snackBar.open(`Erro ao rejeitar movimentação: ${err.message}`, 'Fechar', {
+                        duration: 5000,
+                        panelClass: ['error-snackbar'],
+                    });
                 }
             });
         }

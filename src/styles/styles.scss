@@ -2,3 +2,33 @@
 /*  @ Import/write your custom styles here.
 /*  @ Styles from this file will override 'vendors.scss' and Fuse's base styles.
 /* ----------------------------------------------------------------------------------------------------- */
+
+.success-snackbar {
+    background-color: #16a34a !important;
+    --mdc-snackbar-container-color: #16a34a !important;
+    --mdc-snackbar-label-text-color: #ffffff !important;
+    --mat-snack-bar-button-color: #ffffff !important;
+
+    .mdc-snackbar__surface {
+        background-color: #16a34a !important;
+    }
+
+    .mdc-snackbar__label {
+        color: #ffffff !important;
+    }
+}
+
+.error-snackbar {
+    background-color: #dc2626 !important;
+    --mdc-snackbar-container-color: #dc2626 !important;
+    --mdc-snackbar-label-text-color: #ffffff !important;
+    --mat-snack-bar-button-color: #ffffff !important;
+
+    .mdc-snackbar__surface {
+        background-color: #dc2626 !important;
+    }
+
+    .mdc-snackbar__label {
+        color: #ffffff !important;
+    }
+}
