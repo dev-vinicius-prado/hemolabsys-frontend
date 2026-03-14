@@ -6,10 +6,14 @@ import {
     OnInit,
     ViewEncapsulation,
 } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { EntradaDataService } from './entrada-data.service';
-import { InsumoLoteResponseDTO } from './types/entrada.types';
-import { Observable } from 'rxjs';
+import {
+    AlmoxarifadoOptionDTO,
+    FornecedorOptionDTO,
+    InsumoOptionDTO,
+} from './types/entrada.types';
+import { Observable, shareReplay, tap } from 'rxjs';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatStepperModule } from '@angular/material/stepper';
@@ -41,19 +45,36 @@ export class EntradaComponent implements OnInit {
     private snackBar = inject(MatSnackBar);
 
     entradaForm!: FormGroup;
-    insumosLotes$: Observable<InsumoLoteResponseDTO[]> | undefined;
-    selectedInsumoLote: InsumoLoteResponseDTO | undefined;
+    insumos$!: Observable<InsumoOptionDTO[]>;
+    almoxarifados$!: Observable<AlmoxarifadoOptionDTO[]>;
+    fornecedores$!: Observable<FornecedorOptionDTO[]>;
+
+    private insumosCache: InsumoOptionDTO[] = [];
 
     ngOnInit(): void {
-        // Inicializar formulário reativo com validações
         this.entradaForm = this.formBuilder.group({
-            insumoLoteId: ['', Validators.required],
-            quantidade: ['', [Validators.required, Validators.min(1)]],
-            usuarioRegistroId: [''] // Preenchido por serviço de autenticação posteriormente
+            contexto: this.formBuilder.group({
+                almoxarifadoId: [null, Validators.required],
+                insumoId: [null, Validators.required],
+                fornecedorId: [null, Validators.required],
+            }),
+            lote: this.formBuilder.group({
+                numeroLote: ['', Validators.required],
+                dataFabricacao: [''],
+                dataValidade: ['', Validators.required],
+                numeroNotaFiscal: ['', Validators.required],
+            }),
+            quantidade: this.formBuilder.group({
+                quantidade: [null, [Validators.required, Validators.min(1)]],
+            }),
         });
 
-        // Buscar insumos e lotes disponíveis do serviço
-        this.insumosLotes$ = this.entradaDataService.getInsumosLotesDisponiveis();
+        this.insumos$ = this.entradaDataService.getInsumos().pipe(
+            tap((insumos) => (this.insumosCache = insumos)),
+            shareReplay(1)
+        );
+        this.almoxarifados$ = this.entradaDataService.getAlmoxarifados().pipe(shareReplay(1));
+        this.fornecedores$ = this.entradaDataService.getFornecedores().pipe(shareReplay(1));
     }
 
     submitEntrada(): void {
@@ -62,26 +83,28 @@ export class EntradaComponent implements OnInit {
             return;
         }
 
-        const formValues = this.entradaForm.value;
-        const entradaDTO = {
-            insumoId: this.selectedInsumoLote?.insumoId,
-            loteId: formValues.insumoLoteId,
-            quantidade: formValues.quantidade,
-            usuarioRegistroId: formValues.usuarioRegistroId
-        } as unknown as import('./types/entrada.types').CreateEntradaDTO;
+        const rawValue = this.entradaForm.getRawValue() as {
+            contexto: { almoxarifadoId: number; insumoId: number; fornecedorId: number };
+            lote: { numeroLote: string; dataFabricacao?: string; dataValidade: string; numeroNotaFiscal: string };
+            quantidade: { quantidade: number };
+        };
 
-        if (!entradaDTO.insumoId) {
-            this.snackBar.open('Selecione um insumo/lote válido.', 'Fechar', { duration: 3000 });
-            return;
-        }
+        const payload = {
+            almoxarifadoId: rawValue.contexto.almoxarifadoId,
+            insumoId: rawValue.contexto.insumoId,
+            fornecedorId: rawValue.contexto.fornecedorId,
+            numeroLote: rawValue.lote.numeroLote,
+            dataFabricacao: rawValue.lote.dataFabricacao || undefined,
+            dataValidade: rawValue.lote.dataValidade,
+            numeroNotaFiscal: rawValue.lote.numeroNotaFiscal,
+            quantidade: rawValue.quantidade.quantidade,
+        };
 
-        this.entradaDataService.createEntrada(entradaDTO)
+        this.entradaDataService.createEntrada(payload)
             .subscribe({
-                next: (response) => {
+                next: () => {
                     this.snackBar.open('Entrada registrada com sucesso!', 'Fechar', { duration: 3000 });
                     this.entradaForm.reset();
-                    this.selectedInsumoLote = undefined;
-                    // Atualizar UI com novo estoque (implementar com RxJS tap() no serviço posteriormente)
                 },
                 error: (err) => {
                     this.snackBar.open(`Erro ao registrar entrada: ${err.message}`, 'Fechar', { duration: 5000 });
@@ -89,8 +112,10 @@ export class EntradaComponent implements OnInit {
             });
     }
 
-    onInsumoLoteSelect(lote: InsumoLoteResponseDTO): void {
-        this.selectedInsumoLote = lote;
-        this.entradaForm.patchValue({ insumoLoteId: lote.id });
+    onInsumoSelect(insumoId: number): void {
+        const insumo = this.insumosCache.find((i) => i.id === insumoId);
+        if (!insumo) {
+            return;
+        }
     }
 }

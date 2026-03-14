@@ -1,28 +1,37 @@
-export interface EntradaResponseDTO {
+export interface InsumoOptionDTO {
     id: number;
-    insumoId: number;
-    loteId: number;
-    quantidade: number;
-    dataRegistro: string; // ou Date, dependendo da serialização da API
-    usuarioRegistroId: number;
-    // Adicionar outros campos relevantes que a API possa retornar
+    codigo: string;
+    descricao: string;
+    loteObrigatorio: boolean;
+    perecivel: boolean;
 }
 
-export interface CreateEntradaDTO {
-    insumoId: number;
-    loteId: number;
-    quantidade: number;
-    usuarioRegistroId?: number; // Pode ser preenchido no backend
+export interface AlmoxarifadoOptionDTO {
+    id: number;
+    codigo: string;
+    descricao: string;
 }
 
-export interface InsumoLoteResponseDTO {
+export interface FornecedorOptionDTO {
     id: number;
+    nome: string;
+    cnpj: string;
+    ativo: boolean;
+}
+
+export interface EntradaInsumoRequestDTO {
     insumoId: number;
-    nomeInsumo: string;
-    numeroLote: string;
-    dataValidade: string; // ou Date
-    quantidadeDisponivel: number;
     almoxarifadoId: number;
-    almoxarifadoNome: string;
-    // Adicionar outros campos que ajudem na seleção e exibição
+    fornecedorId: number;
+    quantidade: number;
+    numeroLote: string;
+    dataFabricacao?: string;
+    dataValidade: string;
+    numeroNotaFiscal: string;
+}
+
+export interface MovimentacaoResponseDTO {
+    id: number;
+    tipo?: string;
+    quantidade?: number;
 }

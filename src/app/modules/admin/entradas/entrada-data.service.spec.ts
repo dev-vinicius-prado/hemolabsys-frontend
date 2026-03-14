@@ -25,39 +25,63 @@ describe('EntradaDataService', () => {
         expect(service).toBeTruthy();
     });
 
-    it('should call api.create and refresh insumosLotes after createEntrada', () => {
-        const mockCreateEntradaDTO = { insumoId: 1, loteId: 1, quantidade: 10 };
-        const mockEntradaResponse = { id: 1, insumoId: 1, loteId: 1, quantidade: 10, dataRegistro: '2023-01-01', usuarioRegistroId: 1 };
-        const mockInsumosLotes = [{ id: 1, insumoId: 1, nomeInsumo: 'Insumo A', numeroLote: 'Lote 001', dataValidade: '2024-12-31', quantidadeDisponivel: 90, almoxarifadoId: 1, almoxarifadoNome: 'Almoxarifado Central' }];
+    it('should call api.create on createEntrada', () => {
+        const mockRequest = {
+            insumoId: 1,
+            almoxarifadoId: 2,
+            fornecedorId: 3,
+            quantidade: 10,
+            numeroLote: 'LOTE-001',
+            dataValidade: '2030-12-31',
+            numeroNotaFiscal: 'NF-123',
+        };
+        const mockResponse = { id: 1, quantidade: 10 };
 
-        apiServiceSpy.create.and.returnValue(of(mockEntradaResponse));
-        apiServiceSpy.list.and.returnValue(of(mockInsumosLotes));
+        apiServiceSpy.create.and.returnValue(of(mockResponse));
 
-        const getInsumosLotesSpy = spyOn(service, 'getInsumosLotesDisponiveis').and.returnValue(of(mockInsumosLotes));
-
-        service.createEntrada(mockCreateEntradaDTO).subscribe(response => {
-            expect(response).toEqual(mockEntradaResponse);
+        service.createEntrada(mockRequest).subscribe((response) => {
+            expect(response).toEqual(mockResponse);
         });
 
-        expect(apiServiceSpy.create).toHaveBeenCalledWith('entradas', mockCreateEntradaDTO);
-        expect(getInsumosLotesSpy).toHaveBeenCalled();
+        expect(apiServiceSpy.create).toHaveBeenCalledWith('movimentacoes/entrada', mockRequest);
     });
 
-    it('should fetch and update insumosLotes on getInsumosLotesDisponiveis', () => {
-        const mockInsumosLotes = [
-            { id: 1, insumoId: 1, nomeInsumo: 'Insumo A', numeroLote: 'Lote 001', dataValidade: '2024-12-31', quantidadeDisponivel: 100, almoxarifadoId: 1, almoxarifadoNome: 'Almoxarifado Central' },
-            { id: 2, insumoId: 2, nomeInsumo: 'Insumo B', numeroLote: 'Lote 002', dataValidade: '2024-11-30', quantidadeDisponivel: 50, almoxarifadoId: 1, almoxarifadoNome: 'Almoxarifado Central' }
+    it('should call api.list on getInsumos', () => {
+        const mockInsumos = [
+            { id: 1, codigo: 'I001', descricao: 'Insumo A', loteObrigatorio: true, perecivel: true },
         ];
+        apiServiceSpy.list.and.returnValue(of(mockInsumos));
 
-        apiServiceSpy.list.and.returnValue(of(mockInsumosLotes));
-
-        service.getInsumosLotesDisponiveis().subscribe(insumosLotes => {
-            expect(insumosLotes).toEqual(mockInsumosLotes);
+        service.getInsumos().subscribe((insumos) => {
+            expect(insumos).toEqual(mockInsumos);
         });
 
-        expect(apiServiceSpy.list).toHaveBeenCalledWith('insumos-lotes-disponiveis');
-        service.insumosLotes$.subscribe(currentInsumosLotes => {
-            expect(currentInsumosLotes).toEqual(mockInsumosLotes);
+        expect(apiServiceSpy.list).toHaveBeenCalledWith('insumos', { size: 200, sort: 'codigo,asc' });
+    });
+
+    it('should call api.list on getAlmoxarifados', () => {
+        const mockAlmoxarifados = [
+            { id: 1, codigo: 'ALM-01', descricao: 'Central' },
+        ];
+        apiServiceSpy.list.and.returnValue(of(mockAlmoxarifados));
+
+        service.getAlmoxarifados().subscribe((almoxarifados) => {
+            expect(almoxarifados).toEqual(mockAlmoxarifados);
         });
+
+        expect(apiServiceSpy.list).toHaveBeenCalledWith('almoxarifados', { size: 200, sort: 'descricao,asc' });
+    });
+
+    it('should call api.list on getFornecedores', () => {
+        const mockFornecedores = [
+            { id: 1, nome: 'Fornecedor A', cnpj: '00000000000000', ativo: true },
+        ];
+        apiServiceSpy.list.and.returnValue(of(mockFornecedores));
+
+        service.getFornecedores().subscribe((fornecedores) => {
+            expect(fornecedores).toEqual(mockFornecedores);
+        });
+
+        expect(apiServiceSpy.list).toHaveBeenCalledWith('fornecedores', { size: 200, sort: 'nome,asc' });
     });
 });

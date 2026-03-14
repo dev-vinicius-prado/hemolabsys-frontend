@@ -37,7 +37,7 @@ export class MovimentacoesComponent {
     private readonly itemsSubject = new BehaviorSubject<MovimentacaoAprovacaoDTO[]>([]);
     readonly items$ = this.itemsSubject.asObservable();
 
-    status: SituacaoAprovacao = 'PENDENTE';
+    status: SituacaoAprovacao | 'TODAS' = 'PENDENTE';
     loading = false;
 
     private readonly searchSubject = new BehaviorSubject<string>('');
@@ -80,7 +80,12 @@ export class MovimentacoesComponent {
         this.loading = true;
         this.cdr.markForCheck();
 
-        this.api.get<any>('movimentacoes', { situacaoAprovacao: this.status, size: 200, sort: 'dataMovimentacao,desc' }).subscribe({
+        const params: any = { size: 200, sort: 'dataMovimentacao,desc' };
+        if (this.status !== 'TODAS') {
+            params.situacaoAprovacao = this.status;
+        }
+
+        this.api.get<any>('movimentacoes', params).subscribe({
             next: (page) => {
                 const content = (page?.content ?? []) as MovimentacaoAprovacaoDTO[];
                 this.itemsSubject.next(content);
@@ -98,26 +103,23 @@ export class MovimentacoesComponent {
     aprovar(item: MovimentacaoAprovacaoDTO, isGerente: boolean): void {
         this.api.post(`movimentacoes/${item.id}/aprovar?isGerente=${isGerente ? 'true' : 'false'}`, {}).subscribe({
             next: () => {
-                this.itemsSubject.next(this.itemsSubject.value.filter((x) => x.id !== item.id));
-                this.cdr.markForCheck();
-            },
+                this.reload();
+            }
         });
     }
 
     rejeitar(item: MovimentacaoAprovacaoDTO): void {
-        const motivo = (window.prompt('Motivo da rejeição:', '') ?? '').trim();
-        if (!motivo) return;
-
-        const qs = encodeURIComponent(motivo);
-        this.api.post(`movimentacoes/${item.id}/rejeitar?motivo=${qs}`, {}).subscribe({
-            next: () => {
-                this.itemsSubject.next(this.itemsSubject.value.filter((x) => x.id !== item.id));
-                this.cdr.markForCheck();
-            },
-        });
+        const motivo = prompt('Informe o motivo da rejeição:');
+        if (motivo) {
+            this.api.post(`movimentacoes/${item.id}/rejeitar?motivo=${encodeURIComponent(motivo)}`, {}).subscribe({
+                next: () => {
+                    this.reload();
+                }
+            });
+        }
     }
 
-    trackById(_: number, item: MovimentacaoAprovacaoDTO): number {
+    trackById(index: number, item: MovimentacaoAprovacaoDTO): number {
         return item.id;
     }
 }

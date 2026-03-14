@@ -1,10 +1,12 @@
 import { inject, Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { Observable } from 'rxjs';
 
 import {
-    CreateEntradaDTO,
-    EntradaResponseDTO,
-    InsumoLoteResponseDTO,
+    AlmoxarifadoOptionDTO,
+    EntradaInsumoRequestDTO,
+    FornecedorOptionDTO,
+    InsumoOptionDTO,
+    MovimentacaoResponseDTO,
 } from './types/entrada.types';
 import { ApiService } from 'app/core/api/api.service';
 
@@ -14,27 +16,21 @@ import { ApiService } from 'app/core/api/api.service';
 export class EntradaDataService {
     private readonly api = inject(ApiService);
 
-    private _insumosLotes: BehaviorSubject<InsumoLoteResponseDTO[]> = new BehaviorSubject<InsumoLoteResponseDTO[]>([]);
-    readonly insumosLotes$: Observable<InsumoLoteResponseDTO[]> = this._insumosLotes.asObservable();
-
     constructor() { }
 
-    createEntrada(entrada: CreateEntradaDTO): Observable<EntradaResponseDTO> {
-        return this.api.create<EntradaResponseDTO>('entradas', entrada).pipe(
-            tap(() => this.getInsumosLotesDisponiveis().subscribe()) // Atualiza a lista após a criação
-        );
+    getInsumos(): Observable<InsumoOptionDTO[]> {
+        return this.api.list<InsumoOptionDTO>('insumos', { size: 200, sort: 'codigo,asc' });
     }
 
-    // Método para buscar insumos e lotes disponíveis para seleção no formulário
-    getInsumosLotesDisponiveis(): Observable<InsumoLoteResponseDTO[]> {
-        // Esta é uma chamada de exemplo. A rota real da API pode variar.
-        // Pode ser necessário um endpoint específico que retorne insumos com seus lotes e quantidades.
-        const obs = this.api.list<InsumoLoteResponseDTO>(
-            'insumos-lotes-disponiveis'
-        ).pipe(
-            tap(insumosLotes => this._insumosLotes.next(insumosLotes))
-        );
-        obs.subscribe(); // Dispara a busca e atualização do BehaviorSubject
-        return obs;
+    getAlmoxarifados(): Observable<AlmoxarifadoOptionDTO[]> {
+        return this.api.list<AlmoxarifadoOptionDTO>('almoxarifados', { size: 200, sort: 'descricao,asc' });
+    }
+
+    getFornecedores(): Observable<FornecedorOptionDTO[]> {
+        return this.api.list<FornecedorOptionDTO>('fornecedores', { size: 200, sort: 'nome,asc' });
+    }
+
+    createEntrada(entrada: EntradaInsumoRequestDTO): Observable<MovimentacaoResponseDTO> {
+        return this.api.create<MovimentacaoResponseDTO>('movimentacoes/entrada', entrada);
     }
 }
