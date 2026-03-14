@@ -12,7 +12,6 @@ export * from './fornecedor.catalog.types';
 export * from './almoxarifado-catalog.types';
 export * from './setor.catalog.types';
 export * from './unidade-medida.catalog.types';
-export * from './tipo-embalagem.catalog.types';
 // Tipos utilitários
 export interface PageableResponse<T> {
   content: T[];
