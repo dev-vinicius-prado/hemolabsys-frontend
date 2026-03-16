@@ -85,6 +85,9 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-right" *hasRole="'ADMIN'">
+                                    <button mat-icon-button (click)="viewAudit(user)" matTooltip="Ver Histórico">
+                                        <mat-icon class="icon-size-5 text-secondary" [svgIcon]="'heroicons_outline:clock'"></mat-icon>
+                                    </button>
                                     <button mat-icon-button (click)="editUser(user)">
                                         <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:pencil-square'"></mat-icon>
                                     </button>
@@ -172,8 +175,24 @@
                 </div>
             </div>
 
+            <!-- Audit Mode -->
+            <div *ngIf="mode === 'audit'" class="max-w-4xl mx-auto">
+                <div class="flex flex-col flex-auto p-6 sm:p-8 bg-card shadow rounded-2xl overflow-hidden">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <div class="text-lg font-medium">Histórico de Alterações</div>
+                            <div class="text-secondary">Usuário: <span class="font-semibold text-primary">{{ selectedUser?.nome }}</span></div>
+                        </div>
+                        <button mat-stroked-button (click)="cancel()">
+                            <mat-icon class="icon-size-5 mr-2" [svgIcon]="'heroicons_outline:arrow-uturn-left'"></mat-icon>
+                            Voltar
+                        </button>
+                    </div>
+
+                    <app-audit-timeline [logs]="auditLogs"></app-audit-timeline>
+                </div>
+            </div>
+
         </div>
-
     </div>
-
 </div>

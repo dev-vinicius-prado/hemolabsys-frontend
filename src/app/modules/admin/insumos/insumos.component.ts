@@ -23,6 +23,9 @@ import { DependenciesService } from './services/dependencies.service';
 import { PaginationComponent } from 'app/shared/components/pagination/pagination.component';
 import { PageableResponse } from 'app/core/models';
 import { MatIconModule } from "@angular/material/icon";
+import { HasRoleDirective } from 'app/shared/directives/has-role.directive';
+import { AuditLog, AuditTimelineComponent } from 'app/shared/components/audit-timeline/audit-timeline.component';
+import { ApiService } from 'app/core/api/api.service';
 
 @Component({
     selector: 'insumos',
@@ -31,12 +34,13 @@ import { MatIconModule } from "@angular/material/icon";
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, FormsModule, MatSnackBarModule, PaginationComponent, MatIconModule],
+    imports: [CommonModule, FormsModule, MatSnackBarModule, PaginationComponent, MatIconModule, HasRoleDirective, AuditTimelineComponent],
 })
 export class InsumosComponent implements OnInit, OnDestroy {
     private _changeDetectorRef = inject(ChangeDetectorRef);
     private insumosDataService = inject(InsumosDataService);
     private dependenciesService = inject(DependenciesService);
+    private _apiService = inject(ApiService);
     private _snackBar = inject(MatSnackBar);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -65,7 +69,10 @@ export class InsumosComponent implements OnInit, OnDestroy {
     selectedIds = new Set<number>();
     formVisible = false;
     viewOnly = false;
+    auditVisible = false;
     editingId: number | null = null;
+    selectedInsumo: InsumoResponseDTO | null = null;
+    auditLogs: AuditLog[] = [];
 
     form: {
         categoria: Categoria;
@@ -200,11 +207,36 @@ export class InsumosComponent implements OnInit, OnDestroy {
                 error: (err) => {
                     this._snackBar.open(`Erro ao excluir insumo: ${err.message}`, 'Fechar', {
                         duration: 5000,
-                        panelClass: ['error-snackbar'],
                     });
-                },
+                }
             });
         }
+    }
+
+    viewAudit(insumo: InsumoResponseDTO): void {
+        this.selectedInsumo = insumo;
+        this.auditVisible = true;
+        this.auditLogs = [];
+        this._changeDetectorRef.markForCheck();
+
+        this._apiService.get<AuditLog[]>(`audit/insumo/${insumo.id}`).subscribe({
+            next: (logs) => {
+                this.auditLogs = logs;
+                this._changeDetectorRef.markForCheck();
+            },
+            error: (err) => {
+                this._snackBar.open('Erro ao carregar logs de auditoria', 'Fechar', { duration: 5000 });
+                this.auditVisible = false;
+                this._changeDetectorRef.markForCheck();
+            }
+        });
+    }
+
+    closeAudit(): void {
+        this.auditVisible = false;
+        this.selectedInsumo = null;
+        this.auditLogs = [];
+        this._changeDetectorRef.markForCheck();
     }
 
     salvar(): void {

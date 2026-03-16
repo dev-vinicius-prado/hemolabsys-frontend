@@ -10,11 +10,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { TranslocoModule } from '@ngneat/transloco';
 import { PageableResponse, UsuarioResponseDTO, UsuarioCreateDTO, UsuarioUpdateDTO, Role } from 'app/core/models';
 import { PaginationComponent } from 'app/shared/components/pagination/pagination.component';
 import { HasRoleDirective } from 'app/shared/directives/has-role.directive';
+import { AuditLog, AuditTimelineComponent } from 'app/shared/components/audit-timeline/audit-timeline.component';
 
 @Component({
     selector       : 'app-users',
@@ -33,9 +35,11 @@ import { HasRoleDirective } from 'app/shared/directives/has-role.directive';
         MatSelectModule,
         MatCheckboxModule,
         MatSnackBarModule,
+        MatDialogModule,
         TranslocoModule,
         PaginationComponent,
-        HasRoleDirective
+        HasRoleDirective,
+        AuditTimelineComponent
     ],
 })
 export class UsersComponent implements OnInit, OnDestroy
@@ -44,6 +48,7 @@ export class UsersComponent implements OnInit, OnDestroy
     private _userService = inject(UserService);
     private _formBuilder = inject(UntypedFormBuilder);
     private _snackBar = inject(MatSnackBar);
+    private _dialog = inject(MatDialog);
     private _changeDetectorRef = inject(ChangeDetectorRef);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -53,10 +58,11 @@ export class UsersComponent implements OnInit, OnDestroy
     currentPage: number = 0;
     pageSize: number = 10;
 
-    mode: 'list' | 'create' | 'edit' = 'list';
+    mode: 'list' | 'create' | 'edit' | 'audit' = 'list';
     userForm: UntypedFormGroup;
     selectedUser: UsuarioResponseDTO | null = null;
     roles = Object.values(Role);
+    auditLogs: AuditLog[] = [];
 
     /**
      * Constructor
@@ -240,6 +246,29 @@ export class UsersComponent implements OnInit, OnDestroy
                 }
             });
         }
+    }
+
+    /**
+     * View audit logs
+     */
+    viewAudit(user: UsuarioResponseDTO): void
+    {
+        this.selectedUser = user;
+        this.mode = 'audit';
+        this.auditLogs = [];
+        this._changeDetectorRef.markForCheck();
+
+        this._apiService.get<AuditLog[]>(`audit/user/${user.id}`).subscribe({
+            next: (logs) => {
+                this.auditLogs = logs;
+                this._changeDetectorRef.markForCheck();
+            },
+            error: (err) => {
+                this._snackBar.open('Erro ao carregar logs de auditoria', 'Fechar', { duration: 5000 });
+                this.mode = 'list';
+                this._changeDetectorRef.markForCheck();
+            }
+        });
     }
 
     /**
