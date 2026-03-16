@@ -38,6 +38,16 @@
 
             <!-- List Mode -->
             <div *ngIf="mode === 'list'" class="flex flex-col flex-auto bg-card shadow rounded-2xl overflow-hidden">
+                <!-- Componente de Paginação -->
+                <app-pagination
+                    *ngIf="pagination$ | async as p"
+                    [page]="currentPage"
+                    [size]="pageSize"
+                    [totalElements]="p.totalElements"
+                    [totalPages]="p.totalPages"
+                    (pageChange)="onPageChange($event)"
+                    (sizeChange)="onSizeChange($event)">
+                </app-pagination>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
                         <thead>
@@ -86,17 +96,6 @@
                         </tbody>
                     </table>
                 </div>
-
-                <!-- Componente de Paginação -->
-                <app-pagination
-                    *ngIf="pagination$ | async as p"
-                    [page]="currentPage"
-                    [size]="pageSize"
-                    [totalElements]="p.totalElements"
-                    [totalPages]="p.totalPages"
-                    (pageChange)="onPageChange($event)"
-                    (sizeChange)="onSizeChange($event)">
-                </app-pagination>
             </div>
 
             <!-- Create/Edit Mode -->
