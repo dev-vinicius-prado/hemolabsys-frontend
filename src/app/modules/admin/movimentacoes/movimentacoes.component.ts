@@ -7,6 +7,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { UserService } from 'app/core/user/user.service';
 import { PaginationComponent } from 'app/shared/components/pagination/pagination.component';
 import { PageableResponse } from 'app/core/models';
+import { HasRoleDirective } from 'app/shared/directives/has-role.directive';
 
 type SituacaoAprovacao = 'PENDENTE' | 'APROVADO_COORDENADOR' | 'APROVADO_GERENTE' | 'REJEITADO';
 
@@ -29,7 +30,7 @@ interface MovimentacaoAprovacaoDTO {
 @Component({
     selector: 'app-movimentacoes',
     standalone: true,
-    imports: [CommonModule, FormsModule, MatSnackBarModule, PaginationComponent],
+    imports: [CommonModule, FormsModule, MatSnackBarModule, PaginationComponent, HasRoleDirective],
     templateUrl: './movimentacoes.component.html',
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -49,7 +50,6 @@ export class MovimentacoesComponent implements OnInit, OnDestroy {
 
     loading = false;
     status = 'PENDENTE';
-    userRole = '';
 
     currentPage: number = 0;
     pageSize: number = 10;
@@ -87,9 +87,6 @@ export class MovimentacoesComponent implements OnInit, OnDestroy {
     );
 
     ngOnInit(): void {
-        this.userService.user$.pipe(takeUntil(this._unsubscribeAll)).subscribe(user => {
-            this.userRole = user.role || '';
-        });
         this.reload();
     }
 

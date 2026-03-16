@@ -19,12 +19,14 @@
                     </div>
                 </div>
                 <!-- Actions -->
-                <div class="flex items-center mt-6 sm:mt-0 sm:ml-2 space-x-3" *ngIf="mode === 'list' && isAdmin">
-                    <button class="fuse-mat-button-large bg-primary text-on-primary rounded-xl" mat-flat-button (click)="createUser()">
-                        <mat-icon [svgIcon]="'heroicons_outline:plus-circle'"></mat-icon>
-                        <span class="ml-2">Novo Usuário</span>
-                    </button>
-                </div>
+                <ng-container *ngIf="mode === 'list'">
+                    <div class="flex items-center mt-6 sm:mt-0 sm:ml-2 space-x-3" *hasRole="'ADMIN'">
+                        <button class="fuse-mat-button-large bg-primary text-on-primary rounded-xl" mat-flat-button (click)="createUser()">
+                            <mat-icon [svgIcon]="'heroicons_outline:plus-circle'"></mat-icon>
+                            <span class="ml-2">Novo Usuário</span>
+                        </button>
+                    </div>
+                </ng-container>
             </div>
         </div>
     </div>
@@ -46,7 +48,7 @@
                                 <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">CPF</th>
                                 <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">Perfil</th>
                                 <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">Status</th>
-                                <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary text-right">{{ isAdmin ? 'Ações' : '' }}</th>
+                                <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary text-right" *hasRole="'ADMIN'">Ações</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y">
@@ -72,16 +74,13 @@
                                         {{ user.ativo ? 'Ativo' : 'Inativo' }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 text-right" *ngIf="isAdmin">
+                                <td class="px-6 py-4 text-right" *hasRole="'ADMIN'">
                                     <button mat-icon-button (click)="editUser(user)">
                                         <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:pencil-square'"></mat-icon>
                                     </button>
                                     <button mat-icon-button class="text-red-600" (click)="deleteUser(user)">
                                         <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:trash'"></mat-icon>
                                     </button>
-                                </td>
-                                <td class="px-6 py-4 text-right" *ngIf="!isAdmin">
-                                    -
                                 </td>
                             </tr>
                         </tbody>

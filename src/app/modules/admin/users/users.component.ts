@@ -14,6 +14,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { TranslocoModule } from '@ngneat/transloco';
 import { PageableResponse, UsuarioResponseDTO, UsuarioCreateDTO, UsuarioUpdateDTO, Role } from 'app/core/models';
 import { PaginationComponent } from 'app/shared/components/pagination/pagination.component';
+import { HasRoleDirective } from 'app/shared/directives/has-role.directive';
 
 @Component({
     selector       : 'app-users',
@@ -33,7 +34,8 @@ import { PaginationComponent } from 'app/shared/components/pagination/pagination
         MatCheckboxModule,
         MatSnackBarModule,
         TranslocoModule,
-        PaginationComponent
+        PaginationComponent,
+        HasRoleDirective
     ],
 })
 export class UsersComponent implements OnInit, OnDestroy
@@ -55,7 +57,6 @@ export class UsersComponent implements OnInit, OnDestroy
     userForm: UntypedFormGroup;
     selectedUser: UsuarioResponseDTO | null = null;
     roles = Object.values(Role);
-    isAdmin: boolean = false;
 
     /**
      * Constructor
@@ -73,12 +74,6 @@ export class UsersComponent implements OnInit, OnDestroy
      */
     ngOnInit(): void
     {
-        // Subscribe to user changes to check role
-        this._userService.user$.pipe(takeUntil(this._unsubscribeAll)).subscribe((user) => {
-            this.isAdmin = user.role === 'ADMIN';
-            this._changeDetectorRef.markForCheck();
-        });
-
         // Create the form
         this.userForm = this._formBuilder.group({
             nome    : ['', [Validators.required]],

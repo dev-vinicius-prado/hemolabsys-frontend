@@ -2,6 +2,7 @@ import { Route } from '@angular/router';
 import { initialDataResolver } from 'app/app.resolvers';
 import { AuthGuard } from 'app/core/auth/guards/auth.guard';
 import { NoAuthGuard } from 'app/core/auth/guards/noAuth.guard';
+import { RoleGuard } from 'app/core/auth/guards/role.guard';
 import { LayoutComponent } from 'app/layout/layout.component';
 import { EntradaComponent } from 'app/modules/admin/entradas/entrada.component';
 import { SaidaComponent } from 'app/modules/admin/saidas/saida.component';
@@ -83,7 +84,12 @@ export const appRoutes: Route[] = [
             { path: 'movimentacoes', loadChildren: () => import('app/modules/admin/movimentacoes/movimentacoes.routes') },
             { path: 'entradas', component: EntradaComponent },
             { path: 'saidas', component: SaidaComponent },
-            { path: 'users', loadComponent: () => import('app/modules/admin/users/users.component').then(m => m.UsersComponent) },
+            { 
+                path: 'users', 
+                loadComponent: () => import('app/modules/admin/users/users.component').then(m => m.UsersComponent),
+                canActivate: [RoleGuard],
+                data: { roles: ['ADMIN', 'GERENTE'] }
+            },
             { path: 'profile', loadComponent: () => import('app/modules/admin/profile/profile.component').then(m => m.ProfileComponent) },
             // { path: 'relatorios', loadChildren: () => import('app/modules/admin/relatorios/relatorios.routes') },
             // { path: 'preferencias', loadChildren: () => import('app/modules/admin/preferencias/preferencias.routes') },

@@ -49,6 +49,9 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 type: 'basic',
                 icon: 'heroicons_outline:users',
                 link: '/users',
+                meta: {
+                    roles: ['ADMIN', 'GERENTE']
+                }
             },
             {
                 id: 'preferencias',
