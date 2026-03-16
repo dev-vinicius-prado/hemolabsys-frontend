@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ViewEncapsulation, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { BehaviorSubject, combineLatest, map } from 'rxjs';
+import { BehaviorSubject, combineLatest, map, take } from 'rxjs';
 import { ApiService } from 'app/core/api/api.service';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { UserService } from 'app/core/user/user.service';
 
 type SituacaoAprovacao = 'PENDENTE' | 'APROVADO_COORDENADOR' | 'APROVADO_GERENTE' | 'REJEITADO';
 
@@ -19,28 +20,29 @@ interface MovimentacaoAprovacaoDTO {
     insumoCodigo?: string;
     insumoDescricao?: string;
     almoxarifadoCodigo?: string;
+    almoxarifadoTipo?: string;
     loteNumero?: string;
 }
 
 @Component({
-    selector: 'movimentacoes',
-    templateUrl: './movimentacoes.component.html',
-    styleUrls: ['./movimentacoes.component.scss'],
-    encapsulation: ViewEncapsulation.None,
-    changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-movimentacoes',
     standalone: true,
     imports: [CommonModule, FormsModule, MatSnackBarModule],
+    templateUrl: './movimentacoes.component.html',
+    encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MovimentacoesComponent {
-    private readonly api = inject(ApiService);
-    private readonly cdr = inject(ChangeDetectorRef);
-    private readonly snackBar = inject(MatSnackBar);
+    private api = inject(ApiService);
+    private cdr = inject(ChangeDetectorRef);
+    private snackBar = inject(MatSnackBar);
+    private userService = inject(UserService);
 
-    private readonly itemsSubject = new BehaviorSubject<MovimentacaoAprovacaoDTO[]>([]);
-    readonly items$ = this.itemsSubject.asObservable();
-
-    status: SituacaoAprovacao | 'TODAS' = 'PENDENTE';
+    itemsSubject = new BehaviorSubject<MovimentacaoAprovacaoDTO[]>([]);
+    items$ = this.itemsSubject.asObservable();
     loading = false;
+    status = 'PENDENTE';
+    userRole = '';
 
     private readonly searchSubject = new BehaviorSubject<string>('');
     private _search = '';
@@ -75,6 +77,9 @@ export class MovimentacoesComponent {
     );
 
     ngOnInit(): void {
+        this.userService.user$.pipe(take(1)).subscribe(user => {
+            this.userRole = user.role || '';
+        });
         this.reload();
     }
 
@@ -121,24 +126,29 @@ export class MovimentacoesComponent {
     }
 
     rejeitar(item: MovimentacaoAprovacaoDTO): void {
-        const motivo = prompt('Informe o motivo da rejeição:');
-        if (motivo) {
-            this.api.post(`movimentacoes/${item.id}/rejeitar?motivo=${encodeURIComponent(motivo)}`, {}).subscribe({
-                next: () => {
-                    this.snackBar.open('Movimentação rejeitada.', 'OK', {
-                        duration: 5000,
-                        panelClass: ['success-snackbar'],
-                    });
-                    this.reload();
-                },
-                error: (err) => {
-                    this.snackBar.open(`Erro ao rejeitar movimentação: ${err.message}`, 'Fechar', {
-                        duration: 5000,
-                        panelClass: ['error-snackbar'],
-                    });
-                }
-            });
+        const motivo = window.prompt('Informe o motivo da rejeição:');
+        if (motivo === null) return; // Cancelado pelo usuário
+
+        if (!motivo.trim()) {
+            this.snackBar.open('O motivo da rejeição é obrigatório.', 'OK', { duration: 3000 });
+            return;
         }
+
+        this.api.post(`movimentacoes/${item.id}/rejeitar?motivo=${encodeURIComponent(motivo)}`, {}).subscribe({
+            next: () => {
+                this.snackBar.open('Movimentação rejeitada com sucesso!', 'OK', {
+                    duration: 5000,
+                    panelClass: ['success-snackbar'],
+                });
+                this.reload();
+            },
+            error: (err) => {
+                this.snackBar.open(`Erro ao rejeitar movimentação: ${err.message}`, 'Fechar', {
+                    duration: 5000,
+                    panelClass: ['error-snackbar'],
+                });
+            }
+        });
     }
 
     trackById(index: number, item: MovimentacaoAprovacaoDTO): number {

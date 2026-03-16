@@ -32,7 +32,9 @@
                             "crypto-js/hmac-sha256",
                             "crypto-js/enc-base64",
                             "flat",
-                            "quill"
+                            "quill",
+                            "@stomp/stompjs",
+                            "sockjs-client"
                         ],
                         "assets": [
                             "src/favicon-16x16.png",
@@ -93,7 +95,8 @@
                           "buildTarget": "fuse:build:production"
                         },
                         "development": {
-                          "buildTarget": "fuse:build:development"
+                          "buildTarget": "fuse:build:development",
+                          "proxyConfig": "proxy.conf.json"
                         }
                     },
                     "defaultConfiguration": "development"

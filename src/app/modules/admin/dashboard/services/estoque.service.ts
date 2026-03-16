@@ -17,4 +17,12 @@ export class EstoqueService {
     getAlertasBaixoEstoque(): Observable<EstoqueTotalResponseDTO[]> {
         return this.api.list<EstoqueTotalResponseDTO>('estoque/alertas/baixo-estoque');
     }
+
+    getConsumoSemanal(): Observable<any[]> {
+        return this.api.get<any[]>('movimentacoes/estatisticas/consumo-semanal');
+    }
+
+    getDashboardStats(): Observable<any> {
+        return this.api.get<any>('dashboard/estatisticas');
+    }
 }

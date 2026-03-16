@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { WebSocketService } from 'app/core/websocket/websocket.service';
 
 @Component({
     selector   : 'app-root',
@@ -10,6 +11,8 @@ import { RouterOutlet } from '@angular/router';
 })
 export class AppComponent
 {
+    private _webSocketService = inject(WebSocketService);
+
     /**
      * Constructor
      */

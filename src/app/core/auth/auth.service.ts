@@ -30,6 +30,21 @@ export class AuthService
         return localStorage.getItem('accessToken') ?? '';
     }
 
+    /**
+     * Setter & getter for refresh token
+     *
+     * @param token
+     */
+    set refreshToken(token: string)
+    {
+        localStorage.setItem('refreshToken', token);
+    }
+
+    get refreshToken(): string
+    {
+        return localStorage.getItem('refreshToken') ?? '';
+    }
+
     // -----------------------------------------------------------------------------------------------------
     // @ Public methods
     // -----------------------------------------------------------------------------------------------------
@@ -61,17 +76,18 @@ export class AuthService
      */
     signIn(credentials: { email: string; password: string }): Observable<any>
     {
-        // Throw error, if the user is already logged in
+        // Throw error if the user is already logged in
         if ( this._authenticated )
         {
-            return throwError('User is already logged in.');
+            return throwError('O usuário já está logado.');
         }
 
         return this._apiService.post('auth/authenticate', credentials).pipe(
             switchMap((response: any) =>
             {
-                // Store the access token in the local storage
+                // Store the access and refresh tokens
                 this.accessToken = response.token;
+                this.refreshToken = response.refreshToken;
 
                 // Set the authenticated flag to true
                 this._authenticated = true;
@@ -81,6 +97,49 @@ export class AuthService
 
                 // Return a new observable with the response
                 return of(response);
+            }),
+        );
+    }
+
+    /**
+     * Sign out
+     */
+    signOut(): Observable<any>
+    {
+        // Remove the access and refresh tokens from the local storage
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+
+        // Set the authenticated flag to false
+        this._authenticated = false;
+
+        // Return the observable
+        return of(true);
+    }
+
+    /**
+     * Refresh the access token
+     */
+    refreshAccessToken(): Observable<any>
+    {
+        return this._apiService.post('auth/refresh-token', {
+            refreshToken: this.refreshToken,
+        }).pipe(
+            catchError(() =>
+            {
+                // Sign out
+                this.signOut();
+
+                // Return false
+                return of(false);
+            }),
+            switchMap((response: any) =>
+            {
+                // Store the access token
+                this.accessToken = response.token;
+
+                // Return true
+                return of(true);
             }),
         );
     }
@@ -103,14 +162,14 @@ export class AuthService
             {
                 // Replace the access token with the new one if it's available on
                 // the response object.
-                //
-                // This is an added optional step for better security. Once you sign
-                // in using the token, you should generate a new one on the server
-                // side and attach it to the response object. Then the following
-                // piece of code can replace the token with the refreshed one.
                 if ( response.token )
                 {
                     this.accessToken = response.token;
+                }
+
+                if ( response.refreshToken )
+                {
+                    this.refreshToken = response.refreshToken;
                 }
 
                 // Set the authenticated flag to true
@@ -123,21 +182,6 @@ export class AuthService
                 return of(true);
             }),
         );
-    }
-
-    /**
-     * Sign out
-     */
-    signOut(): Observable<any>
-    {
-        // Remove the access token from the local storage
-        localStorage.removeItem('accessToken');
-
-        // Set the authenticated flag to false
-        this._authenticated = false;
-
-        // Return the observable
-        return of(true);
     }
 
     /**
@@ -194,12 +238,14 @@ export class AuthService
         const email = dto?.email ?? '';
         const phoneNumber = dto?.telefone ?? dto?.phoneNumber ?? '';
         const active = dto?.ativo ?? dto?.active ?? true;
+        const role = dto?.role ?? '';
 
         return {
             id,
             name,
             email,
             phoneNumber,
+            role,
             birthDate: dto?.birthDate ?? '',
             createdAt: dto?.createdAt ?? '',
             updatedAt: dto?.updatedAt ?? '',

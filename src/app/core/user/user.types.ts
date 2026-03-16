@@ -5,6 +5,7 @@ export interface User
     email: string;
     avatar?: string;
     status?: string;
+    role?: string;
     birthDate: string;
     phoneNumber: string;
     createdAt: string;

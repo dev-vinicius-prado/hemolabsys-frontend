@@ -10,13 +10,6 @@ export const defaultNavigation: FuseNavigationItem[] = [
         link : '/dashboard'
     },
     {
-        id   : 'insumos',
-        title: 'Insumos',
-        type : 'basic',
-        icon: 'heroicons_outline:archive-box',
-        link : '/insumos'
-    },
-    {
         id   : 'entradas',
         title: 'Entradas',
         type : 'basic',
