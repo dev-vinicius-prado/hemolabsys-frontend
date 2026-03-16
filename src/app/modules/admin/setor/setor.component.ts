@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, ChangeDetectorRef, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, ChangeDetectorRef, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { BehaviorSubject, combineLatest, map } from 'rxjs';
+import { BehaviorSubject, combineLatest, map, Observable, Subject, takeUntil } from 'rxjs';
 import { ApiService } from '../../../core/api/api.service';
 import { PageableResponse, SetorCreateDTO, SetorResponseDTO, SetorUpdateDTO } from 'app/core/models';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { PaginationComponent } from 'app/shared/components/pagination/pagination.component';
 
 @Component({
     selector: 'setor',
@@ -13,11 +14,12 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, FormsModule, MatSnackBarModule],
+    imports: [CommonModule, FormsModule, MatSnackBarModule, PaginationComponent],
 })
-export class SetorComponent {
+export class SetorComponent implements OnInit, OnDestroy {
     // Estado reativo
     setors$ = new BehaviorSubject<SetorResponseDTO[]>([]);
+    pagination$ = new BehaviorSubject<PageableResponse<SetorResponseDTO> | null>(null);
     searchTerm$ = new BehaviorSubject<string>('');
     searchTerm = '';
 
@@ -25,6 +27,9 @@ export class SetorComponent {
     selectedIds = new Set<number>();
     mode: 'list' | 'create' | 'edit' | 'view' = 'list';
     form: Partial<SetorCreateDTO & { id?: number }> = {};
+
+    currentPage: number = 0;
+    pageSize: number = 10;
 
     // Lista filtrada
     filteredSetores$ = combineLatest([this.setors$, this.searchTerm$]).pipe(
@@ -36,6 +41,7 @@ export class SetorComponent {
     );
 
     private readonly _snackBar = inject(MatSnackBar);
+    private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     constructor(private readonly api: ApiService, private _changeDetectorRef: ChangeDetectorRef) {}
 
@@ -44,14 +50,40 @@ export class SetorComponent {
     }
 
     private loadSetores(): void {
-        this.api.get<PageableResponse<SetorResponseDTO>>('setores', { size: 1000 }).subscribe({
+        const params = {
+            page: this.currentPage,
+            size: this.pageSize,
+            sort: 'nome,asc'
+        };
+
+        this.api.get<PageableResponse<SetorResponseDTO>>('setores', params).subscribe({
             next: (data) => {
                 this.setors$.next(data?.content ?? []);
+                this.pagination$.next(data);
+                this._changeDetectorRef.markForCheck();
             },
             error: () => {
                 this.setors$.next([]);
+                this.pagination$.next(null);
+                this._changeDetectorRef.markForCheck();
             }
         });
+    }
+
+    onPageChange(page: number): void {
+        this.currentPage = page;
+        this.loadSetores();
+    }
+
+    onSizeChange(size: number): void {
+        this.pageSize = size;
+        this.currentPage = 0;
+        this.loadSetores();
+    }
+
+    ngOnDestroy(): void {
+        this._unsubscribeAll.next(null);
+        this._unsubscribeAll.complete();
     }
 
     novo(): void {
@@ -77,8 +109,7 @@ export class SetorComponent {
                         duration: 5000,
                         panelClass: ['success-snackbar'],
                     });
-                    const updated = this.setors$.value.filter(x => x.id !== s.id);
-                    this.setors$.next(updated);
+                    this.loadSetores();
                     this.selectedIds.delete(s.id);
                 },
                 error: (err) => {
@@ -112,15 +143,12 @@ export class SetorComponent {
             : this.api.create<SetorResponseDTO>('setores', createDto);
 
         op$.subscribe({
-            next: (payload) => {
+            next: () => {
                 this._snackBar.open(`Setor ${isEdit ? 'atualizado' : 'criado'} com sucesso!`, 'OK', {
                     duration: 5000,
                     panelClass: ['success-snackbar'],
                 });
-                const list = this.setors$.value.slice();
-                const idx = list.findIndex(x => x.id === payload.id);
-                if (idx > -1) list[idx] = payload; else list.push(payload);
-                this.setors$.next(list);
+                this.loadSetores();
                 this.cancelar();
             },
             error: (err) => {

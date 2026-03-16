@@ -1,10 +1,12 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ViewEncapsulation, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewEncapsulation, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { BehaviorSubject, combineLatest, map, take } from 'rxjs';
+import { BehaviorSubject, combineLatest, map, Observable, Subject, take, takeUntil } from 'rxjs';
 import { ApiService } from 'app/core/api/api.service';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { UserService } from 'app/core/user/user.service';
+import { PaginationComponent } from 'app/shared/components/pagination/pagination.component';
+import { PageableResponse } from 'app/core/models';
 
 type SituacaoAprovacao = 'PENDENTE' | 'APROVADO_COORDENADOR' | 'APROVADO_GERENTE' | 'REJEITADO';
 
@@ -27,22 +29,30 @@ interface MovimentacaoAprovacaoDTO {
 @Component({
     selector: 'app-movimentacoes',
     standalone: true,
-    imports: [CommonModule, FormsModule, MatSnackBarModule],
+    imports: [CommonModule, FormsModule, MatSnackBarModule, PaginationComponent],
     templateUrl: './movimentacoes.component.html',
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MovimentacoesComponent {
+export class MovimentacoesComponent implements OnInit, OnDestroy {
     private api = inject(ApiService);
     private cdr = inject(ChangeDetectorRef);
     private snackBar = inject(MatSnackBar);
     private userService = inject(UserService);
+    private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     itemsSubject = new BehaviorSubject<MovimentacaoAprovacaoDTO[]>([]);
+    paginationSubject = new BehaviorSubject<PageableResponse<MovimentacaoAprovacaoDTO> | null>(null);
+
     items$ = this.itemsSubject.asObservable();
+    pagination$ = this.paginationSubject.asObservable();
+
     loading = false;
     status = 'PENDENTE';
     userRole = '';
+
+    currentPage: number = 0;
+    pageSize: number = 10;
 
     private readonly searchSubject = new BehaviorSubject<string>('');
     private _search = '';
@@ -77,7 +87,7 @@ export class MovimentacoesComponent {
     );
 
     ngOnInit(): void {
-        this.userService.user$.pipe(take(1)).subscribe(user => {
+        this.userService.user$.pipe(takeUntil(this._unsubscribeAll)).subscribe(user => {
             this.userRole = user.role || '';
         });
         this.reload();
@@ -87,24 +97,43 @@ export class MovimentacoesComponent {
         this.loading = true;
         this.cdr.markForCheck();
 
-        const params: any = { size: 200, sort: 'dataMovimentacao,desc' };
-        if (this.status !== 'TODAS') {
-            params.situacaoAprovacao = this.status;
-        }
+        const params = {
+            situacaoAprovacao: this.status === 'TODAS' ? '' : this.status,
+            page: this.currentPage,
+            size: this.pageSize,
+            sort: 'dataMovimentacao,desc'
+        };
 
-        this.api.get<any>('movimentacoes', params).subscribe({
+        this.api.get<PageableResponse<MovimentacaoAprovacaoDTO>>('movimentacoes', params).subscribe({
             next: (page) => {
-                const content = (page?.content ?? []) as MovimentacaoAprovacaoDTO[];
-                this.itemsSubject.next(content);
+                this.itemsSubject.next(page?.content || []);
+                this.paginationSubject.next(page);
                 this.loading = false;
                 this.cdr.markForCheck();
             },
-            error: () => {
+            error: (err) => {
+                this.snackBar.open(`Erro ao carregar movimentações: ${err.message}`, 'Fechar', { duration: 5000 });
                 this.itemsSubject.next([]);
                 this.loading = false;
                 this.cdr.markForCheck();
-            },
+            }
         });
+    }
+
+    onPageChange(page: number): void {
+        this.currentPage = page;
+        this.reload();
+    }
+
+    onSizeChange(size: number): void {
+        this.pageSize = size;
+        this.currentPage = 0;
+        this.reload();
+    }
+
+    ngOnDestroy(): void {
+        this._unsubscribeAll.next(null);
+        this._unsubscribeAll.complete();
     }
 
     aprovar(item: MovimentacaoAprovacaoDTO, isGerente: boolean): void {

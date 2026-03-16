@@ -3,60 +3,67 @@ import { FuseNavigationItem } from '@fuse/components/navigation';
 
 export const defaultNavigation: FuseNavigationItem[] = [
     {
-        id   : 'dashboard',
+        id: 'dashboard',
         title: 'Dashboard',
-        type : 'basic',
+        type: 'basic',
         icon: 'heroicons_outline:chart-pie',
-        link : '/dashboard'
+        link: '/dashboard',
     },
     {
-        id   : 'entradas',
+        id: 'entradas',
         title: 'Entradas',
-        type : 'basic',
+        type: 'basic',
         icon: 'heroicons_outline:arrow-down-on-square',
-        link : '/entradas'
+        link: '/entradas',
     },
     {
-        id   : 'saidas',
+        id: 'saidas',
         title: 'Saídas',
-        type : 'basic',
+        type: 'basic',
         icon: 'heroicons_outline:arrow-up-on-square',
-        link : '/saidas'
+        link: '/saidas',
     },
     {
-        id   : 'movimentacao',
+        id: 'movimentacao',
         title: 'Movimentações',
-        type : 'basic',
+        type: 'basic',
         icon: 'heroicons_outline:arrow-path',
-        link : '/movimentacoes'
+        link: '/movimentacoes',
     },
     {
-        id   : 'relatorios',
+        id: 'relatorios',
         title: 'Relatórios',
-        type : 'basic',
+        type: 'basic',
         icon: 'heroicons_outline:document-chart-bar',
-        link : '/relatorios'
+        link: '/relatorios',
     },
     {
-        id   : 'configuracao',
+        id: 'configuracao',
         title: 'Configurações',
-        type : 'collapsable',
-        icon : 'heroicons_outline:adjustments-horizontal',
+        type: 'collapsable',
+        icon: 'heroicons_outline:adjustments-horizontal',
         children: [
             {
-                id   : 'preferencias',
+                id: 'preferencias',
                 title: 'Preferências',
-                type : 'basic',
-                link : '/preferencias',
-                icon : 'heroicons_outline:cog-6-tooth'
+                type: 'basic',
+                link: '/preferencias',
+                icon: 'heroicons_outline:cog-6-tooth',
             },
             {
-                id   : 'setor',
+                id: 'insumos',
+                title: 'Insumos',
+                type: 'basic',
+                icon: 'heroicons_outline:archive-box',
+                link: '/insumos',
+            },
+            {
+                id: 'setor',
                 title: 'Setores',
-                type : 'basic',
-                link : '/setor',
-                icon : 'heroicons_outline:building-office'
+                type: 'basic',
+                link: '/setor',
+                icon: 'heroicons_outline:building-office',
             },
         ],
-    }
+    },
 ];

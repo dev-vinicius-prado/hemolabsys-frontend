@@ -12,11 +12,22 @@ export class InsumosDataService {
   private readonly _insumosSubject = new BehaviorSubject<InsumoResponseDTO[]>([]);
   readonly insumos$: Observable<InsumoResponseDTO[]> = this._insumosSubject.asObservable();
 
+  private readonly _paginationSubject = new BehaviorSubject<PageableResponse<InsumoResponseDTO> | null>(null);
+  readonly pagination$: Observable<PageableResponse<InsumoResponseDTO> | null> = this._paginationSubject.asObservable();
+
   constructor() { }
 
-  loadInsumos(): void {
-    this.api.get<PageableResponse<InsumoResponseDTO>>('insumos', { size: 1000 }).subscribe({
-      next: (page) => this._insumosSubject.next(page?.content || []),
+  loadInsumos(page: number = 0, size: number = 10, search: string = ''): void {
+    const params: any = { page, size };
+    if (search) {
+        params.search = search; // Assumindo que o backend suporte filtro por busca na paginação
+    }
+
+    this.api.get<PageableResponse<InsumoResponseDTO>>('insumos', params).subscribe({
+      next: (response) => {
+        this._insumosSubject.next(response?.content || []);
+        this._paginationSubject.next(response);
+      },
       error: (err) => console.error('Erro ao carregar insumos', err)
     });
   }

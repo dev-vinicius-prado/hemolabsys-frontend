@@ -71,5 +71,8 @@
     "vigencia": "Vigence",
     "vigencia-fim": "Ending vigence",
     "vigencia-inicio": "Start vigence",
-    "voltar": "Back"
+    "voltar": "Back",
+    "BOM_DIA": "Good morning",
+    "BOA_TARDE": "Good afternoon",
+    "BOA_NOITE": "Good evening"
 }

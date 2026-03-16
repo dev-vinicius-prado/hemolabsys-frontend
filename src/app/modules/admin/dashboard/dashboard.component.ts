@@ -7,6 +7,7 @@ import {
     ChangeDetectorRef,
 } from '@angular/core';
 import { NgForOf, NgIf, DatePipe, CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { Metric, Alert, Product } from 'app/core/dashboard/dashboard.types';
 import { EstoqueService } from './services/estoque.service';
 import { EstoqueLoteResponseDTO } from 'app/core/models/lote.types';
@@ -14,6 +15,10 @@ import { EstoqueTotalResponseDTO } from 'app/core/models/estoque.types';
 import { MatIconModule } from '@angular/material/icon';
 import { ApiService } from 'app/core/api/api.service';
 import { NgApexchartsModule, ApexOptions } from 'ng-apexcharts';
+import { UserService } from 'app/core/user/user.service';
+import { User } from 'app/core/user/user.types';
+import { Observable } from 'rxjs';
+import { TranslocoModule } from '@ngneat/transloco';
 
 @Component({
     selector: 'dashboard',
@@ -21,13 +26,18 @@ import { NgApexchartsModule, ApexOptions } from 'ng-apexcharts';
     templateUrl: './dashboard.component.html',
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [NgForOf, NgIf, DatePipe, CommonModule, MatIconModule, NgApexchartsModule],
+    imports: [NgForOf, NgIf, DatePipe, CommonModule, MatIconModule, NgApexchartsModule, TranslocoModule],
 })
 export class DashboardComponent implements OnInit {
+
     private estoqueService = inject(EstoqueService);
     private api = inject(ApiService);
     private cdr = inject(ChangeDetectorRef);
+    private _router = inject(Router);
+    private _userService = inject(UserService);
 
+    user$: Observable<User>;
+    greeting: string = '';
     metrics: any[] = [];
     alerts: Alert[] = [];
     products: Product[] = [];
@@ -37,8 +47,25 @@ export class DashboardComponent implements OnInit {
     chartOptions: ApexOptions = {};
 
     ngOnInit(): void {
+        this.user$ = this._userService.user$;
+        this._updateGreeting();
         this._initChart();
         this.loadDashboardData();
+    }
+
+    /**
+     * Atualiza a saudação baseada no horário atual
+     * @private
+     */
+    private _updateGreeting(): void {
+        const hours = new Date().getHours();
+        if (hours < 12) {
+            this.greeting = 'BOM_DIA';
+        } else if (hours < 18) {
+            this.greeting = 'BOA_TARDE';
+        } else {
+            this.greeting = 'BOA_NOITE';
+        }
     }
 
     private _initChart(): void {
@@ -174,5 +201,20 @@ export class DashboardComponent implements OnInit {
                 }
             }
         });
+    }
+
+    /**
+     * Navegar para a tela de nova entrada
+     */
+    criarEntrada(): void
+    {
+        this._router.navigate(['/entradas']);
+    }
+    /**
+     * Navegar para a tela de relatórios
+     */
+    visualizarRelatorios(): void
+    {
+        this._router.navigate(['/relatorios']);
     }
 }

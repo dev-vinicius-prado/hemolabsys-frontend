@@ -34,6 +34,16 @@
                 </div>
 
                 <div class="bg-card rounded-2xl shadow overflow-x-auto">
+                    <!-- Componente de Paginação -->
+                    <app-pagination
+                        *ngIf="pagination$ | async as p"
+                        [page]="currentPage"
+                        [size]="pageSize"
+                        [totalElements]="p.totalElements"
+                        [totalPages]="p.totalPages"
+                        (pageChange)="onPageChange($event)"
+                        (sizeChange)="onSizeChange($event)">
+                    </app-pagination>
                     <table class="w-full text-left">
                         <thead>
                             <tr class="bg-gray-50">

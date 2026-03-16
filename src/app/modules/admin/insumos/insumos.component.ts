@@ -4,11 +4,12 @@ import {
     ChangeDetectorRef,
     Component,
     inject,
+    OnDestroy,
     OnInit,
     ViewEncapsulation,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { BehaviorSubject, combineLatest, map, startWith, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, map, Observable, startWith, Subject, tap } from 'rxjs';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 import {
@@ -19,6 +20,8 @@ import {
 } from 'app/core/models/insumo.catalog.types';
 import { InsumosDataService } from './services/insumos-data.service';
 import { DependenciesService } from './services/dependencies.service';
+import { PaginationComponent } from 'app/shared/components/pagination/pagination.component';
+import { PageableResponse } from 'app/core/models';
 
 @Component({
     selector: 'insumos',
@@ -27,16 +30,22 @@ import { DependenciesService } from './services/dependencies.service';
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, FormsModule, MatSnackBarModule],
+    imports: [CommonModule, FormsModule, MatSnackBarModule, PaginationComponent],
 })
-export class InsumosComponent implements OnInit {
+export class InsumosComponent implements OnInit, OnDestroy {
     private _changeDetectorRef = inject(ChangeDetectorRef);
     private insumosDataService = inject(InsumosDataService);
     private dependenciesService = inject(DependenciesService);
     private _snackBar = inject(MatSnackBar);
+    private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     // Estado reativo para filtros
     private readonly searchSubject = new BehaviorSubject<string>('');
+
+    pagination$: Observable<PageableResponse<InsumoResponseDTO> | null> = this.insumosDataService.pagination$;
+
+    currentPage: number = 0;
+    pageSize: number = 10;
 
     // Estado UI
     _search = '';
@@ -78,7 +87,23 @@ export class InsumosComponent implements OnInit {
     constructor() {}
 
     ngOnInit(): void {
-        this.insumosDataService.loadInsumos();
+        this.insumosDataService.loadInsumos(this.currentPage, this.pageSize);
+    }
+
+    onPageChange(page: number): void {
+        this.currentPage = page;
+        this.insumosDataService.loadInsumos(this.currentPage, this.pageSize);
+    }
+
+    onSizeChange(size: number): void {
+        this.pageSize = size;
+        this.currentPage = 0;
+        this.insumosDataService.loadInsumos(this.currentPage, this.pageSize);
+    }
+
+    ngOnDestroy(): void {
+        this._unsubscribeAll.next(null);
+        this._unsubscribeAll.complete();
     }
 
     // Getters para listas filtradas

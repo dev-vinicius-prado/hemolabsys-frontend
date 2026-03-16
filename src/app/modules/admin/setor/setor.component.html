@@ -93,7 +93,17 @@
               </tfoot>
             </ng-container>
           </table>
-          <div class="p-4 text-sm text-secondary">Total: {{ (filteredSetores$ | async)?.length || 0 }}</div>
+          
+          <!-- Componente de Paginação -->
+          <app-pagination 
+            *ngIf="pagination$ | async as p"
+            [page]="currentPage"
+            [size]="pageSize"
+            [totalElements]="p.totalElements"
+            [totalPages]="p.totalPages"
+            (pageChange)="onPageChange($event)"
+            (sizeChange)="onSizeChange($event)">
+          </app-pagination>
         </div>
       </div>
     </div>
