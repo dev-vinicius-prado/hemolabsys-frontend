@@ -8,8 +8,16 @@
       <div class="text-on-primary/80 mt-2">Gerencie seus insumos: criar, editar, visualizar e excluir.</div>
     </div>
     <div class="mt-4 lg:mt-0 flex items-center gap-3">
-      <button class="px-4 py-2 rounded-lg bg-primary-500 text-white hover:bg-primary-600" (click)="novoInsumo()">Novo Insumo ➕</button>
-      <button class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200" (click)="exportCsv()">Export CSV</button>
+       <button class="fuse-mat-button-large bg-primary text-on-primary rounded-xl p-2 flex items-center" mat-flat-button
+                    (click)="novoInsumo()">
+                        <mat-icon class="text-white" [svgIcon]="'heroicons_outline:plus-circle'"></mat-icon>
+                        <span class="ml-2">Novo Insumo</span>
+                    </button>
+        <button class="fuse-mat-button-large bg-card border rounded-xl p-2 flex items-center" mat-stroked-button
+                    (click)="exportCsv()">
+                        <mat-icon class="text-black" [svgIcon]="'heroicons_outline:document-chart-bar'"></mat-icon>
+                        <span class="ml-2">Exportar CSV</span>
+                    </button>
     </div>
   </div>
 
@@ -78,19 +86,18 @@
             <button class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200" (click)="cancelar()">Fechar</button>
           </div>
         </div>
- <!-- Componente de Paginação -->
-        <app-pagination
-          *ngIf="!formVisible && (pagination$ | async) as p"
-          [page]="currentPage"
-          [size]="pageSize"
-          [totalElements]="p.totalElements"
-          [totalPages]="p.totalPages"
-          (pageChange)="onPageChange($event)"
-          (sizeChange)="onSizeChange($event)">
-        </app-pagination>
-        <!-- Tabela -->
         <div *ngIf="!formVisible" class="bg-card rounded-2xl shadow overflow-x-auto">
-          <table class="w-full text-left">
+            <!-- Componente de Paginação -->
+            <app-pagination
+            *ngIf="!formVisible && (pagination$ | async) as p"
+            [page]="currentPage"
+            [size]="pageSize"
+            [totalElements]="p.totalElements"
+            [totalPages]="p.totalPages"
+            (pageChange)="onPageChange($event)"
+            (sizeChange)="onSizeChange($event)"></app-pagination>
+            <!-- Tabela -->
+            <table class="w-full text-left">
             <thead>
               <tr class="bg-gray-50">
                 <th class="px-4 py-3 border-b">Sel.</th>

@@ -22,6 +22,7 @@ import { InsumosDataService } from './services/insumos-data.service';
 import { DependenciesService } from './services/dependencies.service';
 import { PaginationComponent } from 'app/shared/components/pagination/pagination.component';
 import { PageableResponse } from 'app/core/models';
+import { MatIconModule } from "@angular/material/icon";
 
 @Component({
     selector: 'insumos',
@@ -30,7 +31,7 @@ import { PageableResponse } from 'app/core/models';
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, FormsModule, MatSnackBarModule, PaginationComponent],
+    imports: [CommonModule, FormsModule, MatSnackBarModule, PaginationComponent, MatIconModule],
 })
 export class InsumosComponent implements OnInit, OnDestroy {
     private _changeDetectorRef = inject(ChangeDetectorRef);
