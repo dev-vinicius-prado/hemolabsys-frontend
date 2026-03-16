@@ -36,6 +36,9 @@ export const defaultNavigation: FuseNavigationItem[] = [
         type: 'basic',
         icon: 'heroicons_outline:document-chart-bar',
         link: '/relatorios',
+        meta: {
+            roles: ['ADMIN', 'GERENTE', 'COORDENADOR']
+        }
     },
     {
         id: 'configuracao',

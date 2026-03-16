@@ -91,7 +91,12 @@ export const appRoutes: Route[] = [
                 data: { roles: ['ADMIN', 'GERENTE'] }
             },
             { path: 'profile', loadComponent: () => import('app/modules/admin/profile/profile.component').then(m => m.ProfileComponent) },
-            // { path: 'relatorios', loadChildren: () => import('app/modules/admin/relatorios/relatorios.routes') },
+            { 
+                path: 'relatorios', 
+                loadComponent: () => import('app/modules/admin/relatorios/relatorios.component').then(m => m.RelatoriosComponent),
+                canActivate: [RoleGuard],
+                data: { roles: ['ADMIN', 'GERENTE', 'COORDENADOR'] }
+            },
             // { path: 'preferencias', loadChildren: () => import('app/modules/admin/preferencias/preferencias.routes') },
         ]
     },
