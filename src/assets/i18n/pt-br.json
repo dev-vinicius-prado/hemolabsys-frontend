@@ -71,5 +71,15 @@
     "voltar": "Voltar",
     "BOM_DIA": "Bom dia",
     "BOA_TARDE": "Boa tarde",
-    "BOA_NOITE": "Boa noite"
+    "BOA_NOITE": "Boa noite",
+    "ENTRAR_COMO": "Conectado como",
+    "PERFIL": "Perfil",
+    "CONFIGURACOES": "Configurações",
+    "STATUS": "Status",
+    "SAIR": "Sair",
+    "CANCELAR": "Cancelar",
+    "ONLINE": "Online",
+    "OCUPADO": "Ocupado",
+    "AUSENTE": "Ausente",
+    "INVISIVEL": "Invisível"
 }

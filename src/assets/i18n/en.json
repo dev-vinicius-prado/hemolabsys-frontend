@@ -74,5 +74,15 @@
     "voltar": "Back",
     "BOM_DIA": "Good morning",
     "BOA_TARDE": "Good afternoon",
-    "BOA_NOITE": "Good evening"
+    "BOA_NOITE": "Good evening",
+    "ENTRAR_COMO": "Signed in as",
+    "PERFIL": "Profile",
+    "CONFIGURACOES": "Settings",
+    "STATUS": "Status",
+    "SAIR": "Sign out",
+    "CANCELAR": "Cancel",
+    "ONLINE": "Online",
+    "OCUPADO": "Busy",
+    "AUSENTE": "Away",
+    "INVISIVEL": "Invisible"
 }
