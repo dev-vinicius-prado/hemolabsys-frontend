@@ -61,11 +61,11 @@ export class ProfileComponent implements OnInit
     {
         // Create the form
         this.profileForm = this._formBuilder.group({
-            name    : ['', [Validators.required]],
+            nome    : ['', [Validators.required]],
             email   : ['', [Validators.required, Validators.email]],
             cpf     : [{ value: '', disabled: true }],
             role    : [{ value: '', disabled: true }],
-            password: [''],
+            senha   : [''],
         });
 
         // Get the user data
@@ -93,8 +93,8 @@ export class ProfileComponent implements OnInit
         const formData = this.profileForm.getRawValue();
 
         // Remove password if empty
-        if (!formData.password) {
-            delete formData.password;
+        if (!formData.senha) {
+            delete formData.senha;
         }
 
         this._apiService.update('users/me', this.user.id, formData).subscribe({

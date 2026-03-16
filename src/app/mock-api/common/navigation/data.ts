@@ -44,6 +44,13 @@ export const defaultNavigation: FuseNavigationItem[] = [
         icon: 'heroicons_outline:adjustments-horizontal',
         children: [
             {
+                id: 'users',
+                title: 'Usuários',
+                type: 'basic',
+                icon: 'heroicons_outline:users',
+                link: '/users',
+            },
+            {
                 id: 'preferencias',
                 title: 'Preferências',
                 type: 'basic',
@@ -54,15 +61,15 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 id: 'insumos',
                 title: 'Insumos',
                 type: 'basic',
-                icon: 'heroicons_outline:archive-box',
+                icon: 'heroicons_outline:beaker',
                 link: '/insumos',
             },
             {
-                id: 'setor',
+                id: 'setores',
                 title: 'Setores',
                 type: 'basic',
+                icon: 'heroicons_outline:building-office-2',
                 link: '/setor',
-                icon: 'heroicons_outline:building-office',
             },
         ],
     },

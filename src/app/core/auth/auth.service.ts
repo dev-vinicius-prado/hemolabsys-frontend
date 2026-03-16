@@ -250,6 +250,7 @@ export class AuthService
             createdAt: dto?.createdAt ?? '',
             updatedAt: dto?.updatedAt ?? '',
             active,
+            empresaId: dto?.empresaId ?? 0,
         };
     }
 }

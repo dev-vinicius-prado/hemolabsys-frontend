@@ -83,6 +83,7 @@ export const appRoutes: Route[] = [
             { path: 'movimentacoes', loadChildren: () => import('app/modules/admin/movimentacoes/movimentacoes.routes') },
             { path: 'entradas', component: EntradaComponent },
             { path: 'saidas', component: SaidaComponent },
+            { path: 'users', loadComponent: () => import('app/modules/admin/users/users.component').then(m => m.UsersComponent) },
             { path: 'profile', loadComponent: () => import('app/modules/admin/profile/profile.component').then(m => m.ProfileComponent) },
             // { path: 'relatorios', loadChildren: () => import('app/modules/admin/relatorios/relatorios.routes') },
             // { path: 'preferencias', loadChildren: () => import('app/modules/admin/preferencias/preferencias.routes') },

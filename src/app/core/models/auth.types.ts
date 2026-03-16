@@ -7,24 +7,33 @@ export enum Role {
   ADMIN = 'ADMIN'
 }
 
-export interface CreateUserDTO {
-  name: string;
-  email: string;
+export interface UsuarioCreateDTO {
   cpf: string;
-  password: string;
-  birthDate: string; // LocalDateTime convertido para ISO string
-  phoneNumber?: string;
+  email: string;
+  nome: string;
+  senha: string;
+  telefone?: string;
   role: Role;
+  empresaId: number;
 }
 
-export interface UserResponseDTO {
+export interface UsuarioUpdateDTO {
+  id?: number;
+  ativo?: boolean;
+  cpf?: string;
+  email?: string;
+  nome?: string;
+  senha?: string;
+  telefone?: string;
+  role?: Role;
+}
+
+export interface UsuarioResponseDTO {
   id: number;
-  name: string;
-  email: string;
+  ativo: boolean;
   cpf: string;
-  birthDate: string;
-  phoneNumber?: string;
+  email: string;
+  nome: string;
+  telefone?: string;
   role: Role;
-  createdAt: string;
-  updatedAt: string;
 }
