@@ -7,7 +7,7 @@ export interface User
     status?: string;
     role?: string;
     birthDate: string;
-    phoneNumber: string;
+    phoneNumber: number;
     createdAt: string;
     updatedAt: string;
     active: boolean;

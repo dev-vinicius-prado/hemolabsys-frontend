@@ -48,11 +48,39 @@ export class UserService {
      * Get the current signed-in user data
      */
     get(): Observable<User> {
-        return this._httpClient.get<User>('api/common/user').pipe(
-            tap((user) => {
+        return this._httpClient.get<any>('api/users/me').pipe(
+            map((dto) => {
+                const user = this._toUser(dto);
                 this._user.next(user);
+                return user;
             })
         );
+    }
+
+    /**
+     * Mapper to convert DTO to User interface
+     * @param dto
+     * @private
+     */
+    private _toUser(dto: any): User {
+        const id = dto?.id !== undefined && dto?.id !== null ? String(dto.id) : '';
+        const name = dto?.nome ?? dto?.name ?? '';
+        const email = dto?.email ?? '';
+        const active = dto?.ativo ?? dto?.active ?? true;
+        const role = dto?.role ?? '';
+
+        return {
+            id,
+            name,
+            email,
+            role,
+            birthDate: dto?.birthDate ?? '',
+            createdAt: dto?.createdAt ?? '',
+            updatedAt: dto?.updatedAt ?? '',
+            active,
+            empresaId: dto?.empresaId ?? 0,
+            phoneNumber: dto?.phoneNumber ?? 0
+        };
     }
 
     /**
@@ -61,7 +89,7 @@ export class UserService {
      * @param user
      */
     update(user: User): Observable<any> {
-        return this._httpClient.patch<User>('api/common/user', { user }).pipe(
+        return this._httpClient.patch<User>('api/users/me', { user }).pipe(
             map((response) => {
                 this._user.next(response);
             })

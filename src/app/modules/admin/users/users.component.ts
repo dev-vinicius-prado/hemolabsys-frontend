@@ -160,12 +160,12 @@ export class UsersComponent implements OnInit, OnDestroy
         this.mode = 'create';
         this.selectedUser = null;
 
-        // Buscar dados do usuário logado para obter a empresaId
+        // Buscar dados do usuário logado para obter a empresaId como fallback
          this._userService.user$.pipe(take(1)).subscribe((user) => {
              this.userForm.reset({
                 role: 'ESTOQUISTA',
                 ativo: true,
-                empresaId: user.empresaId
+                empresaId: user?.empresaId || null
             });
             this.userForm.get('senha').setValidators([Validators.required, Validators.minLength(8)]);
             this.userForm.get('cpf').enable();

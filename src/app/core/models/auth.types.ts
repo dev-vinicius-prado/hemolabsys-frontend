@@ -14,7 +14,7 @@ export interface UsuarioCreateDTO {
   senha: string;
   telefone?: string;
   role: Role;
-  empresaId: number;
+  empresaId?: number;
 }
 
 export interface UsuarioUpdateDTO {
@@ -36,4 +36,5 @@ export interface UsuarioResponseDTO {
   nome: string;
   telefone?: string;
   role: Role;
+  empresaId?: number;
 }

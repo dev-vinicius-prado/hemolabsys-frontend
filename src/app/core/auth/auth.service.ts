@@ -236,7 +236,6 @@ export class AuthService
         const id = dto?.id !== undefined && dto?.id !== null ? String(dto.id) : '';
         const name = dto?.nome ?? dto?.name ?? '';
         const email = dto?.email ?? '';
-        const phoneNumber = dto?.telefone ?? dto?.phoneNumber ?? '';
         const active = dto?.ativo ?? dto?.active ?? true;
         const role = dto?.role ?? '';
 
@@ -244,13 +243,13 @@ export class AuthService
             id,
             name,
             email,
-            phoneNumber,
             role,
             birthDate: dto?.birthDate ?? '',
             createdAt: dto?.createdAt ?? '',
             updatedAt: dto?.updatedAt ?? '',
             active,
             empresaId: dto?.empresaId ?? 0,
+            phoneNumber: 0
         };
     }
 }

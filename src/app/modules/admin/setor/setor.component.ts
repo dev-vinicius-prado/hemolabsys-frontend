@@ -5,6 +5,7 @@ import { BehaviorSubject, combineLatest, map, Observable, Subject, takeUntil } f
 import { ApiService } from '../../../core/api/api.service';
 import { PageableResponse, SetorCreateDTO, SetorResponseDTO, SetorUpdateDTO } from 'app/core/models';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatIconModule } from "@angular/material/icon";
 import { PaginationComponent } from 'app/shared/components/pagination/pagination.component';
 
 @Component({
@@ -14,7 +15,7 @@ import { PaginationComponent } from 'app/shared/components/pagination/pagination
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, FormsModule, MatSnackBarModule, PaginationComponent],
+    imports: [CommonModule, FormsModule, MatIconModule, MatSnackBarModule, PaginationComponent],
 })
 export class SetorComponent implements OnInit, OnDestroy {
     // Estado reativo
