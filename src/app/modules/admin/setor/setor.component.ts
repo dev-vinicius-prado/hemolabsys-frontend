@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation, ChangeDetectorRe
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BehaviorSubject, combineLatest, map, Observable, Subject, takeUntil } from 'rxjs';
+import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { ApiService } from '../../../core/api/api.service';
 import { PageableResponse, SetorCreateDTO, SetorResponseDTO, SetorUpdateDTO } from 'app/core/models';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -30,7 +31,7 @@ export class SetorComponent implements OnInit, OnDestroy {
     form: Partial<SetorCreateDTO & { id?: number }> = {};
 
     currentPage: number = 0;
-    pageSize: number = 10;
+    pageSize: number = 5;
 
     // Lista filtrada
     filteredSetores$ = combineLatest([this.setors$, this.searchTerm$]).pipe(
@@ -42,6 +43,7 @@ export class SetorComponent implements OnInit, OnDestroy {
     );
 
     private readonly _snackBar = inject(MatSnackBar);
+    private _fuseConfirmationService = inject(FuseConfirmationService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     constructor(private readonly api: ApiService, private _changeDetectorRef: ChangeDetectorRef) {}
@@ -103,24 +105,40 @@ export class SetorComponent implements OnInit, OnDestroy {
     }
 
     excluir(s: SetorResponseDTO): void {
-        if (confirm(`Excluir setor ${s.nome}?`)) {
-            this.api.remove('setores', s.id).subscribe({
-                next: () => {
-                    this._snackBar.open('Setor excluído com sucesso!', 'OK', {
-                        duration: 5000,
-                        panelClass: ['success-snackbar'],
-                    });
-                    this.loadSetores();
-                    this.selectedIds.delete(s.id);
+        const confirmation = this._fuseConfirmationService.open({
+            title: 'Excluir Setor',
+            message: `Deseja excluir o setor NOME: ${s.nome}? <br><b class="text-red-500">Esta ação não pode ser desfeita!</b>`,
+            actions: {
+                confirm: {
+                    label: 'EXCLUIR',
+                    color: 'warn'
                 },
-                error: (err) => {
-                    this._snackBar.open(`Erro ao excluir setor: ${err.message}`, 'Fechar', {
-                        duration: 5000,
-                        panelClass: ['error-snackbar'],
-                    });
+                cancel: {
+                    label: 'Cancelar'
                 }
-            });
-        }
+            }
+        });
+
+        confirmation.afterClosed().subscribe((result) => {
+            if (result === 'confirmed') {
+                this.api.remove('setores', s.id).subscribe({
+                    next: () => {
+                        this._snackBar.open('Setor excluído com sucesso!', 'OK', {
+                            duration: 5000,
+                            panelClass: ['success-snackbar'],
+                        });
+                        this.loadSetores();
+                        this.selectedIds.delete(s.id);
+                    },
+                    error: (err) => {
+                        this._snackBar.open(`Erro ao excluir setor: ${err.message}`, 'Fechar', {
+                            duration: 5000,
+                            panelClass: ['error-snackbar'],
+                        });
+                    }
+                });
+            }
+        });
     }
 
     salvar(): void {

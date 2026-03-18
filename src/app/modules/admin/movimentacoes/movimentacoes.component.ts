@@ -52,7 +52,7 @@ export class MovimentacoesComponent implements OnInit, OnDestroy {
     status = 'PENDENTE';
 
     currentPage: number = 0;
-    pageSize: number = 10;
+    pageSize: number = 5;
 
     private readonly searchSubject = new BehaviorSubject<string>('');
     private _search = '';

@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Subject, takeUntil } from 'rxjs';
 import { LoteResponseDTO, LoteCreateDTO } from 'app/core/models/lote.types';
+import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { LotesDataService } from './lotes.service';
 import { PaginationComponent } from 'app/shared/components/pagination/pagination.component';
 import { HasRoleDirective } from 'app/shared/directives/has-role.directive';
@@ -32,6 +33,7 @@ export class LotesComponent implements OnInit, OnDestroy {
     private _dependenciesService = inject(DependenciesService);
     private _insumosDataService = inject(InsumosDataService);
     private _snackBar = inject(MatSnackBar);
+    private _fuseConfirmationService = inject(FuseConfirmationService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     lotes$ = this._lotesDataService.lotes$;
@@ -40,7 +42,7 @@ export class LotesComponent implements OnInit, OnDestroy {
     insumos$ = this._insumosDataService.insumos$;
 
     currentPage: number = 0;
-    pageSize: number = 10;
+    pageSize: number = 5;
 
     mode: 'list' | 'create' | 'edit' | 'view' = 'list';
     selectedLote: LoteResponseDTO | null = null;
@@ -118,7 +120,7 @@ export class LotesComponent implements OnInit, OnDestroy {
             return;
         }
 
-        const request = this.mode === 'create' 
+        const request = this.mode === 'create'
             ? this._lotesDataService.createLote(this.form)
             : this._lotesDataService.updateLote(this.selectedLote!.id, this.form);
 
@@ -142,13 +144,29 @@ export class LotesComponent implements OnInit, OnDestroy {
     }
 
     excluir(lote: LoteResponseDTO): void {
-        if (confirm(`Deseja realmente excluir o lote ${lote.codigoLote}?`)) {
-            this._lotesDataService.deleteLote(lote.id).subscribe({
-                next: () => {
-                    this._snackBar.open('Lote excluído com sucesso!', 'OK', { duration: 3000 });
+        const confirmation = this._fuseConfirmationService.open({
+            title: 'Excluir Lote',
+            message: `Deseja excluir o lote NOME: ${lote.codigoLote}? <br><b class="text-red-500">Esta ação não pode ser desfeita!</b>`,
+            actions: {
+                confirm: {
+                    label: 'EXCLUIR',
+                    color: 'warn'
+                },
+                cancel: {
+                    label: 'Cancelar'
                 }
-            });
-        }
+            }
+        });
+
+        confirmation.afterClosed().subscribe((result) => {
+            if (result === 'confirmed') {
+                this._lotesDataService.deleteLote(lote.id).subscribe({
+                    next: () => {
+                        this._snackBar.open('Lote excluído com sucesso!', 'OK', { duration: 3000 });
+                    }
+                });
+            }
+        });
     }
 
     cancelar(): void {

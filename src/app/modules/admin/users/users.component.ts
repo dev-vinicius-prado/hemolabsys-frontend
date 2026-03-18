@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnIni
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { BehaviorSubject, Observable, Subject, take, takeUntil } from 'rxjs';
+import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { ApiService } from 'app/core/api/api.service';
 import { UserService } from 'app/core/user/user.service';
 import { MatButtonModule } from '@angular/material/button';
@@ -48,6 +49,7 @@ export class UsersComponent implements OnInit, OnDestroy
     private _userService = inject(UserService);
     private _formBuilder = inject(UntypedFormBuilder);
     private _snackBar = inject(MatSnackBar);
+    private _fuseConfirmationService = inject(FuseConfirmationService);
     private _dialog = inject(MatDialog);
     private _changeDetectorRef = inject(ChangeDetectorRef);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
@@ -56,7 +58,7 @@ export class UsersComponent implements OnInit, OnDestroy
     pagination$: BehaviorSubject<PageableResponse<UsuarioResponseDTO> | null> = new BehaviorSubject<PageableResponse<UsuarioResponseDTO> | null>(null);
 
     currentPage: number = 0;
-    pageSize: number = 10;
+    pageSize: number = 5;
 
     mode: 'list' | 'create' | 'edit' | 'audit' = 'list';
     userForm: UntypedFormGroup;
@@ -235,17 +237,33 @@ export class UsersComponent implements OnInit, OnDestroy
      */
     deleteUser(user: UsuarioResponseDTO): void
     {
-        if (confirm(`Deseja realmente excluir o usuário ${user.nome}?`)) {
-            this._apiService.remove('users', user.id).subscribe({
-                next: () => {
-                    this._snackBar.open('Usuário excluído com sucesso!', 'OK', { duration: 5000 });
-                    this.loadUsers();
+        const confirmation = this._fuseConfirmationService.open({
+            title: 'Excluir Usuário',
+            message: `Deseja excluir o usuário NOME: ${user.nome}? <br><b class="text-red-500">Esta ação não pode ser desfeita!</b>`,
+            actions: {
+                confirm: {
+                    label: 'EXCLUIR',
+                    color: 'warn'
                 },
-                error: (err) => {
-                    this._snackBar.open(`Erro ao excluir usuário: ${err.message}`, 'Fechar', { duration: 5000 });
+                cancel: {
+                    label: 'Cancelar'
                 }
-            });
-        }
+            }
+        });
+
+        confirmation.afterClosed().subscribe((result) => {
+            if (result === 'confirmed') {
+                this._apiService.remove('users', user.id).subscribe({
+                    next: () => {
+                        this._snackBar.open('Usuário excluído com sucesso!', 'OK', { duration: 5000 });
+                        this.loadUsers();
+                    },
+                    error: (err) => {
+                        this._snackBar.open(`Erro ao excluir usuário: ${err.message}`, 'Fechar', { duration: 5000 });
+                    }
+                });
+            }
+        });
     }
 
     /**

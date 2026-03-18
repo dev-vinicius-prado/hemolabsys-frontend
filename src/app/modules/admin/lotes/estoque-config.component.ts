@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
 import { EstoqueInsumoConfigDTO, EstoqueInsumoResponseDTO } from 'app/core/models';
+import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { EstoqueConfigService } from './estoque-config.service';
 import { PaginationComponent } from 'app/shared/components/pagination/pagination.component';
 import { HasRoleDirective } from 'app/shared/directives/has-role.directive';
@@ -32,6 +33,7 @@ export class EstoqueConfigComponent implements OnInit, OnDestroy {
     private _dependenciesService = inject(DependenciesService);
     private _insumosDataService = inject(InsumosDataService);
     private _snackBar = inject(MatSnackBar);
+    private _fuseConfirmationService = inject(FuseConfirmationService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     configs$ = this._estoqueConfigService.configs$;
@@ -40,7 +42,7 @@ export class EstoqueConfigComponent implements OnInit, OnDestroy {
     insumos$ = this._insumosDataService.insumos$;
 
     currentPage: number = 0;
-    pageSize: number = 10;
+    pageSize: number = 5;
 
     mode: 'list' | 'create' | 'edit' = 'list';
     selectedConfig: EstoqueInsumoResponseDTO | null = null;
@@ -118,13 +120,29 @@ export class EstoqueConfigComponent implements OnInit, OnDestroy {
     }
 
     excluir(config: EstoqueInsumoResponseDTO): void {
-        if (confirm(`Deseja realmente excluir a meta para o insumo ${config.insumoNome} no almoxarifado ${config.almoxarifadoNome}?`)) {
-            this._estoqueConfigService.deleteConfig(config.id).subscribe({
-                next: () => {
-                    this._snackBar.open('Meta excluída com sucesso!', 'OK', { duration: 3000 });
+        const confirmation = this._fuseConfirmationService.open({
+            title: 'Excluir Meta de Estoque',
+            message: `Deseja excluir a meta para o insumo NOME: ${config.insumoNome} no almoxarifado ${config.almoxarifadoNome}? <br><b class="text-red-500">Esta ação não pode ser desfeita!</b>`,
+            actions: {
+                confirm: {
+                    label: 'EXCLUIR',
+                    color: 'warn'
+                },
+                cancel: {
+                    label: 'Cancelar'
                 }
-            });
-        }
+            }
+        });
+
+        confirmation.afterClosed().subscribe((result) => {
+            if (result === 'confirmed') {
+                this._estoqueConfigService.deleteConfig(config.id).subscribe({
+                    next: () => {
+                        this._snackBar.open('Meta excluída com sucesso!', 'OK', { duration: 3000 });
+                    }
+                });
+            }
+        });
     }
 
     cancelar(): void {

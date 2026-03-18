@@ -6,6 +6,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { Alerta, ConfiguracaoAlerta } from 'app/core/models/alerta.types';
+import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { AlertasService } from 'app/core/services/alertas.service';
 import { finalize, Observable } from 'rxjs';
 import { HasRoleDirective } from 'app/shared/directives/has-role.directive';
@@ -32,6 +33,7 @@ import { InsumoResponseDTO } from 'app/core/models';
 })
 export class AlertasComponent implements OnInit {
     private _alertasService = inject(AlertasService);
+    private _fuseConfirmationService = inject(FuseConfirmationService);
     private _insumosService = inject(InsumosDataService);
     private _cdr = inject(ChangeDetectorRef);
     private _fb = inject(UntypedFormBuilder);
@@ -119,9 +121,27 @@ export class AlertasComponent implements OnInit {
         });
     }
 
-    deleteConfig(id: number): void {
-        this._alertasService.deleteConfiguracao(id).subscribe(() => {
-            this.loadConfigs();
+    deleteConfig(config: ConfiguracaoAlerta): void {
+        const confirmation = this._fuseConfirmationService.open({
+            title: 'Excluir Regra de Alerta',
+            message: `Deseja excluir a regra de alerta para o insumo NOME: ${config.insumoNome}? <br><b class="text-red-500">Esta ação não pode ser desfeita!</b>`,
+            actions: {
+                confirm: {
+                    label: 'EXCLUIR',
+                    color: 'warn'
+                },
+                cancel: {
+                    label: 'Cancelar'
+                }
+            }
+        });
+
+        confirmation.afterClosed().subscribe((result) => {
+            if (result === 'confirmed') {
+                this._alertasService.deleteConfiguracao(config.id!).subscribe(() => {
+                    this.loadConfigs();
+                });
+            }
         });
     }
 

@@ -18,6 +18,7 @@ import {
     InsumoUpdateDTO,
     Categoria,
 } from 'app/core/models/insumo.catalog.types';
+import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { InsumosDataService } from './services/insumos-data.service';
 import { DependenciesService } from './services/dependencies.service';
 import { PaginationComponent } from 'app/shared/components/pagination/pagination.component';
@@ -42,6 +43,7 @@ export class InsumosComponent implements OnInit, OnDestroy {
     private dependenciesService = inject(DependenciesService);
     private _apiService = inject(ApiService);
     private _snackBar = inject(MatSnackBar);
+    private _fuseConfirmationService = inject(FuseConfirmationService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     // Estado reativo para filtros
@@ -50,7 +52,7 @@ export class InsumosComponent implements OnInit, OnDestroy {
     pagination$: Observable<PageableResponse<InsumoResponseDTO> | null> = this.insumosDataService.pagination$;
 
     currentPage: number = 0;
-    pageSize: number = 10;
+    pageSize: number = 5;
 
     // Estado UI
     _search = '';
@@ -202,22 +204,38 @@ export class InsumosComponent implements OnInit, OnDestroy {
     }
 
     excluir(insumo: InsumoResponseDTO): void {
-        if (confirm(`Excluir ${insumo.descricao}?`)) {
-            this.insumosDataService.deleteInsumo(insumo.id).subscribe({
-                next: () => {
-                    this._snackBar.open('Insumo excluído com sucesso!', 'OK', {
-                        duration: 5000,
-                        panelClass: ['success-snackbar'],
-                    });
-                    this.selectedIds.delete(insumo.id);
+        const confirmation = this._fuseConfirmationService.open({
+            title: 'Excluir Insumo',
+            message: `Deseja excluir o insumo NOME: ${insumo.descricao}? <br><b class="text-red-500">Esta ação não pode ser desfeita!</b>`,
+            actions: {
+                confirm: {
+                    label: 'EXCLUIR',
+                    color: 'warn'
                 },
-                error: (err) => {
-                    this._snackBar.open(`Erro ao excluir insumo: ${err.message}`, 'Fechar', {
-                        duration: 5000,
-                    });
+                cancel: {
+                    label: 'Cancelar'
                 }
-            });
-        }
+            }
+        });
+
+        confirmation.afterClosed().subscribe((result) => {
+            if (result === 'confirmed') {
+                this.insumosDataService.deleteInsumo(insumo.id).subscribe({
+                    next: () => {
+                        this._snackBar.open('Insumo excluído com sucesso!', 'OK', {
+                            duration: 5000,
+                            panelClass: ['success-snackbar'],
+                        });
+                        this.selectedIds.delete(insumo.id);
+                    },
+                    error: (err) => {
+                        this._snackBar.open(`Erro ao excluir insumo: ${err.message}`, 'Fechar', {
+                            duration: 5000,
+                        });
+                    }
+                });
+            }
+        });
     }
 
     viewAudit(insumo: InsumoResponseDTO): void {
