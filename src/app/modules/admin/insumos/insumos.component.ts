@@ -113,6 +113,13 @@ export class InsumosComponent implements OnInit, OnDestroy {
         this._unsubscribeAll.next(null);
         this._unsubscribeAll.complete();
     }
+    // Normaliza a string removendo acentos
+    private removeAccents = (str: string) => {
+    if (!str) return '';
+    return str.toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    };
 
     // Getters para listas filtradas
     readonly filteredInsumos$ = combineLatest([
@@ -120,15 +127,15 @@ export class InsumosComponent implements OnInit, OnDestroy {
         this.search$.pipe(startWith('')),
     ]).pipe(
         map(([insumos, search]) => {
-            const s = search.trim().toLowerCase();
+            const s = this.removeAccents(search.trim().toLowerCase());
 
             return insumos.filter(
                 (i) =>
                     i.codigo.toLowerCase().includes(s) ||
-                i.descricao.toLowerCase().includes(s) ||
-                (i.categoria ?? '').toLowerCase().includes(s) ||
-                (i.unidadeMedida?.descricao ?? '').toLowerCase().includes(s) ||
-                (i.fornecedores ?? []).some((f) => (f.nome ?? '').toLowerCase().includes(s))
+                    this.removeAccents(i.descricao.toLowerCase()).includes(s) ||
+                this.removeAccents((i.categoria ?? '').toLowerCase()).includes(s) ||
+                this.removeAccents(i.unidadeMedida?.descricao ?? '').toLowerCase().includes(s) ||
+                (i.fornecedores ?? []).some((f) => this.removeAccents((f.nome ?? '').toLowerCase()).includes(s))
             );
         }),
         tap(() => {
@@ -305,49 +312,49 @@ export class InsumosComponent implements OnInit, OnDestroy {
         }
     }
 
-cancelar(): void {
-    this.formVisible = false;
-    this.viewOnly = false;
-    this.editingId = null;
-    this._changeDetectorRef.markForCheck();
-}
+    cancelar(): void {
+        this.formVisible = false;
+        this.viewOnly = false;
+        this.editingId = null;
+        this._changeDetectorRef.markForCheck();
+    }
 
-exportCsv(): void {
-    // Lógica de exportação CSV (manter como está, mas usar filteredInsumos$)
-    this.filteredInsumos$.subscribe((filtered) => {
-        const header = [
-            'Código',
-            'Descrição',
-            'Categoria',
-            'Perecível?',
-            'Fornecedores',
-            'Unid. Medida',
-            'Lote Obrigatório?',
-        ];
-        const rows = filtered.map((i) => [
-            i.codigo,
-            i.descricao,
-            i.categoria,
-            i.perecivel ? 'Sim' : 'Não',
-            (i.fornecedores ?? []).map((f) => f.nome).join(' | '),
-            i.unidadeMedida?.descricao ?? '',
-            i.loteObrigatorio ? 'Sim' : 'Não',
-        ]);
-        const csv = [header, ...rows]
-        .map((r) =>
-            r
-        .map((v) => '"' + String(v).replaceAll('"', '""') + '"')
-        .join(',')
-    )
-    .join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'insumos.csv';
-    a.click();
-    URL.revokeObjectURL(url);
-});
-}
+    exportCsv(): void {
+        // Lógica de exportação CSV (manter como está, mas usar filteredInsumos$)
+        this.filteredInsumos$.subscribe((filtered) => {
+            const header = [
+                'Código',
+                'Descrição',
+                'Categoria',
+                'Perecível?',
+                'Fornecedores',
+                'Unid. Medida',
+                'Lote Obrigatório?',
+            ];
+            const rows = filtered.map((i) => [
+                i.codigo,
+                i.descricao,
+                i.categoria,
+                i.perecivel ? 'Sim' : 'Não',
+                (i.fornecedores ?? []).map((f) => f.nome).join(' | '),
+                i.unidadeMedida?.descricao ?? '',
+                i.loteObrigatorio ? 'Sim' : 'Não',
+            ]);
+            const csv = [header, ...rows]
+            .map((r) =>
+                r
+            .map((v) => '"' + String(v).replaceAll('"', '""') + '"')
+            .join(',')
+        )
+        .join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'insumos.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+    });
+    }
 
 }
