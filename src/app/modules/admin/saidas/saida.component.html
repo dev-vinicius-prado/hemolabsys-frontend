@@ -40,11 +40,9 @@
                                         Insumo é obrigatório.
                                     </mat-error>
                                 </mat-form-field>
-
-                                <div class="mt-4">
-                                    <button mat-button matStepperNext [disabled]="!saidaForm.get('almoxarifadoId')?.valid || !saidaForm.get('insumoId')?.valid">
-                                        Próximo
-                                    </button>
+                                <div>
+                                    <button class="px-4 py-2 rounded-lg bg-primary-500 text-white hover:bg-primary-600" [disabled]="!saidaForm.get('almoxarifadoId')?.valid || !saidaForm.get('insumoId')?.valid"
+                                     mat-button matStepperNext>Próximo</button>
                                 </div>
                             </mat-step>
 
@@ -70,9 +68,9 @@
                                     </mat-error>
                                 </mat-form-field>
 
-                                <div class="mt-4">
-                                    <button mat-button matStepperPrevious>Voltar</button>
-                                    <button mat-button matStepperNext [disabled]="!saidaForm.get('codigoLote')?.valid">
+                                <div class="mt-2 flex gap-3">
+                                    <button class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200" mat-button matStepperPrevious>Voltar</button>
+                                    <button class="px-4 py-2 rounded-lg bg-primary-500 text-white hover:bg-primary-600" mat-button matStepperNext [disabled]="!saidaForm.get('codigoLote')?.valid">
                                         Próximo
                                     </button>
                                 </div>
@@ -124,10 +122,10 @@
                                     <textarea matInput [formControlName]="'motivo'" rows="2"></textarea>
                                 </mat-form-field>
 
-                                <div class="mt-4">
-                                    <button mat-button matStepperPrevious>Voltar</button>
-                                    <button class="fuse-mat-button-large ml-2" mat-flat-button [color]="'primary'"
-                                            [disabled]="saidaForm.invalid" type="submit">
+                                <div class="mt-4 flex gap-3">
+                                    <button class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200" mat-button matStepperPrevious>Voltar</button>
+                                    <button class="px-4 py-2 rounded-lg bg-primary-500 text-white hover:bg-primary-600" 
+                                    mat-button matStepperNext [disabled]="saidaForm.invalid" type="submit">
                                         Confirmar Saída
                                     </button>
                                 </div>
