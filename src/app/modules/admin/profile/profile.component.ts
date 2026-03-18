@@ -71,6 +71,8 @@ export class ProfileComponent implements OnInit
         // Get the user data
         this._userService.user$.pipe(take(1)).subscribe((user: User) => {
             this.user = user;
+            console.log('Pefil do usuário: ', user);
+
             this.profileForm.patchValue(user);
             this._changeDetectorRef.markForCheck();
         });

@@ -234,14 +234,14 @@ export class AuthService
     private _toUser(dto: any): User
     {
         const id = dto?.id !== undefined && dto?.id !== null ? String(dto.id) : '';
-        const name = dto?.nome ?? dto?.name ?? '';
+        const nome = dto?.nome ?? dto?.name ?? '';
         const email = dto?.email ?? '';
         const active = dto?.ativo ?? dto?.active ?? true;
         const role = dto?.role ?? '';
 
         return {
             id,
-            name,
+            nome,
             email,
             role,
             birthDate: dto?.birthDate ?? '',
