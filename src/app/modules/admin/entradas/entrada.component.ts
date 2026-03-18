@@ -46,10 +46,11 @@ export class EntradaComponent implements OnInit {
     private snackBar = inject(MatSnackBar);
     private router = inject(Router);
 
-    entradaForm!: FormGroup;
     insumos$!: Observable<InsumoOptionDTO[]>;
     almoxarifados$!: Observable<AlmoxarifadoOptionDTO[]>;
     fornecedores$!: Observable<FornecedorOptionDTO[]>;
+
+    entradaForm!: FormGroup;
 
     private insumosCache: InsumoOptionDTO[] = [];
 

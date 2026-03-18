@@ -100,10 +100,22 @@
                                 </mat-form-field>
 
                                 <mat-form-field class="fuse-mat-no-subscript w-full mt-4">
-                                    <mat-label>Solicitante</mat-label>
+                                    <mat-label>Setor Solicitante</mat-label>
+                                    <mat-select [formControlName]="'idSetorSolicitante'">
+                                        <mat-option *ngFor="let setor of (setores$ | async)" [value]="setor.id">
+                                            {{ setor.nome }}
+                                        </mat-option>
+                                    </mat-select>
+                                    <mat-error *ngIf="saidaForm.get('idSetorSolicitante')?.hasError('required')">
+                                        Setor é obrigatório.
+                                    </mat-error>
+                                </mat-form-field>
+
+                                <mat-form-field class="fuse-mat-no-subscript w-full mt-4">
+                                    <mat-label>Solicitante (Nome)</mat-label>
                                     <input matInput [formControlName]="'solicitante'">
                                     <mat-error *ngIf="saidaForm.get('solicitante')?.hasError('required')">
-                                        Obrigatório.
+                                        Nome do solicitante é obrigatório.
                                     </mat-error>
                                 </mat-form-field>
 

@@ -77,6 +77,27 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 icon: 'heroicons_outline:building-office-2',
                 link: '/setor',
             },
+            {
+                id: 'lotes',
+                title: 'Lotes',
+                type: 'basic',
+                icon: 'heroicons_outline:rectangle-stack',
+                link: '/lotes',
+            },
+            {
+                id: 'metas-estoque',
+                title: 'Metas de Estoque',
+                type: 'basic',
+                icon: 'heroicons_outline:presentation-chart-line',
+                link: '/lotes/metas',
+            },
+            {
+                id: 'alertas',
+                title: 'Alertas',
+                type: 'basic',
+                icon: 'heroicons_outline:bell-alert',
+                link: '/alertas',
+            },
         ],
     },
 ];

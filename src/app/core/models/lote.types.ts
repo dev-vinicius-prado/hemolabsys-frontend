@@ -1,35 +1,29 @@
 // lote.types.ts
 
-export interface CreateLoteDTO {
-  codigo: string;
-  insumoId: number;
-  quantidadeOriginal: number;
+export interface LoteCreateDTO {
+  codigoLote: string;
   dataFabricacao: string;
   dataValidade: string;
-  fornecedorId?: number;
-}
-
-export interface UpdateLoteDTO {
-  id: number;
-  codigo: string;
+  quantidadeInicial: number;
   insumoId: number;
-  quantidadeOriginal: number;
-  dataFabricacao: string;
-  dataValidade: string;
-  fornecedorId?: number;
+  fornecedorId: number;
+  numeroNotaFiscal?: string;
 }
 
 export interface LoteResponseDTO {
   id: number;
-  codigo: string;
-  insumoId: number;
-  insumoDescricao: string;
-  quantidadeOriginal: number;
-  quantidadeAtual: number;
+  codigoLote: string;
   dataFabricacao: string;
   dataValidade: string;
-  fornecedorId?: number;
-  fornecedorNome?: string;
+  quantidadeInicial: number;
+  quantidadeDisponivel: number;
+  numeroNotaFiscal?: string;
+  ativo: boolean;
+  insumoId: number;
+  insumoDescricao: string;
+  insumoCodigo: string;
+  fornecedorId: number;
+  fornecedorNome: string;
   createdAt: string;
   updatedAt: string;
 }

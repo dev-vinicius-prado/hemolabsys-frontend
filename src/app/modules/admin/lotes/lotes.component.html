@@ -1,0 +1,123 @@
+<div class="absolute inset-0 flex flex-col min-w-0 overflow-hidden">
+  <!-- Header -->
+  <div class="relative flex flex-col flex-0 lg:flex-row lg:items-center lg:justify-between px-6 pt-6 pb-4 lg:pr-8 lg:pl-7 sm:pt-10 sm:pb-6 bg-primary-700 dark:bg-transparent">
+    <div class="flex flex-col items-start flex-auto min-w-0">
+      <div class="text-2xl sm:text-4xl font-extrabold tracking-tight leading-none text-on-primary dark:text-white">
+        Lotes · Gestão
+      </div>
+      <div class="text-on-primary/80 mt-2">Gerencie os lotes de insumos, datas de validade e fornecedores.</div>
+    </div>
+    <div class="mt-4 lg:mt-0 flex items-center gap-3" *hasRole="['COORDENADOR', 'GERENTE', 'ADMIN']">
+      <button class="fuse-mat-button-large bg-primary text-on-primary rounded-xl p-2 flex items-center border border-solid border-white"
+        mat-flat-button (click)="novo()">
+        <mat-icon class="text-white" [svgIcon]="'heroicons_outline:plus-circle'"></mat-icon>
+          <span class="ml-2">Novo Lote</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="flex flex-auto overflow-hidden">
+    <div class="flex flex-col flex-auto overflow-y-auto -webkit-overflow-scrolling-touch">
+      <div class="flex-auto p-6 sm:p-10">
+
+        <!-- Formulário de criação/edição/visualização -->
+        <div *ngIf="mode !== 'list'" class="mb-6 p-6 bg-card rounded-2xl shadow border border-gray-200">
+          <div class="text-lg font-semibold mb-4">
+            {{ mode === 'view' ? 'Visualizar Lote' : (mode === 'edit' ? 'Editar Lote' : 'Novo Lote') }}
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm text-secondary mb-1">Código do Lote *</label>
+              <input class="w-full px-3 py-2 rounded-lg border" type="text" [(ngModel)]="form.codigoLote" [readonly]="mode === 'view'" />
+            </div>
+            <div>
+              <label class="block text-sm text-secondary mb-1">Insumo *</label>
+              <select class="w-full px-3 py-2 rounded-lg border" [(ngModel)]="form.insumoId" [disabled]="mode === 'view'">
+                <option value="0">Selecione...</option>
+                <option *ngFor="let i of (insumos$ | async)" [value]="i.id">{{ i.descricao }} ({{ i.codigo }})</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm text-secondary mb-1">Fornecedor *</label>
+              <select class="w-full px-3 py-2 rounded-lg border" [(ngModel)]="form.fornecedorId" [disabled]="mode === 'view'">
+                <option value="0">Selecione...</option>
+                <option *ngFor="let f of (fornecedores$ | async)" [value]="f.id">{{ f.nome }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm text-secondary mb-1">Data de Fabricação *</label>
+              <input class="w-full px-3 py-2 rounded-lg border" type="date" [(ngModel)]="form.dataFabricacao" [readonly]="mode === 'view'" />
+            </div>
+            <div>
+              <label class="block text-sm text-secondary mb-1">Data de Validade *</label>
+              <input class="w-full px-3 py-2 rounded-lg border" type="date" [(ngModel)]="form.dataValidade" [readonly]="mode === 'view'" />
+            </div>
+            <div>
+              <label class="block text-sm text-secondary mb-1">Quantidade Inicial *</label>
+              <input class="w-full px-3 py-2 rounded-lg border" type="number" [(ngModel)]="form.quantidadeInicial" [readonly]="mode === 'view'" />
+            </div>
+            <div class="sm:col-span-3">
+              <label class="block text-sm text-secondary mb-1">Número da Nota Fiscal</label>
+              <input class="w-full px-3 py-2 rounded-lg border" type="text" [(ngModel)]="form.numeroNotaFiscal" [readonly]="mode === 'view'" />
+            </div>
+          </div>
+          <div class="mt-6 flex gap-3">
+            <button *ngIf="mode === 'create' || mode === 'edit'" class="px-4 py-2 rounded-lg bg-primary text-on-primary hover:bg-primary-600" (click)="salvar()">Salvar</button>
+            <button class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200" (click)="cancelar()">Fechar</button>
+          </div>
+        </div>
+
+        <div *ngIf="mode === 'list'" class="bg-card rounded-2xl shadow overflow-x-auto">
+            <!-- Componente de Paginação -->
+            <app-pagination
+                *ngIf="pagination$ | async as p"
+                [page]="currentPage"
+                [size]="pageSize"
+                [totalElements]="p.totalElements"
+                [totalPages]="p.totalPages"
+                (pageChange)="onPageChange($event)"
+                (sizeChange)="onSizeChange($event)">
+            </app-pagination>
+            <!-- Tabela -->
+            <table class="w-full text-left">
+                <thead>
+                <tr class="bg-gray-50">
+                    <th class="px-4 py-3 border-b">Cód. Lote</th>
+                    <th class="px-4 py-3 border-b">Insumo</th>
+                    <th class="px-4 py-3 border-b">Vencimento</th>
+                    <th class="px-4 py-3 border-b text-right">Qtd. Disp.</th>
+                    <th class="px-4 py-3 border-b text-center">Status</th>
+                    <th class="px-4 py-3 border-b" *hasRole="['COORDENADOR', 'GERENTE', 'ADMIN']">Ações</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr *ngFor="let l of (lotes$ | async)" class="hover:bg-gray-50">
+                    <td class="px-4 py-3 border-b font-medium">{{ l.codigoLote }}</td>
+                    <td class="px-4 py-3 border-b">{{ l.insumoDescricao }}</td>
+                    <td class="px-4 py-3 border-b">{{ l.dataValidade | date:'dd/MM/yyyy' }}</td>
+                    <td class="px-4 py-3 border-b text-right">{{ l.quantidadeDisponivel }}</td>
+                    <td class="px-4 py-3 border-b text-center">
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full"
+                              [ngClass]="l.ativo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                            {{ l.ativo ? 'Ativo' : 'Inativo' }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 border-b" *hasRole="['COORDENADOR', 'GERENTE', 'ADMIN']">
+                    <div class="flex gap-2">
+                        <button class="px-2 py-1 rounded bg-gray-100 hover:bg-gray-200" (click)="visualizar(l)" title="Visualizar">👁️</button>
+                        <button class="px-2 py-1 rounded bg-blue-100 hover:bg-blue-200 text-blue-700" (click)="editar(l)" title="Editar">✏️</button>
+                        <button class="px-2 py-1 rounded" [ngClass]="l.ativo ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'"
+                                (click)="toggleStatus(l)" title="Alternar Status">🔄</button>
+                        <button class="px-2 py-1 rounded bg-red-100 hover:bg-red-200 text-red-700" (click)="excluir(l)" title="Excluir">🗑️</button>
+                    </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

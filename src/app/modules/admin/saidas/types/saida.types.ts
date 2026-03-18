@@ -14,7 +14,13 @@ export interface CreateSaidaDTO {
     codigoLote: string;
     quantidade: number;
     solicitante: string;
+    idSetorSolicitante?: number;
     motivo?: string;
+}
+
+export interface SetorOptionDTO {
+    id: number;
+    nome: string;
 }
 
 export interface InsumoLoteSaidaResponseDTO {

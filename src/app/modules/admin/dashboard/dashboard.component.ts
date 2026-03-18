@@ -7,7 +7,7 @@ import {
     ChangeDetectorRef,
 } from '@angular/core';
 import { NgForOf, NgIf, DatePipe, CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Metric, Alert, Product } from 'app/core/dashboard/dashboard.types';
 import { EstoqueService } from './services/estoque.service';
 import { EstoqueLoteResponseDTO } from 'app/core/models/lote.types';
@@ -16,6 +16,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { ApiService } from 'app/core/api/api.service';
 import { NgApexchartsModule, ApexOptions } from 'ng-apexcharts';
 import { UserService } from 'app/core/user/user.service';
+import { DateUtils } from 'app/core/utils/date-utils';
 import { User } from 'app/core/user/user.types';
 import { Observable } from 'rxjs';
 import { TranslocoModule } from '@ngneat/transloco';
@@ -26,7 +27,7 @@ import { TranslocoModule } from '@ngneat/transloco';
     templateUrl: './dashboard.component.html',
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [NgForOf, NgIf, DatePipe, CommonModule, MatIconModule, NgApexchartsModule, TranslocoModule],
+    imports: [NgForOf, NgIf, DatePipe, CommonModule, MatIconModule, NgApexchartsModule, TranslocoModule, RouterLink],
 })
 export class DashboardComponent implements OnInit {
 
@@ -119,7 +120,7 @@ export class DashboardComponent implements OnInit {
             next: (lotes: EstoqueLoteResponseDTO[]) => {
                 this.alerts = lotes.map(lote => ({
                     message: `${lote.insumoNome}`,
-                    details: `Lote ${lote.codigoLote} - Vence em: ${lote.dataValidade}`,
+                    details: `Lote ${lote.codigoLote} - Vence em: ${DateUtils.format(lote.dataValidade)}`,
                     statusIcon: 'heroicons_outline:exclamation-triangle'
                 }));
                 this.cdr.markForCheck();

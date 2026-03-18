@@ -81,18 +81,20 @@ export const appRoutes: Route[] = [
             { path: 'dashboard', loadChildren: () => import('app/modules/admin/dashboard/dashboard.routes') },
             { path: 'insumos', loadChildren: () => import('app/modules/admin/insumos/insumos.routes') },
             { path: 'setor', loadChildren: () => import('app/modules/admin/setor/setor.routes') },
+            { path: 'lotes', loadChildren: () => import('app/modules/admin/lotes/lotes.routes') },
             { path: 'movimentacoes', loadChildren: () => import('app/modules/admin/movimentacoes/movimentacoes.routes') },
+            { path: 'alertas', loadChildren: () => import('app/modules/admin/alertas/alertas.routes') },
             { path: 'entradas', component: EntradaComponent },
             { path: 'saidas', component: SaidaComponent },
-            { 
-                path: 'users', 
+            {
+                path: 'users',
                 loadComponent: () => import('app/modules/admin/users/users.component').then(m => m.UsersComponent),
                 canActivate: [RoleGuard],
                 data: { roles: ['ADMIN', 'GERENTE'] }
             },
             { path: 'profile', loadComponent: () => import('app/modules/admin/profile/profile.component').then(m => m.ProfileComponent) },
-            { 
-                path: 'relatorios', 
+            {
+                path: 'relatorios',
                 loadComponent: () => import('app/modules/admin/relatorios/relatorios.component').then(m => m.RelatoriosComponent),
                 canActivate: [RoleGuard],
                 data: { roles: ['ADMIN', 'GERENTE', 'COORDENADOR'] }

@@ -14,8 +14,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatStepperModule } from '@angular/material/stepper';
 import { SaidaDataService } from './saida-data.service';
-import { InsumoLoteSaidaResponseDTO } from './types/saida.types';
-import { Observable, combineLatest, filter, startWith, switchMap, tap } from 'rxjs';
+import { InsumoLoteSaidaResponseDTO, SetorOptionDTO } from './types/saida.types';
+import { Observable, combineLatest, filter, shareReplay, startWith, switchMap, tap } from 'rxjs';
 import { DependenciesService } from '../insumos/services/dependencies.service';
 import { InsumosDataService } from '../insumos/services/insumos-data.service';
 import { AlmoxarifadoResponseDTO } from 'app/core/models/almoxarifado-catalog.types';
@@ -52,6 +52,7 @@ export class SaidaComponent implements OnInit {
     insumosLotesSaida$: Observable<InsumoLoteSaidaResponseDTO[]> | undefined;
     almoxarifados$: Observable<AlmoxarifadoResponseDTO[]> = this.dependenciesService.almoxarifados$;
     insumos$: Observable<InsumoResponseDTO[]> = this.insumosDataService.insumos$;
+    setores$!: Observable<SetorOptionDTO[]>;
 
     selectedInsumoLoteSaida: InsumoLoteSaidaResponseDTO | undefined;
     private lotesDisponiveis: InsumoLoteSaidaResponseDTO[] = [];
@@ -62,6 +63,7 @@ export class SaidaComponent implements OnInit {
             insumoId: ['', Validators.required],
             codigoLote: ['', Validators.required],
             quantidade: ['', [Validators.required, Validators.min(1)]],
+            idSetorSolicitante: [null, Validators.required],
             solicitante: ['', Validators.required],
             motivo: [''],
             usuarioRegistroId: ['']
@@ -69,6 +71,7 @@ export class SaidaComponent implements OnInit {
 
         this.insumosDataService.loadInsumos();
         this.dependenciesService.loadAlmoxarifados();
+        this.setores$ = this.saidaDataService.getSetores().pipe(shareReplay(1));
 
         this.insumosLotesSaida$ = combineLatest([
             this.saidaForm.get('almoxarifadoId')!.valueChanges.pipe(startWith('')),
@@ -100,6 +103,7 @@ export class SaidaComponent implements OnInit {
             insumoId: formValues.insumoId,
             codigoLote: formValues.codigoLote,
             quantidade: formValues.quantidade,
+            idSetorSolicitante: formValues.idSetorSolicitante,
             solicitante: formValues.solicitante,
             motivo: formValues.motivo
         };

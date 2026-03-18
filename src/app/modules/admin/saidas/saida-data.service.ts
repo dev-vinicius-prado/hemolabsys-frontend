@@ -5,6 +5,7 @@ import {
     CreateSaidaDTO,
     SaidaResponseDTO,
     InsumoLoteSaidaResponseDTO,
+    SetorOptionDTO,
 } from './types/saida.types';
 
 @Injectable({
@@ -33,5 +34,9 @@ export class SaidaDataService {
         ).pipe(
             tap(insumosLotes => this._insumosLotesSaida.next(insumosLotes))
         );
+    }
+
+    getSetores(): Observable<SetorOptionDTO[]> {
+        return this.api.list<SetorOptionDTO>('setores', { size: 200, sort: 'nome,asc' });
     }
 }

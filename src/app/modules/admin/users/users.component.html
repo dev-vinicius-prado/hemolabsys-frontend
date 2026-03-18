@@ -40,8 +40,6 @@
                             <tr class="bg-gray-50 dark:bg-transparent border-b">
                                 <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">Nome</th>
                                 <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">E-mail</th>
-                                <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">Telefone</th>
-                                <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">CPF</th>
                                 <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">Perfil</th>
                                 <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">Status</th>
                                 <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary text-right" *hasRole="['GERENTE', 'ADMIN']">Ações</th>
@@ -51,8 +49,6 @@
                             <tr *ngFor="let user of (users$ | async)" class="hover:bg-gray-50 dark:hover:bg-hover transition-colors">
                                 <td class="px-6 py-4 font-semibold">{{ user.nome }}</td>
                                 <td class="px-6 py-4 text-secondary">{{ user.email }}</td>
-                                <td class="px-6 py-4 text-secondary">{{ user.telefone || '-' }}</td>
-                                <td class="px-6 py-4 text-secondary">{{ user.cpf }}</td>
                                 <td class="px-6 py-4">
                                     <span class="px-2 py-1 rounded-full text-xs font-medium"
                                           [ngClass]="{
