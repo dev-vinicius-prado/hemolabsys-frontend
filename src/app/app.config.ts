@@ -1,4 +1,4 @@
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { APP_INITIALIZER, ApplicationConfig, inject } from '@angular/core';
 import { LuxonDateAdapter } from '@angular/material-luxon-adapter';
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
@@ -8,15 +8,18 @@ import { provideFuse } from '@fuse';
 import { provideTransloco, TranslocoService } from '@ngneat/transloco';
 import { firstValueFrom } from 'rxjs';
 import { appRoutes } from 'app/app.routes';
+import { authInterceptor } from 'app/core/auth/auth.interceptor';
 import { provideAuth } from 'app/core/auth/auth.provider';
 import { provideIcons } from 'app/core/icons/icons.provider';
 import { mockApiServices } from 'app/mock-api';
 import { TranslocoHttpLoader } from './core/transloco/transloco.http-loader';
+import { mockApiInterceptor } from '@fuse/lib/mock-api';
+import { fuseLoadingInterceptor } from '@fuse/services/loading';
 
 export const appConfig: ApplicationConfig = {
     providers: [
         provideAnimations(),
-        provideHttpClient(),
+        provideHttpClient(withInterceptors([authInterceptor, fuseLoadingInterceptor, mockApiInterceptor])),
         provideRouter(appRoutes,
             withPreloading(PreloadAllModules),
             withInMemoryScrolling({scrollPositionRestoration: 'enabled'}),
@@ -75,7 +78,7 @@ export const appConfig: ApplicationConfig = {
                 const defaultLang = translocoService.getDefaultLang();
                 translocoService.setActiveLang(defaultLang);
                 console.log('Default lang: ', defaultLang);
-                
+
 
                 return () => firstValueFrom(translocoService.load(defaultLang));
             },

@@ -1,0 +1,157 @@
+<div class="absolute inset-0 flex flex-col min-w-0 overflow-hidden">
+    <div class="relative flex flex-col flex-0 lg:flex-row lg:items-center lg:justify-between px-6 pt-6 pb-4 lg:pr-8 lg:pl-7 sm:pt-10 sm:pb-6 bg-primary-700 dark:bg-transparent">
+        <div class="flex flex-col items-start flex-auto min-w-0">
+            <div class="text-2xl sm:text-4xl font-extrabold tracking-tight leading-none text-on-primary dark:text-white">
+                Movimentações · Aprovação
+            </div>
+            <div class="text-on-primary/80 mt-2">Aprove ou rejeite solicitações pendentes.</div>
+        </div>
+        <div class="mt-4 lg:mt-0 flex items-center gap-3">
+            <select class="px-3 py-2 rounded-lg border border-gray-300" [(ngModel)]="status" (ngModelChange)="reload()">
+                <option value="PENDENTE">Pendentes</option>
+                <option value="APROVADO_COORDENADOR">Aprovadas (Coord.)</option>
+                <option value="APROVADO_GERENTE">Aprovadas (Ger.)</option>
+                <option value="REJEITADO">Rejeitadas</option>
+                <option value="TODAS">Todas</option>
+            </select>
+            <button class="px-4 py-2 rounded-lg bg-primary-500 text-white hover:bg-primary-600" (click)="reload()">
+                Atualizar
+            </button>
+        </div>
+    </div>
+
+    <div class="flex flex-auto overflow-hidden">
+        <div class="flex flex-col flex-auto overflow-y-auto -webkit-overflow-scrolling-touch">
+            <div class="flex-auto p-6 sm:p-10">
+                <div class="flex flex-col sm:flex-row gap-4 items-stretch sm:items-end mb-6">
+                    <div class="flex-1">
+                        <label class="block text-md font-bold text-secondary mb-1">Pesquisa</label>
+                        <input class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none" [(ngModel)]="search" placeholder="Buscar por insumo, lote, almoxarifado, usuário..." />
+                    </div>
+                    <div class="text-sm text-secondary flex items-center" *ngIf="loading">
+                        Carregando...
+                    </div>
+                </div>
+
+                <div class="bg-card rounded-2xl shadow overflow-x-auto">
+                    <!-- Componente de Paginação -->
+                    <app-pagination
+                        *ngIf="pagination$ | async as p"
+                        [page]="currentPage"
+                        [size]="pageSize"
+                        [totalElements]="p.totalElements"
+                        [totalPages]="p.totalPages"
+                        (pageChange)="onPageChange($event)"
+                        (sizeChange)="onSizeChange($event)">
+                    </app-pagination>
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th class="px-4 py-3 border-b">ID</th>
+                                <th class="px-4 py-3 border-b">Tipo</th>
+                                <th class="px-4 py-3 border-b">Insumo</th>
+                                <th class="px-4 py-3 border-b">Lote</th>
+                                <th class="px-4 py-3 border-b">Almox.</th>
+                                <th class="px-4 py-3 border-b">Tipo Almox.</th>
+                                <th class="px-4 py-3 border-b">Qtd</th>
+                                <th class="px-4 py-3 border-b">Data</th>
+                                <th class="px-4 py-3 border-b">Solicitante</th>
+                                <th class="px-4 py-3 border-b">Status</th>
+                                <th class="px-4 py-3 border-b">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let m of (filtered$ | async); trackBy: trackById" class="hover:bg-gray-50">
+                                <td class="px-4 py-3 border-b font-medium text-secondary">{{ m.id }}</td>
+                                <td class="px-4 py-3 border-b">
+                                    <span class="px-2 py-1 rounded text-xs font-semibold uppercase tracking-wide"
+                                        [ngClass]="{
+                                            'bg-blue-100 text-blue-700': m.tipoMovimentacao === 'ENTRADA',
+                                            'bg-orange-100 text-orange-700': m.tipoMovimentacao === 'SAIDA',
+                                            'bg-red-100 text-red-700': m.tipoMovimentacao === 'DESCARTE',
+                                            'bg-gray-100 text-gray-700': m.tipoMovimentacao === 'AJUSTE'
+                                        }">
+                                        {{ m.tipoMovimentacao }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 border-b">
+                                    <div class="font-bold">{{ m.insumoCodigo }}</div>
+                                    <div class="text-xs text-secondary truncate max-w-40">{{ m.insumoDescricao }}</div>
+                                </td>
+                                <td class="px-4 py-3 border-b text-sm">{{ m.loteNumero }}</td>
+                                <td class="px-4 py-3 border-b text-sm font-semibold">{{ m.almoxarifadoCodigo }}</td>
+                                <td class="px-4 py-3 border-b text-xs">
+                                    <span class="px-1.5 py-0.5 rounded border border-gray-200 bg-gray-50">
+                                        {{ m.almoxarifadoTipo }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 border-b font-bold">{{ m.quantidade }}</td>
+                                <td class="px-4 py-3 border-b text-sm">{{ m.dataRegistro | date: 'dd/MM/yyyy' }}</td>
+                                <td class="px-4 py-3 border-b text-sm">
+                                    <div>{{ m.solicitante || m.usuarioRegistro }}</div>
+                                    <div class="text-xs text-secondary italic" *ngIf="m.usuarioRegistro && m.solicitante && m.usuarioRegistro !== m.solicitante">
+                                        Por: {{ m.usuarioRegistro }}
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 border-b">
+                                    <span class="px-2 py-1 rounded text-xs font-bold"
+                                        [ngClass]="{
+                                            'bg-yellow-100 text-yellow-800': m.statusAprovacao === 'PENDENTE',
+                                            'bg-green-100 text-green-800': m.statusAprovacao === 'APROVADO_COORDENADOR' || m.statusAprovacao === 'APROVADO_GERENTE',
+                                            'bg-red-100 text-red-800': m.statusAprovacao === 'REJEITADO'
+                                        }">
+                                        {{ m.statusAprovacao || 'PENDENTE' }}
+                                    </span>
+                                    <div class="text-[10px] text-red-600 mt-1 max-w-32 truncate" *ngIf="m.statusAprovacao === 'REJEITADO' && m.motivoRejeicao" [title]="m.motivoRejeicao">
+                                        Mto: {{ m.motivoRejeicao }}
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 border-b">
+                                    <div class="flex flex-col gap-1.5" *ngIf="m.statusAprovacao === 'PENDENTE' || m.statusAprovacao === 'APROVADO_COORDENADOR'">
+                                        <!-- Botão Coordenador: Aparece se pendente e almox é PC -->
+                                        <ng-container *hasRole="['COORDENADOR', 'GERENTE', 'ADMIN']">
+                                            <button class="w-full px-2 py-1 rounded bg-green-600 text-white text-xs font-bold hover:bg-green-700 transition-colors"
+                                                *ngIf="m.statusAprovacao === 'PENDENTE' && m.almoxarifadoTipo === 'SERVICO_POSTO_COLETA'"
+                                                (click)="aprovar(m, false)">
+                                                APROVAR (COORD.)
+                                            </button>
+                                        </ng-container>
+
+                                        <!-- Botão Gerente: Aparece se pendente ou aprovado por coord -->
+                                        <ng-container *hasRole="['GERENTE', 'ADMIN']">
+                                            <button class="w-full px-2 py-1 rounded bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors"
+                                                *ngIf="(m.statusAprovacao === 'PENDENTE' || m.statusAprovacao === 'APROVADO_COORDENADOR')"
+                                                (click)="aprovar(m, true)">
+                                                APROVAR (GER.)
+                                            </button>
+                                        </ng-container>
+
+                                        <button class="w-full px-2 py-1 rounded bg-red-100 text-red-700 text-xs font-bold hover:bg-red-200 transition-colors border border-red-200"
+                                            *hasRole="['COORDENADOR', 'GERENTE', 'ADMIN']"
+                                            (click)="rejeitar(m)">
+                                            REJEITAR
+                                        </button>
+                                    </div>
+                                    <div class="text-xs text-secondary italic" *ngIf="m.statusAprovacao !== 'PENDENTE' && m.statusAprovacao !== 'APROVADO_COORDENADOR'">
+                                        Finalizada
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <ng-container *ngIf="(filtered$ | async)?.length === 0">
+                            <tfoot>
+                                <tr>
+                                    <td colspan="10" class="text-center py-4 text-secondary">
+                                        Nenhum registro encontrado
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </ng-container>
+                    </table>
+                    <div class="p-4 text-sm text-secondary">Total: {{ (filtered$ | async)?.length || 0 }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

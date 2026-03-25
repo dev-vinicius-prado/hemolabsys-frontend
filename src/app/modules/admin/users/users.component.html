@@ -1,0 +1,180 @@
+<div class="flex flex-col flex-auto min-w-0">
+
+    <!-- Header -->
+    <div class="relative flex flex-col flex-0 lg:flex-row lg:items-center lg:justify-between px-6 pt-6 pb-4 lg:pr-8 lg:pl-7 sm:pt-10 sm:pb-6 bg-primary-700 dark:bg-transparent">
+        <div class="flex flex-col items-start flex-auto min-w-0">
+            <div class="text-2xl sm:text-4xl font-extrabold tracking-tight leading-none text-on-primary dark:text-white">
+                Gestão de Usuários
+            </div>
+            <div class="text-on-primary/80 mt-2">Administre os usuários e permissões do sistema</div>
+        </div>
+        <!-- Actions -->
+        <ng-container *ngIf="mode === 'list'">
+            <div class="flex items-center mt-6 sm:mt-0 sm:ml-2 space-x-3" *hasRole="'ADMIN'">
+                <button class="fuse-mat-button-large bg-primary text-on-primary rounded-xl border border-solid border-white" mat-flat-button (click)="createUser()">
+                    <mat-icon [svgIcon]="'heroicons_outline:plus-circle'"></mat-icon>
+                    <span class="ml-2">Novo Usuário</span>
+                </button>
+            </div>
+        </ng-container>
+    </div>
+
+    <!-- Main -->
+    <div class="flex-auto p-6 sm:p-10">
+        <div class="max-w-screen-xl mx-auto">
+            <!-- List Mode -->
+            <div *ngIf="mode === 'list'" class="flex flex-col flex-auto bg-card shadow rounded-2xl overflow-hidden">
+                <!-- Componente de Paginação -->
+                <app-pagination
+                    *ngIf="pagination$ | async as p"
+                    [page]="currentPage"
+                    [size]="pageSize"
+                    [totalElements]="p.totalElements"
+                    [totalPages]="p.totalPages"
+                    (pageChange)="onPageChange($event)"
+                    (sizeChange)="onSizeChange($event)">
+                </app-pagination>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-gray-50 dark:bg-transparent border-b">
+                                <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">Nome</th>
+                                <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">E-mail</th>
+                                <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">Perfil</th>
+                                <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">Status</th>
+                                <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary text-right" *hasRole="['GERENTE', 'ADMIN']">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y">
+                            <tr *ngFor="let user of (users$ | async)" class="hover:bg-gray-50 dark:hover:bg-hover transition-colors">
+                                <td class="px-6 py-4 font-semibold">{{ user.nome }}</td>
+                                <td class="px-6 py-4 text-secondary">{{ user.email }}</td>
+                                <td class="px-6 py-4">
+                                    <span class="px-2 py-1 rounded-full text-xs font-medium"
+                                          [ngClass]="{
+                                              'bg-indigo-100 text-indigo-800': user.role === 'ADMIN',
+                                              'bg-blue-100 text-blue-800': user.role === 'GERENTE',
+                                              'bg-green-100 text-green-800': user.role === 'COORDENADOR',
+                                              'bg-gray-100 text-gray-800': user.role === 'ESTOQUISTA'
+                                          }">
+                                        {{ user.role }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="flex items-center" [ngClass]="user.ativo ? 'text-green-600' : 'text-red-600'">
+                                        <span class="w-2 h-2 rounded-full mr-2" [ngClass]="user.ativo ? 'bg-green-600' : 'bg-red-600'"></span>
+                                        {{ user.ativo ? 'Ativo' : 'Inativo' }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-right" *hasRole="'ADMIN'">
+                                    <button mat-icon-button (click)="viewAudit(user)" matTooltip="Ver Histórico">
+                                        <mat-icon class="icon-size-5 text-secondary" [svgIcon]="'heroicons_outline:clock'"></mat-icon>
+                                    </button>
+                                    <button mat-icon-button (click)="editUser(user)">
+                                        <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:pencil-square'"></mat-icon>
+                                    </button>
+                                    <button mat-icon-button class="text-red-600" (click)="deleteUser(user)">
+                                        <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Create/Edit Mode -->
+            <div *ngIf="mode === 'create' || mode === 'edit'" class="max-w-3xl mx-auto">
+                <div class="flex flex-col flex-auto p-6 sm:p-8 bg-card shadow rounded-2xl overflow-hidden">
+                    <div class="text-lg font-medium">{{ mode === 'create' ? 'Novo Usuário' : 'Editar Usuário' }}</div>
+                    <div class="text-secondary">Preencha os dados do colaborador abaixo.</div>
+
+                    <form [formGroup]="userForm" class="flex flex-col mt-8">
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
+                            <!-- Name -->
+                            <mat-form-field class="fuse-mat-no-subscript">
+                                <mat-label>Nome Completo</mat-label>
+                                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_outline:user'"></mat-icon>
+                                <input matInput [formControlName]="'nome'">
+                            </mat-form-field>
+
+                            <!-- Email -->
+                            <mat-form-field class="fuse-mat-no-subscript">
+                                <mat-label>E-mail</mat-label>
+                                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_outline:envelope'"></mat-icon>
+                                <input matInput [formControlName]="'email'">
+                            </mat-form-field>
+
+                            <!-- CPF -->
+                            <mat-form-field class="fuse-mat-no-subscript">
+                                <mat-label>CPF</mat-label>
+                                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_outline:identification'"></mat-icon>
+                                <input matInput [formControlName]="'cpf'">
+                            </mat-form-field>
+
+                            <!-- Role -->
+                            <mat-form-field class="fuse-mat-no-subscript">
+                                <mat-label>Perfil / Role</mat-label>
+                                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_outline:shield-check'"></mat-icon>
+                                <mat-select [formControlName]="'role'">
+                                    <mat-option *ngFor="let role of roles" [value]="role">
+                                        {{ role }}
+                                    </mat-option>
+                                </mat-select>
+                            </mat-form-field>
+
+                            <!-- Telefone -->
+                            <mat-form-field class="fuse-mat-no-subscript">
+                                <mat-label>Telefone</mat-label>
+                                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_outline:phone'"></mat-icon>
+                                <input matInput [formControlName]="'telefone'" placeholder="Ex: 11988887777">
+                            </mat-form-field>
+                        </div>
+
+                        <!-- Password -->
+                        <mat-form-field class="mt-6 fuse-mat-no-subscript">
+                            <mat-label>{{ mode === 'create' ? 'Senha' : 'Nova Senha (deixe em branco para manter)' }}</mat-label>
+                            <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_outline:lock-closed'"></mat-icon>
+                            <input matInput type="password" [formControlName]="'senha'">
+                        </mat-form-field>
+
+                        <!-- Ativo -->
+                        <div class="mt-6">
+                            <mat-checkbox [formControlName]="'ativo'" [color]="'primary'">Usuário Ativo</mat-checkbox>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex items-center justify-end mt-10 gap-3">
+                            <button mat-stroked-button (click)="cancel()">
+                                {{ 'CANCELAR' | transloco }}
+                            </button>
+                            <button mat-flat-button [color]="'primary'" (click)="saveUser()" [disabled]="userForm.invalid">
+                                {{ mode === 'create' ? 'Criar Usuário' : 'Salvar Alterações' }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Audit Mode -->
+            <div *ngIf="mode === 'audit'" class="max-w-4xl mx-auto">
+                <div class="flex flex-col flex-auto p-6 sm:p-8 bg-card shadow rounded-2xl overflow-hidden">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <div class="text-lg font-medium">Histórico de Alterações</div>
+                            <div class="text-secondary">Usuário: <span class="font-semibold text-primary">{{ selectedUser?.nome }}</span></div>
+                        </div>
+                        <button mat-stroked-button (click)="cancel()">
+                            <mat-icon class="icon-size-5 mr-2" [svgIcon]="'heroicons_outline:arrow-uturn-left'"></mat-icon>
+                            Voltar
+                        </button>
+                    </div>
+
+                    <app-audit-timeline [logs]="auditLogs"></app-audit-timeline>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

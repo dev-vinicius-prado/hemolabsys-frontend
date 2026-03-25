@@ -1,0 +1,134 @@
+<div class="absolute inset-0 flex flex-col min-w-0 overflow-hidden">
+  <!-- Header -->
+  <div class="relative flex flex-col flex-0 lg:flex-row lg:items-center lg:justify-between px-6 pt-6 pb-4 lg:pr-8 lg:pl-7 sm:pt-10 sm:pb-6 bg-primary-700 dark:bg-transparent">
+    <div class="flex flex-col items-start flex-auto min-w-0">
+      <div class="text-2xl sm:text-4xl font-extrabold tracking-tight leading-none text-on-primary dark:text-white">
+        Almoxarifados · Lista
+      </div>
+      <div class="text-on-primary/80 mt-2">Gerencie seus almoxarifados: criar, editar, visualizar e excluir.</div>
+    </div>
+    <div class="mt-4 lg:mt-0 flex items-center gap-3">
+       <button class="fuse-mat-button-large bg-primary text-on-primary rounded-xl p-2 flex items-center border border-solid border-white"
+       mat-flat-button (click)="novoAlmoxarifado()">
+                        <mat-icon class="text-white" [svgIcon]="'heroicons_outline:plus-circle'"></mat-icon>
+                        <span class="ml-2">Novo Almoxarifado</span>
+                    </button>
+        <button class="fuse-mat-button-large bg-card border rounded-xl p-2 flex items-center" mat-stroked-button
+                    (click)="exportCsv()">
+                        <mat-icon class="text-black" [svgIcon]="'heroicons_outline:document-chart-bar'"></mat-icon>
+                        <span class="ml-2">Exportar CSV</span>
+                    </button>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="flex flex-auto overflow-hidden">
+    <div class="flex flex-col flex-auto overflow-y-auto -webkit-overflow-scrolling-touch">
+      <div class="flex-auto p-6 sm:p-10">
+        <!-- Filtros e busca -->
+        <div class="flex flex-col sm:flex-row gap-4 items-stretch sm:items-end mb-6">
+          <div class="flex-1">
+            <label class="block text-md font-bold text-secondary mb-1">Pesquisa</label>
+            <input class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none" [(ngModel)]="_search" (ngModelChange)="search = $event" placeholder="Buscar por código, descrição ou tipo..." />
+          </div>
+        </div>
+
+        <!-- Formulário de criação/edição/visualização -->
+        <div *ngIf="formVisible" class="mb-6 p-6 bg-card rounded-2xl shadow border border-gray-200">
+          <div class="text-lg font-semibold mb-4">{{ viewOnly ? 'Visualizar Almoxarifado' : (editingId ? 'Editar Almoxarifado' : 'Novo Almoxarifado') }}</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm text-secondary mb-1">Código</label>
+              <input class="w-full px-3 py-2 rounded-lg border" [(ngModel)]="form.codigo" [readonly]="viewOnly" />
+            </div>
+            <div>
+              <label class="block text-sm text-secondary mb-1">Descrição</label>
+              <input class="w-full px-3 py-2 rounded-lg border" [(ngModel)]="form.descricao" [readonly]="viewOnly" />
+            </div>
+            <div>
+              <label class="block text-sm text-secondary mb-1">Tipo de Serviço</label>
+              <select class="w-full px-3 py-2 rounded-lg border" [(ngModel)]="form.tipo" [disabled]="viewOnly">
+                <option value="ALMOXARIFADO">ALMOXARIFADO</option>
+                <option value="SERVICO_EAC">SERVICO_EAC</option>
+                <option value="SERVICO_POSTO_COLETA">SERVICO_POSTO_COLETA</option>
+                <option value="SERVICO_LABORATORIO_CENTRAL">SERVICO_LABORATORIO_CENTRAL</option>
+              </select>
+            </div>
+            <!-- EmpresaId fixo por enquanto, como no padrão do projeto -->
+          </div>
+          <div class="mt-6 flex gap-3">
+            <button *ngIf="!viewOnly" class="px-4 py-2 rounded-lg bg-primary-500 text-white hover:bg-primary-600" (click)="salvar()">Salvar</button>
+            <button class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200" (click)="cancelar()">Fechar</button>
+          </div>
+        </div>
+
+        <!-- Histórico de Auditoria -->
+        <div *ngIf="auditVisible" class="mb-6 p-6 bg-card rounded-2xl shadow border border-gray-200">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <div class="text-lg font-semibold">Histórico de Alterações</div>
+              <div class="text-secondary text-sm">Almoxarifado: <span class="font-bold text-primary">{{ selectedAlmoxarifado?.descricao }}</span></div>
+            </div>
+            <button class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 flex items-center" (click)="closeAudit()">
+              <mat-icon class="icon-size-5 mr-2" [svgIcon]="'heroicons_outline:arrow-uturn-left'"></mat-icon>
+              Voltar
+            </button>
+          </div>
+          <app-audit-timeline [logs]="auditLogs"></app-audit-timeline>
+        </div>
+
+        <div *ngIf="!formVisible && !auditVisible" class="bg-card rounded-2xl shadow overflow-x-auto">
+            <!-- Componente de Paginação -->
+            <app-pagination
+            *ngIf="!formVisible && (pagination$ | async) as p"
+            [page]="currentPage"
+            [size]="pageSize"
+            [totalElements]="p.totalElements"
+            [totalPages]="p.totalPages"
+            (pageChange)="onPageChange($event)"
+            (sizeChange)="onSizeChange($event)"></app-pagination>
+            <!-- Tabela -->
+            <table class="w-full text-left">
+            <thead>
+              <tr class="bg-gray-50">
+                <th class="px-4 py-3 border-b">Sel.</th>
+                <th class="px-4 py-3 border-b">Código</th>
+                <th class="px-4 py-3 border-b">Descrição</th>
+                <th class="px-4 py-3 border-b">Tipo</th>
+                <th class="px-4 py-3 border-b">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let a of (filteredAlmoxarifados$ | async)" class="hover:bg-gray-50">
+                <td class="px-4 py-3 border-b"><input type="checkbox" [checked]="selectedIds.has(a.id)" (change)="toggleSelect(a.id)" /></td>
+                <td class="px-4 py-3 border-b">{{ a.codigo }}</td>
+                <td class="px-4 py-3 border-b">{{ a.descricao }}</td>
+                <td class="px-4 py-3 border-b">{{ a.tipo }}</td>
+                <td class="px-4 py-3 border-b">
+                  <div class="flex gap-2">
+                    <button class="px-2 py-1 rounded bg-gray-100 hover:bg-gray-200" (click)="viewAudit(a)" title="Ver Histórico" *hasRole="['ADMIN', 'GERENTE']">
+                      <mat-icon class="icon-size-4 text-secondary" [svgIcon]="'heroicons_outline:clock'"></mat-icon>
+                    </button>
+                    <button class="px-2 py-1 rounded bg-gray-100 hover:bg-gray-200" (click)="editar(a)" title="Editar">✏️</button>
+                    <button class="px-2 py-1 rounded bg-gray-100 hover:bg-gray-200" (click)="visualizar(a)" title="Visualizar">👁️</button>
+                    <button class="px-2 py-1 rounded bg-red-100 hover:bg-red-200 text-red-700" (click)="excluir(a)" title="Excluir">🗑️</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+            <ng-container *ngIf="(filteredAlmoxarifados$ | async)?.length === 0">
+              <tfoot>
+                <tr>
+                  <td colspan="5" class="text-center py-4 text-secondary">
+                    Nenhum registro cadastrado
+                  </td>
+                </tr>
+              </tfoot>
+            </ng-container>
+          </table>
+          <div class="p-4 text-sm text-secondary">Total: {{ (filteredAlmoxarifados$ | async)?.length || 0 }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -3,61 +3,123 @@ import { FuseNavigationItem } from '@fuse/components/navigation';
 
 export const defaultNavigation: FuseNavigationItem[] = [
     {
-        id   : 'rotina',
-        title: 'Rotina',
-        type : 'basic',
-        icon: 'heroicons_outline:pencil-square',
-        link : '/rotina'
+        id: 'dashboard',
+        title: 'Dashboard',
+        type: 'basic',
+        icon: 'heroicons_outline:chart-pie',
+        link: '/dashboard',
     },
     {
-        id   : 'estoque',
-        title: 'Estoque',
-        type : 'collapsable',
-        icon: 'heroicons_outline:archive-box-arrow-down',
-        link : '/estoque',
-        children: [
-            {
-                id   : 'fornecedor',
-                title: 'Fornecedores',
-                type : 'basic',
-                link : '/fornecedor',
-                icon : 'heroicons_outline:home-modern'
-            },
-        ],
-    },
-    {
-        id   : 'financeiro', title: 'Financeiro',
-        type : 'basic',
-        icon: 'heroicons_outline:banknotes',
-        link : '/financeiro'
-    },
-    {
-        id   : 'clinica',
-        title: 'Clínica',
-        type : 'basic',
+        id: 'insumos',
+        title: 'Insumos',
+        type: 'basic',
         icon: 'heroicons_outline:beaker',
-        link : '/clinica'
+        link: '/insumos',
     },
     {
-        id   : 'integracao',
-        title: 'Integração',
-        type : 'basic',
-        icon: 'heroicons_outline:arrow-path-rounded-square',
-        link : '/integracao'
+        id: 'entradas',
+        title: 'Entradas',
+        type: 'basic',
+        icon: 'heroicons_outline:arrow-down-on-square',
+        link: '/entradas',
     },
     {
-        id   : 'configuracao',
-        title: 'Configuracoes',
-        type : 'collapsable',
-        icon : 'heroicons_outline:adjustments-horizontal',
+        id: 'saidas',
+        title: 'Saídas',
+        type: 'basic',
+        icon: 'heroicons_outline:arrow-up-on-square',
+        link: '/saidas',
+    },
+    {
+        id: 'movimentacao',
+        title: 'Movimentações',
+        type: 'basic',
+        icon: 'heroicons_outline:arrow-path',
+        link: '/movimentacoes',
+    },
+    {
+        id: 'relatorios',
+        title: 'Relatórios',
+        type: 'basic',
+        icon: 'heroicons_outline:document-chart-bar',
+        link: '/relatorios',
+        meta: {
+            roles: ['ADMIN', 'GERENTE', 'COORDENADOR']
+        }
+    },
+    {
+        id: 'configuracao',
+        title: 'Configurações',
+        type: 'collapsable',
+        icon: 'heroicons_outline:adjustments-horizontal',
         children: [
             {
-                id   : 'preferencias',
+                id: 'alertas',
+                title: 'Alertas',
+                type: 'basic',
+                icon: 'heroicons_outline:bell-alert',
+                link: '/alertas',
+            },
+            {
+                id: 'almoxarifado',
+                title: 'Almoxarifados',
+                type: 'basic',
+                icon: 'heroicons_outline:home-modern',
+                link: '/almoxarifado',
+            },
+            {
+                id: 'insumos',
+                title: 'Insumos',
+                type: 'basic',
+                icon: 'heroicons_outline:beaker',
+                link: '/insumos',
+            },
+            {
+                id: 'lotes',
+                title: 'Lotes',
+                type: 'basic',
+                icon: 'heroicons_outline:rectangle-stack',
+                link: '/lotes',
+            },
+            {
+                id: 'metas-estoque',
+                title: 'Metas de Estoque',
+                type: 'basic',
+                icon: 'heroicons_outline:presentation-chart-line',
+                link: '/metas',
+            },
+            {
+                id: 'setores',
+                title: 'Setores',
+                type: 'basic',
+                icon: 'heroicons_outline:building-office-2',
+                link: '/setor',
+            },
+            {
+                id: 'preferencias',
                 title: 'Preferências',
-                type : 'basic',
-                link : '/preferencias',
-                icon : 'heroicons_outline:cog-6-tooth'
+                type: 'collapsable',
+                icon: 'heroicons_outline:cog-6-tooth',
+                children: [
+                    {
+                        id: 'preferencias.empresa',
+                        title: 'Empresas',
+                        type: 'basic',
+                        icon: 'heroicons_outline:building-office',
+                        link: '/preferencias/empresa',
+                    }
+                ]
+            },
+            {
+                id: 'users',
+                title: 'Usuários',
+                type: 'basic',
+                icon: 'heroicons_outline:users',
+                link: '/users',
+                meta: {
+                    roles: ['ADMIN', 'GERENTE']
+                }
             },
         ],
-    }
+    },
 ];

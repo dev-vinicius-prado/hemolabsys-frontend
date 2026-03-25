@@ -1,0 +1,128 @@
+<div class="absolute inset-0 flex flex-col min-w-0 overflow-hidden">
+    <!-- Header -->
+    <div class="relative flex flex-col flex-0 lg:flex-row lg:items-center lg:justify-between px-6 pt-6 pb-4 lg:pr-8 lg:pl-7 sm:pt-10 sm:pb-6 bg-primary-700 dark:bg-transparent">
+        <div class="flex flex-col items-start flex-auto min-w-0">
+        <div class="text-2xl sm:text-4xl font-extrabold tracking-tight leading-none text-on-primary dark:text-white">
+        Registro de Entrada de Insumos
+        </div>
+        <div class="text-on-primary/80 mt-2">Faça o registro de entrada de insumos para gerenciar o estoque de forma eficiente.</div>
+        </div>
+    </div>
+    <div class="flex flex-auto overflow-hidden">
+        <div class="flex flex-col flex-auto overflow-y-auto -webkit-overflow-scrolling-touch">
+            <div class="flex-auto p-6 sm:p-10">
+                <div class="bg-card rounded-2xl shadow overflow-x-auto">
+                    <form class="flex flex-col mt-6" [formGroup]="entradaForm" (ngSubmit)="submitEntrada()">
+                        <mat-horizontal-stepper #stepper>
+                            <mat-step [stepControl]="entradaForm.get('contexto')">
+                                <ng-template matStepLabel>Selecionar Insumo e Contexto</ng-template>
+                                <div [formGroupName]="'contexto'">
+                                    <mat-form-field class="fuse-mat-no-subscript w-full">
+                                        <mat-label>Almoxarifado</mat-label>
+                                        <mat-select [formControlName]="'almoxarifadoId'">
+                                            <mat-option *ngFor="let almoxarifado of (almoxarifados$ | async)" [value]="almoxarifado.id">
+                                                {{ almoxarifado.codigo }} - {{ almoxarifado.descricao }}
+                                            </mat-option>
+                                        </mat-select>
+                                        <mat-error *ngIf="entradaForm.get('contexto.almoxarifadoId')?.hasError('required')">
+                                            Almoxarifado é obrigatório.
+                                        </mat-error>
+                                    </mat-form-field>
+
+                                    <mat-form-field class="fuse-mat-no-subscript w-full">
+                                        <mat-label>Insumo</mat-label>
+                                        <mat-select [formControlName]="'insumoId'" (selectionChange)="onInsumoSelect($event.value)">
+                                            <mat-option *ngFor="let insumo of (insumos$ | async)" [value]="insumo.id">
+                                                {{ insumo.codigo }} - {{ insumo.descricao }}
+                                            </mat-option>
+                                        </mat-select>
+                                        <mat-error *ngIf="entradaForm.get('contexto.insumoId')?.hasError('required')">
+                                            Insumo é obrigatório.
+                                        </mat-error>
+                                    </mat-form-field>
+
+                                    <mat-form-field class="fuse-mat-no-subscript w-full">
+                                        <mat-label>Fornecedor</mat-label>
+                                        <mat-select [formControlName]="'fornecedorId'">
+                                            <mat-option *ngFor="let fornecedor of (fornecedores$ | async)" [value]="fornecedor.id">
+                                                {{ fornecedor.nome }} - {{ fornecedor.cnpj }}
+                                            </mat-option>
+                                        </mat-select>
+                                        <mat-error *ngIf="entradaForm.get('contexto.fornecedorId')?.hasError('required')">
+                                            Fornecedor é obrigatório.
+                                        </mat-error>
+                                    </mat-form-field>
+                                </div>
+                                <div>
+                                    <button class="px-4 py-2 rounded-lg bg-primary-500 text-white hover:bg-primary-600"
+                                     mat-button matStepperNext>Próximo</button>
+                                </div>
+                            </mat-step>
+
+                            <mat-step [stepControl]="entradaForm.get('lote')">
+                                <ng-template matStepLabel>Informar Lote e Documento</ng-template>
+                                <div [formGroupName]="'lote'">
+                                    <mat-form-field class="fuse-mat-no-subscript w-full">
+                                        <mat-label>Número do Lote</mat-label>
+                                        <input matInput [formControlName]="'numeroLote'" type="text">
+                                        <mat-error *ngIf="entradaForm.get('lote.numeroLote')?.hasError('required')">
+                                            Número do lote é obrigatório.
+                                        </mat-error>
+                                    </mat-form-field>
+
+                                    <mat-form-field class="fuse-mat-no-subscript w-full">
+                                        <mat-label>Data de Fabricação</mat-label>
+                                        <input matInput [formControlName]="'dataFabricacao'" type="date">
+                                    </mat-form-field>
+
+                                    <mat-form-field class="fuse-mat-no-subscript w-full">
+                                        <mat-label>Data de Validade</mat-label>
+                                        <input matInput [formControlName]="'dataValidade'" type="date">
+                                        <mat-error *ngIf="entradaForm.get('lote.dataValidade')?.hasError('required')">
+                                            Data de validade é obrigatória.
+                                        </mat-error>
+                                    </mat-form-field>
+
+                                    <mat-form-field class="fuse-mat-no-subscript w-full">
+                                        <mat-label>Número da Nota Fiscal</mat-label>
+                                        <input matInput [formControlName]="'numeroNotaFiscal'" type="text">
+                                        <mat-error *ngIf="entradaForm.get('lote.numeroNotaFiscal')?.hasError('required')">
+                                            Número da nota fiscal é obrigatório.
+                                        </mat-error>
+                                    </mat-form-field>
+                                </div>
+
+                                <div>
+                                    <button mat-button matStepperPrevious>Voltar</button>
+                                    <button mat-button matStepperNext>Próximo</button>
+                                </div>
+                            </mat-step>
+
+                            <mat-step [stepControl]="entradaForm.get('quantidade')">
+                                <ng-template matStepLabel>Informar Quantidade</ng-template>
+                                <div [formGroupName]="'quantidade'">
+                                    <mat-form-field class="fuse-mat-no-subscript w-full">
+                                        <mat-label>Quantidade</mat-label>
+                                        <input matInput [formControlName]="'quantidade'" type="number" min="1">
+                                        <mat-error *ngIf="entradaForm.get('quantidade.quantidade')?.hasError('required')">
+                                            Quantidade é obrigatória.
+                                        </mat-error>
+                                        <mat-error *ngIf="entradaForm.get('quantidade.quantidade')?.hasError('min')">
+                                            A quantidade deve ser no mínimo 1.
+                                        </mat-error>
+                                    </mat-form-field>
+                                </div>
+                                <div>
+                                    <button mat-button matStepperPrevious>Voltar</button>
+                                    <button class="fuse-mat-button-large" mat-flat-button [color]="'primary'" [disabled]="entradaForm.invalid" type="submit">
+                                        Registrar Entrada
+                                    </button>
+                                </div>
+                            </mat-step>
+                        </mat-horizontal-stepper>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

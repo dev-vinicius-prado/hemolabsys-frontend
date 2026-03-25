@@ -1,0 +1,136 @@
+<div class="absolute inset-0 flex flex-col min-w-0 overflow-hidden">
+    <!-- Header -->
+    <div class="relative flex flex-col flex-0 lg:flex-row lg:items-center lg:justify-between px-6 pt-6 pb-4 lg:pr-8 lg:pl-7 sm:pt-10 sm:pb-6 bg-primary-700 dark:bg-transparent">
+        <div class="flex flex-col items-start flex-auto min-w-0">
+        <div class="text-2xl sm:text-4xl font-extrabold tracking-tight leading-none text-on-primary dark:text-white">
+            Relatórios e Inteligência
+        </div>
+        <div class="text-on-primary/80 mt-2">Análise de consumo, estoque e conformidade</div>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex-auto p-2 sm:p-10">
+        <div class="max-w-screen-xl mx-auto">
+
+            <mat-tab-group class="sm:px-2" [animationDuration]="'0ms'">
+
+                <!-- Consumo -->
+                <mat-tab label="Consumo por Período">
+                    <div class="bg-card shadow rounded-2xl p-6 mt-8">
+                        <form [formGroup]="filterForm" class="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
+                            <mat-form-field class="fuse-mat-no-subscript">
+                                <mat-label>Início</mat-label>
+                                <input matInput [matDatepicker]="startPicker" formControlName="dataInicio">
+                                <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+                                <mat-datepicker #startPicker></mat-datepicker>
+                            </mat-form-field>
+
+                            <mat-form-field class="fuse-mat-no-subscript">
+                                <mat-label>Fim</mat-label>
+                                <input matInput [matDatepicker]="endPicker" formControlName="dataFim">
+                                <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+                                <mat-datepicker #endPicker></mat-datepicker>
+                            </mat-form-field>
+
+                            <mat-form-field class="fuse-mat-no-subscript">
+                                <mat-label>Setor (Opcional)</mat-label>
+                                <mat-select formControlName="setorId">
+                                    <mat-option [value]="null">Todos</mat-option>
+                                    <mat-option *ngFor="let s of setores" [value]="s.id">{{ s.nome }}</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+
+                            <button mat-flat-button [color]="'primary'" (click)="gerarRelatorioConsumo()" [disabled]="loadingConsumo">
+                                <mat-icon *ngIf="!loadingConsumo" [svgIcon]="'heroicons_outline:magnifying-glass'"></mat-icon>
+                                <span *ngIf="!loadingConsumo" class="ml-2">Gerar Relatório</span>
+                                <span *ngIf="loadingConsumo">Processando...</span>
+                            </button>
+                        </form>
+
+                        <div class="mt-8 overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead>
+                                    <tr class="bg-gray-50 border-b">
+                                        <th class="px-4 py-3 text-secondary font-semibold uppercase text-sm">Código</th>
+                                        <th class="px-4 py-3 text-secondary font-semibold uppercase text-sm">Insumo</th>
+                                        <th class="px-4 py-3 text-secondary font-semibold uppercase text-sm">Setor</th>
+                                        <th class="px-4 py-3 text-secondary font-semibold uppercase text-sm text-right">Qtd. Consumida</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y">
+                                    <tr *ngFor="let item of relatorioConsumo">
+                                        <td class="px-4 py-3 font-medium">{{ item.insumoCodigo }}</td>
+                                        <td class="px-4 py-3">
+                                            <div class="font-medium text-secondary text-sm">{{ item.insumoDescricao }}</div>
+                                        </td>
+                                        <td class="px-4 py-3 text-secondary text-sm">{{ item.setorNome }}</td>
+                                        <td class="px-4 py-3 text-right font-bold text-sm">{{ item.quantidadeConsumida }} {{ item.unidadeMedida }}</td>
+                                    </tr>
+                                    <tr *ngIf="relatorioConsumo.length === 0 && !loadingConsumo">
+                                        <td colspan="4" class="px-4 py-8 text-center text-secondary italic">
+                                            Selecione os filtros e clique em Gerar Relatório.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </mat-tab>
+
+                <!-- Estoque Crítico -->
+                <mat-tab label="Estoque Crítico">
+                    <div class="bg-card shadow rounded-2xl p-6 mt-8">
+                        <div class="flex items-center justify-between">
+                            <div class="text-lg font-semibold">Itens abaixo do estoque mínimo</div>
+                            <button mat-icon-button (click)="gerarRelatorioEstoqueBaixo()">
+                                <mat-icon [svgIcon]="'heroicons_outline:arrow-path'"></mat-icon>
+                            </button>
+                        </div>
+
+                        <div class="mt-6 overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead>
+                                    <tr class="bg-gray-50 border-b">
+                                        <th class="px-4 py-3 text-secondary font-semibold uppercase text-sm">Código</th>
+                                        <th class="px-4 py-3 text-secondary font-semibold uppercase text-sm">Insumo</th>
+                                        <th class="px-4 py-3 text-secondary font-semibold uppercase text-sm">Almoxarifado</th>
+                                        <th class="px-4 py-3 text-secondary font-semibold uppercase text-sm text-right">Qtd. Atual</th>
+                                        <th class="px-4 py-3 text-secondary font-semibold uppercase text-sm text-right">Qtd. Mínima</th>
+                                        <th class="px-4 py-3 text-secondary font-semibold uppercase text-sm text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y">
+                                    <tr *ngFor="let item of relatorioEstoqueBaixo">
+                                        <td class="px-4 py-3 font-medium">{{ item.insumoCodigo }}</td>
+                                        <td class="px-4 py-3">
+                                            <div class="font-medium text-secondary text-md">{{ item.insumoDescricao }}</div>
+                                        </td>
+                                        <td class="px-4 py-3 text-secondary text-md">{{ item.almoxarifadoNome }}</td>
+                                        <td class="px-4 py-3 text-right font-bold text-md" [ngClass]="item.status === 'CRITICO' ? 'text-red-600' : 'text-orange-600'">
+                                            {{ item.quantidadeAtual }} {{ item.unidadeMedida }}
+                                        </td>
+                                        <td class="px-4 py-3 text-right text-secondary text-md">{{ item.quantidadeMinima }} {{ item.unidadeMedida }}</td>
+                                        <td class="px-4 py-3 text-center">
+                                            <span class="px-2 py-1 rounded-full font-bold uppercase tracking-wide"
+                                                [ngClass]="item.status === 'CRITICO' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'">
+                                                {{ item.status }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr *ngIf="relatorioEstoqueBaixo.length === 0 && !loadingEstoque">
+                                        <td colspan="6" class="px-4 py-8 text-center text-secondary italic">
+                                            Nenhum item com estoque baixo no momento.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </mat-tab>
+
+            </mat-tab-group>
+
+        </div>
+    </div>
+</div>

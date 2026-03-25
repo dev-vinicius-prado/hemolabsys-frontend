@@ -16,7 +16,7 @@
 <!-- Notifications panel -->
 <ng-template #notificationsPanel>
 
-    <div class="fixed inset-0 sm:static sm:inset-auto flex flex-col sm:min-w-90 sm:w-90 sm:rounded-2xl overflow-hidden shadow-lg">
+    <div class="fixed inset-0 sm:static sm:inset-auto flex flex-col sm:min-w-90 sm:w-90 sm:rounded-2xl overflow-hidden shadow-lg" *transloco="let t">
 
         <!-- Header -->
         <div class="flex shrink-0 items-center py-4 pr-4 pl-6 bg-primary text-on-primary">
@@ -29,11 +29,11 @@
                         [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
                 </button>
             </div>
-            <div class="text-lg font-medium leading-10">Notifications</div>
+            <div class="text-lg font-medium leading-10">{{ t('NOTIFICACOES') }}</div>
             <div class="ml-auto">
                 <button
                     mat-icon-button
-                    [matTooltip]="'Mark all as read'"
+                    [matTooltip]="t('MARCAR_TODAS_LIDAS')"
                     [disabled]="unreadCount === 0"
                     (click)="markAllAsRead()">
                     <mat-icon
@@ -85,7 +85,7 @@
                             class="w-6 h-6 min-h-6"
                             mat-icon-button
                             (click)="toggleRead(notification)"
-                            [matTooltip]="notification.read ? 'Mark as unread' : 'Mark as read'">
+                            [matTooltip]="notification.read ? t('MARCAR_COMO_NAO_LIDA') : t('MARCAR_COMO_LIDA')">
                             <span
                                 class="w-2 h-2 rounded-full"
                                 [ngClass]="{'bg-gray-400 dark:bg-gray-500 sm:opacity-0 sm:group-hover:opacity-100': notification.read,
@@ -96,7 +96,7 @@
                             class="w-6 h-6 min-h-6 sm:opacity-0 sm:group-hover:opacity-100"
                             mat-icon-button
                             (click)="delete(notification)"
-                            [matTooltip]="'Remove'">
+                            [matTooltip]="t('REMOVER_NOTIFICACAO')">
                             <mat-icon
                                 class="icon-size-4"
                                 [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
@@ -136,7 +136,7 @@
                                 [innerHTML]="notification.description"></div>
                         </ng-container>
                         <div class="mt-2 text-sm leading-none text-secondary">
-                            {{notification.time | date:'MMM dd, h:mm a'}}
+                            {{notification.time | date:'dd/MM/yyyy HH:mm'}}
                         </div>
                     </div>
                 </ng-template>
@@ -150,8 +150,8 @@
                             class="text-primary-700 dark:text-primary-50"
                             [svgIcon]="'heroicons_outline:bell'"></mat-icon>
                     </div>
-                    <div class="mt-5 text-2xl font-semibold tracking-tight">No notifications</div>
-                    <div class="w-full max-w-60 mt-1 text-md text-center text-secondary">When you have notifications, they will appear here.</div>
+                    <div class="mt-5 text-2xl font-semibold tracking-tight">{{ t('NOTIFICACOES') }}</div>
+                    <div class="w-full max-w-60 mt-1 text-md text-center text-secondary">{{ t('SEM_NOTIFICACOES') }}</div>
                 </div>
             </ng-container>
 

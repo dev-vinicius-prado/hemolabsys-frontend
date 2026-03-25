@@ -1,0 +1,43 @@
+<div class="flex flex-col flex-auto min-w-0 p-4">
+    <div *ngIf="logs.length === 0" class="flex flex-col items-center justify-center p-8 text-secondary">
+        <mat-icon class="icon-size-12 mb-2" [svgIcon]="'heroicons_outline:information-circle'"></mat-icon>
+        <div class="text-md">Nenhum histórico encontrado para este registro.</div>
+    </div>
+
+    <div *ngIf="logs.length > 0" class="relative">
+        <!-- Vertical Line -->
+        <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200 ml-0.5"></div>
+
+        <div *ngFor="let log of logs" class="relative flex items-start mb-10 pl-10">
+            <!-- Timeline Dot -->
+            <div class="absolute left-0 w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center z-10 border-4 border-white">
+                <mat-icon class="icon-size-5 text-primary" [svgIcon]="'heroicons_outline:clock'"></mat-icon>
+            </div>
+
+            <div class="flex flex-col min-w-0 bg-card shadow-sm border rounded-xl p-4 w-full">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center">
+                        <mat-icon class="icon-size-4 text-secondary mr-1" [svgIcon]="'heroicons_outline:user'"></mat-icon>
+                        <span class="font-semibold text-md">{{ log.author }}</span>
+                    </div>
+                    <div class="text-xs text-secondary">
+                        {{ log.commitDate | date:'dd/MM/yyyy HH:mm:ss' }}
+                    </div>
+                </div>
+
+                <div class="text-xs text-secondary mb-3 font-mono">ID: {{ log.commitId.substring(0, 8) }}</div>
+
+                <div class="space-y-2">
+                    <div *ngFor="let change of log.changes" class="text-sm p-2 bg-gray-50 rounded border border-gray-100">
+                        <div class="font-medium text-secondary mb-1 uppercase text-xxs tracking-wider">{{ change.property }}</div>
+                        <div class="flex items-center flex-wrap gap-2">
+                            <span class="line-through text-red-500 bg-red-50 px-1 rounded">{{ formatValue(change.oldValue) }}</span>
+                            <mat-icon class="icon-size-3 text-secondary" [svgIcon]="'heroicons_outline:arrow-long-right'"></mat-icon>
+                            <span class="text-green-600 bg-green-50 px-1 rounded font-semibold">{{ formatValue(change.newValue) }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

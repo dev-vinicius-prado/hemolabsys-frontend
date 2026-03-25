@@ -5,10 +5,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { FuseFullscreenComponent } from '@fuse/components/fullscreen';
 import { FuseLoadingBarComponent } from '@fuse/components/loading-bar';
-import { FuseNavigationService, FuseVerticalNavigationComponent } from '@fuse/components/navigation';
+import { FuseNavigationService, FuseVerticalNavigationComponent, FuseNavigationItem } from '@fuse/components/navigation';
 import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
 import { NavigationService } from 'app/core/navigation/navigation.service';
 import { Navigation } from 'app/core/navigation/navigation.types';
+import { UserService } from 'app/core/user/user.service';
+import { User } from 'app/core/user/user.types';
 import { LanguagesComponent } from 'app/layout/common/languages/languages.component';
 import { MessagesComponent } from 'app/layout/common/messages/messages.component';
 import { NotificationsComponent } from 'app/layout/common/notifications/notifications.component';
@@ -16,7 +18,7 @@ import { QuickChatComponent } from 'app/layout/common/quick-chat/quick-chat.comp
 import { SearchComponent } from 'app/layout/common/search/search.component';
 import { ShortcutsComponent } from 'app/layout/common/shortcuts/shortcuts.component';
 import { UserComponent } from 'app/layout/common/user/user.component';
-import { Subject, takeUntil } from 'rxjs';
+import { combineLatest, Subject, takeUntil } from 'rxjs';
 
 @Component({
     selector     : 'classic-layout',
@@ -38,6 +40,7 @@ export class ClassicLayoutComponent implements OnInit, OnDestroy
         private _activatedRoute: ActivatedRoute,
         private _router: Router,
         private _navigationService: NavigationService,
+        private _userService: UserService,
         private _fuseMediaWatcherService: FuseMediaWatcherService,
         private _fuseNavigationService: FuseNavigationService,
     )
@@ -65,12 +68,22 @@ export class ClassicLayoutComponent implements OnInit, OnDestroy
      */
     ngOnInit(): void
     {
-        // Subscribe to navigation data
-        this._navigationService.navigation$
+        // Subscribe to navigation data and user data
+        combineLatest([
+            this._navigationService.navigation$,
+            this._userService.user$
+        ])
             .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((navigation: Navigation) =>
+            .subscribe(([navigation, user]) =>
             {
-                this.navigation = navigation;
+                // Clone the navigation data
+                const clonedNavigation = JSON.parse(JSON.stringify(navigation));
+
+                // Filter the navigation items based on the user's role
+                this.navigation = {
+                    ...clonedNavigation,
+                    default: this._filterNavigation(clonedNavigation.default, user)
+                };
             });
 
         // Subscribe to media changes
@@ -96,6 +109,45 @@ export class ClassicLayoutComponent implements OnInit, OnDestroy
     // -----------------------------------------------------------------------------------------------------
     // @ Public methods
     // -----------------------------------------------------------------------------------------------------
+
+    /**
+     * Filter navigation items based on the user's role
+     *
+     * @param navigation
+     * @param user
+     * @private
+     */
+    private _filterNavigation(navigation: FuseNavigationItem[], user: User): FuseNavigationItem[]
+    {
+        return navigation.filter((item) => {
+            // If the item has a 'meta.roles' property...
+            if ( item.meta && item.meta.roles )
+            {
+                // Check if the user's role is included in the roles array
+                const hasRole = item.meta.roles.includes(user.role);
+
+                // If the user doesn't have the role, don't show the item
+                if ( !hasRole )
+                {
+                    return false;
+                }
+            }
+
+            // If the item has children, filter them as well
+            if ( item.children )
+            {
+                item.children = this._filterNavigation(item.children, user);
+
+                // If the item is collapsable and has no children left after filtering, don't show the item
+                if ( item.type === 'collapsable' && item.children.length === 0 )
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        });
+    }
 
     /**
      * Toggle navigation

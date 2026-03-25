@@ -1,0 +1,178 @@
+<div class="flex flex-col flex-auto min-w-0">
+
+    <!-- Header -->
+    <div class="bg-card">
+        <div class="flex flex-col w-full max-w-screen-xl mx-auto px-6 sm:px-8">
+            <div class="flex flex-col sm:flex-row flex-auto sm:items-center min-w-0 my-8 sm:my-12">
+                <!-- Avatar and Welcome -->
+                <div class="flex flex-auto items-center min-w-0" *ngIf="user$ | async as user">
+                    <div class="flex-0 w-16 h-16 rounded-full overflow-hidden">
+                        <img class="w-full h-full object-cover" [src]="user.avatar">
+                    </div>
+                    <div class="flex flex-col min-w-0 ml-4">
+                        <div class="text-2xl md:text-5xl font-semibold tracking-tight leading-7 md:leading-snug truncate">
+                            {{ greeting | transloco }}, {{ user.nome.split(' ')[0] }}!
+                        </div>
+                        <div class="flex items-center mt-1.5">
+                            <mat-icon class="icon-size-5 text-secondary" [svgIcon]="'heroicons_outline:calendar-days'"></mat-icon>
+                            <div class="ml-1.5 text-md text-secondary font-medium tracking-tight">
+                                {{ today | date: 'fullDate':'':'pt-BR' }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Actions -->
+                <div class="flex items-center mt-6 sm:mt-0 sm:ml-2 space-x-3">
+                    <button class="fuse-mat-button-large bg-primary text-on-primary rounded-xl p-2 flex items-center" mat-flat-button
+                    (click)="criarEntrada()">
+                        <mat-icon class="text-white" [svgIcon]="'heroicons_outline:plus-circle'"></mat-icon>
+                        <span class="ml-2">Nova Entrada</span>
+                    </button>
+                    <button class="fuse-mat-button-large bg-card border rounded-xl p-2 flex items-center" mat-stroked-button
+                    (click)="visualizarRelatorios()">
+                        <mat-icon class="text-black" [svgIcon]="'heroicons_outline:document-chart-bar'"></mat-icon>
+                        <span class="ml-2">Relatórios</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex-auto border-t -mt-px pt-4 sm:pt-6 pb-8">
+        <div class="w-full max-w-screen-xl mx-auto px-6 sm:px-8">
+
+            <!-- Metrics -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+                <div *ngFor="let metric of metrics"
+                     class="flex flex-col flex-auto p-6 bg-card rounded-2xl shadow-sm border-b-4"
+                     [ngClass]="{
+                        'border-blue-500': metric.color === 'blue',
+                        'border-amber-500': metric.color === 'amber',
+                        'border-red-500': metric.color === 'red',
+                        'border-indigo-500': metric.color === 'indigo'
+                     }">
+                    <div class="flex items-start justify-between">
+                        <div class="text-sm font-semibold text-secondary uppercase tracking-wider">{{ metric.title }}</div>
+                        <mat-icon class="icon-size-6 text-secondary" [svgIcon]="metric.icon"></mat-icon>
+                    </div>
+                    <div class="flex items-baseline mt-4">
+                        <div class="text-4xl font-bold tracking-tight">{{ metric.value }}</div>
+                        <div class="ml-2 text-md font-medium text-secondary">{{ metric.label }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Consumption Chart -->
+            <div class="grid grid-cols-1 gap-8 w-full mt-8">
+                <div class="flex flex-col flex-auto bg-card shadow-sm rounded-2xl overflow-hidden">
+                    <div class="p-6 border-b flex items-center justify-between">
+                        <div>
+                            <div class="text-lg font-semibold tracking-tight">Tendência de Consumo Semanal</div>
+                            <div class="text-md text-secondary font-medium">Volume de saídas aprovadas nos últimos 7 dias.</div>
+                        </div>
+                        <div class="flex items-center">
+                            <mat-icon class="icon-size-5 text-green-500" [svgIcon]="'heroicons_outline:arrow-trending-up'"></mat-icon>
+                            <span class="ml-1.5 text-sm font-medium text-green-500">+12.5%</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col flex-auto p-6 h-80">
+                        <apx-chart
+                            [series]="chartOptions.series"
+                            [chart]="chartOptions.chart"
+                            [xaxis]="chartOptions.xaxis"
+                            [stroke]="chartOptions.stroke"
+                            [tooltip]="chartOptions.tooltip"
+                            [dataLabels]="chartOptions.dataLabels"
+                            [colors]="chartOptions.colors"
+                            [fill]="chartOptions.fill"
+                        ></apx-chart>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-8 w-full mt-8">
+
+                <!-- Inventory Status (Left 2/3) -->
+                <div class="xl:col-span-2 flex flex-col flex-auto bg-card shadow-sm rounded-2xl overflow-hidden">
+                    <div class="p-6 border-b">
+                        <div class="text-lg font-semibold tracking-tight">Inventário em Estado Crítico</div>
+                        <div class="text-md text-secondary font-medium">Insumos com estoque abaixo do mínimo de segurança.</div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="bg-gray-50 dark:bg-transparent">
+                                    <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">Insumo</th>
+                                    <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">Qtd Atual</th>
+                                    <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">Mínimo</th>
+                                    <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr *ngFor="let product of products" class="hover:bg-gray-50 dark:hover:bg-hover transition-colors">
+                                    <td class="px-6 py-4">
+                                        <div class="font-semibold">{{ product.name }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 font-mono font-medium">{{ product.currentQuantity }}</td>
+                                    <td class="px-6 py-4 font-mono text-secondary">{{ product.minQuantity }}</td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide"
+                                              [ngClass]="{
+                                                'bg-red-100 text-red-800': product.status === 'CRITICO',
+                                                'bg-amber-100 text-amber-800': product.status === 'BAIXO'
+                                              }">
+                                            <mat-icon class="icon-size-4 mr-1" [svgIcon]="product.statusIcon"></mat-icon>
+                                            {{ product.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr *ngIf="products.length === 0">
+                                    <td colspan="4" class="px-6 py-12 text-center text-secondary font-medium">
+                                        Nenhum item em estado crítico no momento.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="p-4 border-t bg-gray-50 dark:bg-transparent text-right">
+                        <button class="text-primary font-semibold text-sm hover:underline" mat-button [routerLink]="['/metas']">Ver Estoque Completo</button>
+                    </div>
+                </div>
+
+                <!-- Alerts Feed (Right 1/3) -->
+                <div class="flex flex-col flex-auto bg-card shadow-sm rounded-2xl overflow-hidden">
+                    <div class="p-6 border-b flex items-center justify-between">
+                        <div>
+                            <div class="text-lg font-semibold tracking-tight text-red-600">Alertas de Validade</div>
+                            <div class="text-md text-secondary font-medium">Lotes próximos ao vencimento.</div>
+                        </div>
+                        <mat-icon class="text-red-500 animate-pulse" [svgIcon]="'heroicons_outline:bell-alert'"></mat-icon>
+                    </div>
+                    <div class="flex-auto overflow-y-auto max-h-120 p-6 space-y-6">
+                        <div *ngFor="let alert of alerts" class="flex items-start">
+                            <div class="flex-0 w-10 h-10 flex items-center justify-center rounded-full bg-red-100 text-red-600">
+                                <mat-icon class="icon-size-5" [svgIcon]="alert.statusIcon"></mat-icon>
+                            </div>
+                            <div class="ml-4 min-w-0">
+                                <div class="font-bold truncate text-gray-800">{{ alert.message }}</div>
+                                <div class="text-sm text-secondary mt-0.5 leading-relaxed">{{ alert.details }}</div>
+                            </div>
+                        </div>
+                        <div *ngIf="alerts.length === 0" class="flex flex-col items-center justify-center py-12 text-center">
+                            <mat-icon class="icon-size-12 text-secondary opacity-20" [svgIcon]="'heroicons_outline:check-circle'"></mat-icon>
+                            <div class="mt-4 text-secondary font-medium">Nenhum alerta de vencimento para os próximos 30 dias.</div>
+                        </div>
+                    </div>
+                    <div class="p-4 border-t text-center">
+                        <button class="w-full text-secondary font-semibold text-sm" mat-button [routerLink]="['/alertas']">Configurar Alertas</button>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
