@@ -82,6 +82,7 @@ export const appRoutes: Route[] = [
             { path: 'insumos', loadChildren: () => import('app/modules/admin/insumos/insumos.routes') },
             { path: 'setor', loadChildren: () => import('app/modules/admin/setor/setor.routes') },
             { path: 'lotes', loadChildren: () => import('app/modules/admin/lotes/lotes.routes') },
+            { path: 'metas', loadChildren: () => import('app/modules/admin/lotes/metas.routes') },
             { path: 'movimentacoes', loadChildren: () => import('app/modules/admin/movimentacoes/movimentacoes.routes') },
             { path: 'alertas', loadChildren: () => import('app/modules/admin/alertas/alertas.routes') },
             { path: 'entradas', component: EntradaComponent },

@@ -89,7 +89,7 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 title: 'Metas de Estoque',
                 type: 'basic',
                 icon: 'heroicons_outline:presentation-chart-line',
-                link: '/lotes/metas',
+                link: '/metas',
             },
             {
                 id: 'alertas',
