@@ -84,5 +84,11 @@
     "ONLINE": "Online",
     "OCUPADO": "Busy",
     "AUSENTE": "Away",
-    "INVISIVEL": "Invisible"
+    "INVISIVEL": "Invisible",
+    "NOTIFICACOES": "Notifications",
+    "MARCAR_TODAS_LIDAS": "Mark all as read",
+    "MARCAR_COMO_LIDA": "Mark as read",
+    "MARCAR_COMO_NAO_LIDA": "Mark as unread",
+    "REMOVER_NOTIFICACAO": "Remove notification",
+    "SEM_NOTIFICACOES": "You don't have any notifications!"
 }

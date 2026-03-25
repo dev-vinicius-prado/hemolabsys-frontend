@@ -81,5 +81,11 @@
     "ONLINE": "Online",
     "OCUPADO": "Ocupado",
     "AUSENTE": "Ausente",
-    "INVISIVEL": "Invisível"
+    "INVISIVEL": "Invisível",
+    "NOTIFICACOES": "Notificações",
+    "MARCAR_TODAS_LIDAS": "Marcar todas como lidas",
+    "MARCAR_COMO_LIDA": "Marcar como lida",
+    "MARCAR_COMO_NAO_LIDA": "Marcar como não lida",
+    "REMOVER_NOTIFICACAO": "Remover notificação",
+    "SEM_NOTIFICACOES": "Você não tem notificações!"
 }
