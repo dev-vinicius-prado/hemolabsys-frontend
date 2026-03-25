@@ -10,6 +10,13 @@ export const defaultNavigation: FuseNavigationItem[] = [
         link: '/dashboard',
     },
     {
+        id: 'insumos',
+        title: 'Insumos',
+        type: 'basic',
+        icon: 'heroicons_outline:beaker',
+        link: '/insumos',
+    },
+    {
         id: 'entradas',
         title: 'Entradas',
         type: 'basic',
@@ -47,21 +54,18 @@ export const defaultNavigation: FuseNavigationItem[] = [
         icon: 'heroicons_outline:adjustments-horizontal',
         children: [
             {
-                id: 'users',
-                title: 'Usuários',
+                id: 'alertas',
+                title: 'Alertas',
                 type: 'basic',
-                icon: 'heroicons_outline:users',
-                link: '/users',
-                meta: {
-                    roles: ['ADMIN', 'GERENTE']
-                }
+                icon: 'heroicons_outline:bell-alert',
+                link: '/alertas',
             },
             {
-                id: 'preferencias',
-                title: 'Preferências',
+                id: 'almoxarifado',
+                title: 'Almoxarifados',
                 type: 'basic',
-                link: '/preferencias',
-                icon: 'heroicons_outline:cog-6-tooth',
+                icon: 'heroicons_outline:home-modern',
+                link: '/almoxarifado',
             },
             {
                 id: 'insumos',
@@ -69,13 +73,6 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 type: 'basic',
                 icon: 'heroicons_outline:beaker',
                 link: '/insumos',
-            },
-            {
-                id: 'setores',
-                title: 'Setores',
-                type: 'basic',
-                icon: 'heroicons_outline:building-office-2',
-                link: '/setor',
             },
             {
                 id: 'lotes',
@@ -92,11 +89,36 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 link: '/metas',
             },
             {
-                id: 'alertas',
-                title: 'Alertas',
+                id: 'setores',
+                title: 'Setores',
                 type: 'basic',
-                icon: 'heroicons_outline:bell-alert',
-                link: '/alertas',
+                icon: 'heroicons_outline:building-office-2',
+                link: '/setor',
+            },
+            {
+                id: 'preferencias',
+                title: 'Preferências',
+                type: 'collapsable',
+                icon: 'heroicons_outline:cog-6-tooth',
+                children: [
+                    {
+                        id: 'preferencias.empresa',
+                        title: 'Empresas',
+                        type: 'basic',
+                        icon: 'heroicons_outline:building-office',
+                        link: '/preferencias/empresa',
+                    }
+                ]
+            },
+            {
+                id: 'users',
+                title: 'Usuários',
+                type: 'basic',
+                icon: 'heroicons_outline:users',
+                link: '/users',
+                meta: {
+                    roles: ['ADMIN', 'GERENTE']
+                }
             },
         ],
     },

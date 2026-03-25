@@ -80,6 +80,7 @@ export const appRoutes: Route[] = [
         children: [
             { path: 'dashboard', loadChildren: () => import('app/modules/admin/dashboard/dashboard.routes') },
             { path: 'insumos', loadChildren: () => import('app/modules/admin/insumos/insumos.routes') },
+            { path: 'almoxarifado', loadChildren: () => import('app/modules/admin/almoxarifado/almoxarifado.routes') },
             { path: 'setor', loadChildren: () => import('app/modules/admin/setor/setor.routes') },
             { path: 'lotes', loadChildren: () => import('app/modules/admin/lotes/lotes.routes') },
             { path: 'metas', loadChildren: () => import('app/modules/admin/lotes/metas.routes') },
@@ -100,7 +101,7 @@ export const appRoutes: Route[] = [
                 canActivate: [RoleGuard],
                 data: { roles: ['ADMIN', 'GERENTE', 'COORDENADOR'] }
             },
-            // { path: 'preferencias', loadChildren: () => import('app/modules/admin/preferencias/preferencias.routes') },
+            { path: 'preferencias', loadChildren: () => import('app/modules/admin/preferencias/preferencias.routes') },
         ]
     },
 ];

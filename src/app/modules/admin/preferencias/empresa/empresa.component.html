@@ -1,0 +1,126 @@
+<div class="absolute inset-0 flex flex-col min-w-0 overflow-hidden">
+  <!-- Header -->
+  <div class="relative flex flex-col flex-0 lg:flex-row lg:items-center lg:justify-between px-6 pt-6 pb-4 lg:pr-8 lg:pl-7 sm:pt-10 sm:pb-6 bg-primary-700 dark:bg-transparent">
+    <div class="flex flex-col items-start flex-auto min-w-0">
+      <div class="text-2xl sm:text-4xl font-extrabold tracking-tight leading-none text-on-primary dark:text-white">
+        Empresas · Lista
+      </div>
+      <div class="text-on-primary/80 mt-2">Gerencie suas empresas: criar, editar, visualizar e excluir.</div>
+    </div>
+    <div class="mt-4 lg:mt-0 flex items-center gap-3">
+       <button class="fuse-mat-button-large bg-primary text-on-primary rounded-xl p-2 flex items-center border border-solid border-white"
+       mat-flat-button (click)="novaEmpresa()" *hasRole="['ADMIN']">
+                        <mat-icon class="text-white" [svgIcon]="'heroicons_outline:plus-circle'"></mat-icon>
+                        <span class="ml-2">Nova Empresa</span>
+                    </button>
+        <button class="fuse-mat-button-large bg-card border rounded-xl p-2 flex items-center" mat-stroked-button
+                    (click)="exportCsv()">
+                        <mat-icon class="text-black" [svgIcon]="'heroicons_outline:document-chart-bar'"></mat-icon>
+                        <span class="ml-2">Exportar CSV</span>
+                    </button>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="flex flex-auto overflow-hidden">
+    <div class="flex flex-col flex-auto overflow-y-auto -webkit-overflow-scrolling-touch">
+      <div class="flex-auto p-6 sm:p-10">
+        <!-- Filtros e busca -->
+        <div class="flex flex-col sm:flex-row gap-4 items-stretch sm:items-end mb-6">
+          <div class="flex-1">
+            <label class="block text-md font-bold text-secondary mb-1">Pesquisa</label>
+            <input class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none" [(ngModel)]="_search" (ngModelChange)="search = $event" placeholder="Buscar por Razão Social, Nome Fantasia ou CNPJ..." />
+          </div>
+        </div>
+
+        <!-- Formulário de criação/edição/visualização -->
+        <div *ngIf="formVisible" class="mb-6 p-6 bg-card rounded-2xl shadow border border-gray-200">
+          <div class="text-lg font-semibold mb-4">{{ viewOnly ? 'Visualizar Empresa' : (editingId ? 'Editar Empresa' : 'Nova Empresa') }}</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm text-secondary mb-1">Razão Social</label>
+              <input class="w-full px-3 py-2 rounded-lg border" [(ngModel)]="form.razaoSocial" [readonly]="viewOnly" />
+            </div>
+            <div>
+              <label class="block text-sm text-secondary mb-1">Nome Fantasia</label>
+              <input class="w-full px-3 py-2 rounded-lg border" [(ngModel)]="form.nomeFantasia" [readonly]="viewOnly" />
+            </div>
+            <div>
+              <label class="block text-sm text-secondary mb-1">CNPJ</label>
+              <input class="w-full px-3 py-2 rounded-lg border" [(ngModel)]="form.cnpj" [readonly]="viewOnly" />
+            </div>
+            <div>
+              <label class="block text-sm text-secondary mb-1">Tipo</label>
+              <select class="w-full px-3 py-2 rounded-lg border" [(ngModel)]="form.indMatrizFilial" [disabled]="viewOnly">
+                <option value="M">Matriz</option>
+                <option value="F">Filial</option>
+              </select>
+            </div>
+            <div *ngIf="form.indMatrizFilial === 'F'">
+              <label class="block text-sm text-secondary mb-1">Empresa Matriz (ID)</label>
+              <input class="w-full px-3 py-2 rounded-lg border" type="number" [(ngModel)]="form.idEmpresaMatriz" [readonly]="viewOnly" />
+            </div>
+            <div class="flex items-center gap-2 mt-6">
+              <input type="checkbox" [(ngModel)]="form.ativo" [disabled]="viewOnly" />
+              <span>Ativo?</span>
+            </div>
+          </div>
+          <div class="mt-6 flex gap-3">
+            <button *ngIf="!viewOnly" class="px-4 py-2 rounded-lg bg-primary-500 text-white hover:bg-primary-600" (click)="salvar()">Salvar</button>
+            <button class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200" (click)="cancelar()">Fechar</button>
+          </div>
+        </div>
+
+        <div *ngIf="!formVisible" class="bg-card rounded-2xl shadow overflow-x-auto">
+            <!-- Tabela -->
+            <table class="w-full text-left">
+            <thead>
+              <tr class="bg-gray-50">
+                <th class="px-4 py-3 border-b">Sel.</th>
+                <th class="px-4 py-3 border-b">Razão Social</th>
+                <th class="px-4 py-3 border-b">CNPJ</th>
+                <th class="px-4 py-3 border-b">Tipo</th>
+                <th class="px-4 py-3 border-b">Status</th>
+                <th class="px-4 py-3 border-b">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let e of (filteredEmpresas$ | async)" class="hover:bg-gray-50">
+                <td class="px-4 py-3 border-b"><input type="checkbox" [checked]="selectedIds.has(e.id)" (change)="toggleSelect(e.id)" /></td>
+                <td class="px-4 py-3 border-b">
+                  <div class="font-semibold">{{ e.razaoSocial }}</div>
+                  <div class="text-xs text-secondary">{{ e.nomeFantasia }}</div>
+                </td>
+                <td class="px-4 py-3 border-b">{{ e.cnpj }}</td>
+                <td class="px-4 py-3 border-b">{{ e.indMatrizFilial === 'M' ? 'Matriz' : 'Filial' }}</td>
+                <td class="px-4 py-3 border-b">
+                  <span class="px-2 py-1 rounded-full text-xs font-semibold"
+                    [ngClass]="e.ativo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
+                    {{ e.ativo ? 'Ativo' : 'Inativo' }}
+                  </span>
+                </td>
+                <td class="px-4 py-3 border-b">
+                  <div class="flex gap-2">
+                    <button class="px-2 py-1 rounded bg-gray-100 hover:bg-gray-200" (click)="editar(e)" title="Editar" *hasRole="['ADMIN']">✏️</button>
+                    <button class="px-2 py-1 rounded bg-gray-100 hover:bg-gray-200" (click)="visualizar(e)" title="Visualizar">👁️</button>
+                    <button class="px-2 py-1 rounded bg-red-100 hover:bg-red-200 text-red-700" (click)="excluir(e)" title="Excluir" *hasRole="['ADMIN']">🗑️</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+            <ng-container *ngIf="(filteredEmpresas$ | async)?.length === 0">
+              <tfoot>
+                <tr>
+                  <td colspan="6" class="text-center py-4 text-secondary">
+                    Nenhum registro cadastrado
+                  </td>
+                </tr>
+              </tfoot>
+            </ng-container>
+          </table>
+          <div class="p-4 text-sm text-secondary">Total: {{ (filteredEmpresas$ | async)?.length || 0 }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
