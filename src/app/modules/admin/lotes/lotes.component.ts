@@ -111,12 +111,24 @@ export class LotesComponent implements OnInit, OnDestroy {
     visualizar(lote: LoteResponseDTO): void {
         this.selectedLote = lote;
         this.mode = 'view';
+        this.form = {
+            codigoLote: lote.codigoLote,
+            dataFabricacao: lote.dataFabricacao,
+            dataValidade: lote.dataValidade,
+            quantidadeInicial: lote.quantidadeInicial,
+            insumoId: lote.insumoId,
+            fornecedorId: lote.fornecedorId,
+            numeroNotaFiscal: lote.numeroNotaFiscal || ''
+        };
         this._changeDetectorRef.markForCheck();
     }
 
     salvar(): void {
         if (!this.form.codigoLote || !this.form.insumoId || !this.form.fornecedorId) {
-            this._snackBar.open('Preencha os campos obrigatórios', 'OK', { duration: 3000 });
+            this._snackBar.open('Preencha os campos obrigatórios', 'OK', {
+                duration: 3000,
+                panelClass: ['error-snackbar'],
+            });
             return;
         }
 
@@ -126,11 +138,17 @@ export class LotesComponent implements OnInit, OnDestroy {
 
         request.subscribe({
             next: () => {
-                this._snackBar.open(this.mode === 'create' ? 'Lote criado com sucesso!' : 'Lote atualizado com sucesso!', 'OK', { duration: 3000 });
+                this._snackBar.open(this.mode === 'create' ? 'Lote criado com sucesso!' : 'Lote atualizado com sucesso!', 'OK', {
+                    duration: 3000,
+                    panelClass: ['success-snackbar'],
+                });
                 this.cancelar();
             },
             error: (err) => {
-                this._snackBar.open('Erro ao salvar lote: ' + (err.error?.message || err.message), 'OK', { duration: 5000 });
+                this._snackBar.open('Erro ao salvar lote: ' + (err.error?.message || err.message), 'OK', {
+                    duration: 5000,
+                    panelClass: ['error-snackbar'],
+                });
             }
         });
     }
@@ -138,7 +156,10 @@ export class LotesComponent implements OnInit, OnDestroy {
     toggleStatus(lote: LoteResponseDTO): void {
         this._lotesDataService.toggleStatus(lote.id).subscribe({
             next: () => {
-                this._snackBar.open('Status do lote atualizado!', 'OK', { duration: 3000 });
+                this._snackBar.open('Status do lote atualizado!', 'OK', {
+                    duration: 3000,
+                    panelClass: ['success-snackbar'],
+                });
             }
         });
     }
@@ -162,7 +183,10 @@ export class LotesComponent implements OnInit, OnDestroy {
             if (result === 'confirmed') {
                 this._lotesDataService.deleteLote(lote.id).subscribe({
                     next: () => {
-                        this._snackBar.open('Lote excluído com sucesso!', 'OK', { duration: 3000 });
+                        this._snackBar.open('Lote excluído com sucesso!', 'OK', {
+                            duration: 3000,
+                            panelClass: ['success-snackbar'],
+                        });
                     }
                 });
             }

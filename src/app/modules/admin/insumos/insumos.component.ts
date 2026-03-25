@@ -231,6 +231,7 @@ export class InsumosComponent implements OnInit, OnDestroy {
                     error: (err) => {
                         this._snackBar.open(`Erro ao excluir insumo: ${err.message}`, 'Fechar', {
                             duration: 5000,
+                            panelClass: ['error-snackbar'],
                         });
                     }
                 });
@@ -250,7 +251,10 @@ export class InsumosComponent implements OnInit, OnDestroy {
                 this._changeDetectorRef.markForCheck();
             },
             error: (err) => {
-                this._snackBar.open('Erro ao carregar logs de auditoria', 'Fechar', { duration: 5000 });
+                this._snackBar.open('Erro ao carregar logs de auditoria', 'Fechar', {
+                    duration: 5000,
+                    panelClass: ['error-snackbar'],
+                });
                 this.auditVisible = false;
                 this._changeDetectorRef.markForCheck();
             }

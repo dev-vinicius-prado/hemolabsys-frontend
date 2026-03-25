@@ -205,12 +205,18 @@ export class UsersComponent implements OnInit, OnDestroy
         if (this.mode === 'create') {
             this._apiService.post('users', formData).subscribe({
                 next: () => {
-                    this._snackBar.open('Usuário criado com sucesso!', 'OK', { duration: 5000 });
+                    this._snackBar.open('Usuário criado com sucesso!', 'OK', {
+                        duration: 5000,
+                        panelClass: ['success-snackbar'],
+                    });
                     this.cancel();
                     this.loadUsers();
                 },
                 error: (err) => {
-                    this._snackBar.open(`Erro ao criar usuário: ${err.message}`, 'Fechar', { duration: 5000 });
+                    this._snackBar.open(`Erro ao criar usuário: ${err.message}`, 'Fechar', {
+                        duration: 5000,
+                        panelClass: ['error-snackbar'],
+                    });
                 }
             });
         } else {
@@ -221,12 +227,18 @@ export class UsersComponent implements OnInit, OnDestroy
 
             this._apiService.update('users', this.selectedUser.id, formData).subscribe({
                 next: () => {
-                    this._snackBar.open('Usuário atualizado com sucesso!', 'OK', { duration: 5000 });
+                    this._snackBar.open('Usuário atualizado com sucesso!', 'OK', {
+                        duration: 5000,
+                        panelClass: ['success-snackbar'],
+                    });
                     this.cancel();
                     this.loadUsers();
                 },
                 error: (err) => {
-                    this._snackBar.open(`Erro ao atualizar usuário: ${err.message}`, 'Fechar', { duration: 5000 });
+                    this._snackBar.open(`Erro ao atualizar usuário: ${err.message}`, 'Fechar', {
+                        duration: 5000,
+                        panelClass: ['error-snackbar'],
+                    });
                 }
             });
         }
@@ -255,11 +267,17 @@ export class UsersComponent implements OnInit, OnDestroy
             if (result === 'confirmed') {
                 this._apiService.remove('users', user.id).subscribe({
                     next: () => {
-                        this._snackBar.open('Usuário excluído com sucesso!', 'OK', { duration: 5000 });
+                        this._snackBar.open('Usuário excluído com sucesso!', 'OK', {
+                            duration: 5000,
+                            panelClass: ['success-snackbar'],
+                        });
                         this.loadUsers();
                     },
                     error: (err) => {
-                        this._snackBar.open(`Erro ao excluir usuário: ${err.message}`, 'Fechar', { duration: 5000 });
+                        this._snackBar.open(`Erro ao excluir usuário: ${err.message}`, 'Fechar', {
+                            duration: 5000,
+                            panelClass: ['error-snackbar'],
+                        });
                     }
                 });
             }
@@ -282,7 +300,10 @@ export class UsersComponent implements OnInit, OnDestroy
                 this._changeDetectorRef.markForCheck();
             },
             error: (err) => {
-                this._snackBar.open('Erro ao carregar logs de auditoria', 'Fechar', { duration: 5000 });
+                this._snackBar.open('Erro ao carregar logs de auditoria', 'Fechar', {
+                    duration: 5000,
+                    panelClass: ['error-snackbar'],
+                });
                 this.mode = 'list';
                 this._changeDetectorRef.markForCheck();
             }

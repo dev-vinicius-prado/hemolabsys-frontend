@@ -104,17 +104,26 @@ export class EstoqueConfigComponent implements OnInit, OnDestroy {
 
     salvar(): void {
         if (!this.form.almoxarifadoId || !this.form.insumoId || this.form.estoqueMinimo === null) {
-            this._snackBar.open('Preencha os campos obrigatórios', 'OK', { duration: 3000 });
+            this._snackBar.open('Preencha os campos obrigatórios', 'OK', {
+                duration: 3000,
+                panelClass: ['error-snackbar'],
+            });
             return;
         }
 
         this._estoqueConfigService.saveConfig(this.form).subscribe({
             next: () => {
-                this._snackBar.open('Meta de estoque salva com sucesso!', 'OK', { duration: 3000 });
+                this._snackBar.open('Meta de estoque salva com sucesso!', 'OK', {
+                    duration: 3000,
+                    panelClass: ['success-snackbar'],
+                });
                 this.cancelar();
             },
             error: (err) => {
-                this._snackBar.open('Erro ao salvar meta: ' + (err.error?.message || err.message), 'OK', { duration: 5000 });
+                this._snackBar.open('Erro ao salvar meta: ' + (err.error?.message || err.message), 'OK', {
+                    duration: 5000,
+                    panelClass: ['error-snackbar'],
+                });
             }
         });
     }
@@ -138,7 +147,10 @@ export class EstoqueConfigComponent implements OnInit, OnDestroy {
             if (result === 'confirmed') {
                 this._estoqueConfigService.deleteConfig(config.id).subscribe({
                     next: () => {
-                        this._snackBar.open('Meta excluída com sucesso!', 'OK', { duration: 3000 });
+                        this._snackBar.open('Meta excluída com sucesso!', 'OK', {
+                            duration: 3000,
+                            panelClass: ['success-snackbar'],
+                        });
                     }
                 });
             }
