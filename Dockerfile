@@ -3,9 +3,18 @@
 # Stage 1: Build
 FROM node:20-alpine AS build
 WORKDIR /app
+
+# Copy package files
 COPY package*.json ./
-RUN npm install
+
+# Aumenta a memória disponível para o Node (útil em builds pesados) e instala dependências
+# Usamos --legacy-peer-deps para evitar conflitos de versões de dependências comuns em templates como o Fuse
+RUN npm install --legacy-peer-deps
+
+# Copy the rest of the application
 COPY . .
+
+# Build the application
 RUN npm run build -- --configuration production
 
 # Stage 2: Runtime
