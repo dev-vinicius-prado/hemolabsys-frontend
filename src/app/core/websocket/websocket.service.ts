@@ -2,6 +2,7 @@ import { Injectable, OnDestroy, inject } from '@angular/core';
 import { Client, IMessage } from '@stomp/stompjs';
 import * as SockJS from 'sockjs-client';
 import { BehaviorSubject, Observable, filter, take } from 'rxjs';
+import { environment } from 'app/environments/environment';
 import { AuthService } from 'app/core/auth/auth.service';
 import { NotificationsService } from 'app/layout/common/notifications/notifications.service';
 import { Notification } from 'app/layout/common/notifications/notifications.types';
@@ -22,8 +23,8 @@ export class WebSocketService implements OnDestroy {
     }
 
     private _initWebSocket(): void {
-        const url = 'http://localhost:8080/ws'; // Ajuste conforme seu backend
-        
+        const url = environment.wsUrl;
+
         this.stompClient = new Client({
             webSocketFactory: () => new SockJS(url),
             debug: (str) => {
