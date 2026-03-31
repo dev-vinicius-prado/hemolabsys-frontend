@@ -25,6 +25,8 @@
         "@angular/platform-browser-dynamic": "17.0.3",
         "@angular/router": "17.0.3",
         "@ngneat/transloco": "6.0.0",
+        "@stomp/stompjs": "^7.0.0",
+        "sockjs-client": "^1.6.1",
         "apexcharts": "3.44.0",
         "crypto-js": "3.3.0",
         "highlight.js": "11.9.0",
