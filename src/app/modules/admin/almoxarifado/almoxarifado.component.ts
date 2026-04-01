@@ -57,7 +57,7 @@ export class AlmoxarifadoComponent implements OnInit, OnDestroy {
     pagination$: Observable<PageableResponse<AlmoxarifadoResponseDTO> | null> = this.almoxarifadoDataService.pagination$;
 
     currentPage: number = 0;
-    pageSize: number = 10;
+    pageSize: number = 5;
 
     // Estado UI
     _search = '';
