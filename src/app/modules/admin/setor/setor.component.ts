@@ -8,6 +8,7 @@ import { PageableResponse, SetorCreateDTO, SetorResponseDTO, SetorUpdateDTO } fr
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatIconModule } from "@angular/material/icon";
 import { PaginationComponent } from 'app/shared/components/pagination/pagination.component';
+import { HasRoleDirective } from 'app/shared/directives/has-role.directive';
 
 @Component({
     selector: 'setor',
@@ -16,7 +17,7 @@ import { PaginationComponent } from 'app/shared/components/pagination/pagination
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, FormsModule, MatIconModule, MatSnackBarModule, PaginationComponent],
+    imports: [CommonModule, FormsModule, MatIconModule, MatSnackBarModule, PaginationComponent, HasRoleDirective],
 })
 export class SetorComponent implements OnInit, OnDestroy {
     // Estado reativo

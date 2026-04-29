@@ -282,6 +282,6 @@ export class EmpresaComponent implements OnInit, OnDestroy {
     }
 
     exportCsv(): void {
-        this._snackBar.open('Funcionalidade de exportação em desenvolvimento', 'OK', { duration: 3000 });
+        this._snackBar.open('Funcionalidade de exportação em desenvolvimento', 'OK', { duration: 3000, panelClass: ["success-snackbar"]});
     }
 }

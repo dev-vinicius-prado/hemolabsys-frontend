@@ -146,7 +146,7 @@
                                     <button mat-icon-button (click)="editConfig(config)">
                                         <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:pencil'"></mat-icon>
                                     </button>
-                                    <button mat-icon-button (click)="deleteConfig(config)" color="warn">
+                                    <button *hasRole="'ADMIN'" mat-icon-button (click)="deleteConfig(config)" color="warn">
                                         <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:trash'"></mat-icon>
                                     </button>
                                 </td>

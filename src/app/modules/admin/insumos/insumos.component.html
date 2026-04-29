@@ -142,7 +142,7 @@
                     </button>
                     <button class="px-2 py-1 rounded bg-gray-100 hover:bg-gray-200" (click)="editar(i)" title="Editar">✏️</button>
                     <button class="px-2 py-1 rounded bg-gray-100 hover:bg-gray-200" (click)="visualizar(i)" title="Visualizar">👁️</button>
-                    <button class="px-2 py-1 rounded bg-red-100 hover:bg-red-200 text-red-700" (click)="excluir(i)" title="Excluir">🗑️</button>
+                    <button *hasRole="'ADMIN'" class="px-2 py-1 rounded bg-red-100 hover:bg-red-200 text-red-700" (click)="excluir(i)" title="Excluir">🗑️</button>
                   </div>
                 </td>
               </tr>

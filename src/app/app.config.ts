@@ -16,10 +16,13 @@ import { TranslocoHttpLoader } from './core/transloco/transloco.http-loader';
 import { mockApiInterceptor } from '@fuse/lib/mock-api';
 import { fuseLoadingInterceptor } from '@fuse/services/loading';
 
+import { provideEnvironmentNgxMask } from 'ngx-mask';
+
 export const appConfig: ApplicationConfig = {
     providers: [
         provideAnimations(),
         provideHttpClient(withInterceptors([authInterceptor, fuseLoadingInterceptor, mockApiInterceptor])),
+        provideEnvironmentNgxMask(),
         provideRouter(appRoutes,
             withPreloading(PreloadAllModules),
             withInMemoryScrolling({scrollPositionRestoration: 'enabled'}),

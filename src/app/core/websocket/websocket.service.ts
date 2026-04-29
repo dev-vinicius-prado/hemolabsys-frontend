@@ -68,11 +68,8 @@ export class WebSocketService implements OnDestroy {
     }
 
     private _handleNewNotification(notification: Notification): void {
-        // Adiciona a nova notificação ao NotificationsService
-        this._notificationsService.notifications$.pipe(take(1)).subscribe(currentNotifications => {
-            // Adiciona no início da lista (mais recente)
-            this._notificationsService['_notifications'].next([notification, ...currentNotifications]);
-        });
+        // Adiciona a nova notificação ao NotificationsService de forma segura
+        this._notificationsService.addLocal(notification);
     }
 
     ngOnDestroy(): void {

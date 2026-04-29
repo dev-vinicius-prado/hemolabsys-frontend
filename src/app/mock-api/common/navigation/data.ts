@@ -75,6 +75,13 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 link: '/insumos',
             },
             {
+                id: 'fornecedores',
+                title: 'Fornecedores',
+                type: 'basic',
+                icon: 'heroicons_outline:truck',
+                link: '/fornecedores',
+            },
+            {
                 id: 'lotes',
                 title: 'Lotes',
                 type: 'basic',

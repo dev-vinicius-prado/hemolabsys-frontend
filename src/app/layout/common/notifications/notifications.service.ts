@@ -46,6 +46,18 @@ export class NotificationsService
     }
 
     /**
+     * Add a notification locally (e.g. from WebSocket)
+     *
+     * @param notification
+     */
+    addLocal(notification: Notification): void
+    {
+        this.notifications$.pipe(take(1)).subscribe(notifications => {
+            this._notifications.next([notification, ...notifications]);
+        });
+    }
+
+    /**
      * Create a notification
      *
      * @param notification

@@ -325,6 +325,6 @@ export class AlmoxarifadoComponent implements OnInit, OnDestroy {
 
     exportCsv(): void {
         // Implementar exportação se necessário
-        this._snackBar.open('Funcionalidade de exportação em desenvolvimento', 'OK', { duration: 3000 });
+        this._snackBar.open('Funcionalidade de exportação em desenvolvimento', 'OK', { duration: 3000, panelClass: ["success-snackbar"]});
     }
 }

@@ -80,6 +80,7 @@ export const appRoutes: Route[] = [
         children: [
             { path: 'dashboard', loadChildren: () => import('app/modules/admin/dashboard/dashboard.routes') },
             { path: 'insumos', loadChildren: () => import('app/modules/admin/insumos/insumos.routes') },
+            { path: 'fornecedores', loadChildren: () => import('app/modules/admin/fornecedores/fornecedores.routes') },
             { path: 'almoxarifado', loadChildren: () => import('app/modules/admin/almoxarifado/almoxarifado.routes') },
             { path: 'setor', loadChildren: () => import('app/modules/admin/setor/setor.routes') },
             { path: 'lotes', loadChildren: () => import('app/modules/admin/lotes/lotes.routes') },
