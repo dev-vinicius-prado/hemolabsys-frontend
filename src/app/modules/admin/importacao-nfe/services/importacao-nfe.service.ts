@@ -2,9 +2,9 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap } from 'rxjs';
 import { ApiService } from 'app/core/api/api.service';
-import { 
-    ImportacaoNfeResponseDTO, 
-    PendenciaImportacaoResponseDTO, 
+import {
+    ImportacaoNfeResponseDTO,
+    PendenciaImportacaoResponseDTO,
     ResolucaoPendenciaDTO,
     StatusImportacao
 } from 'app/core/models';
