@@ -89,6 +89,7 @@ export const appRoutes: Route[] = [
             { path: 'alertas', loadChildren: () => import('app/modules/admin/alertas/alertas.routes') },
             { path: 'entradas', component: EntradaComponent },
             { path: 'saidas', component: SaidaComponent },
+            { path: 'importacao-nfe', loadChildren: () => import('app/modules/admin/importacao-nfe/importacao-nfe.routes') },
             {
                 path: 'users',
                 loadComponent: () => import('app/modules/admin/users/users.component').then(m => m.UsersComponent),
