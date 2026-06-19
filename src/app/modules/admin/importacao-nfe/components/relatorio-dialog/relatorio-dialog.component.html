@@ -1,0 +1,82 @@
+<div class="flex flex-col max-w-240 min-w-160 max-h-screen overflow-hidden">
+    <div class="flex items-center justify-between px-6 py-4 bg-primary text-on-primary">
+        <div class="flex flex-col">
+            <div class="text-lg font-bold">Relatório de Importação</div>
+            <div class="text-sm opacity-80" *ngIf="relatorio">Chave: {{relatorio.chaveAcesso}}</div>
+        </div>
+        <button mat-icon-button (click)="fechar()">
+            <mat-icon class="text-current" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+        </button>
+    </div>
+
+    <div class="p-6 overflow-y-auto">
+        <div *ngIf="!relatorio" class="flex flex-col items-center justify-center p-8 text-secondary">
+            <mat-icon class="icon-size-12 mb-2" [svgIcon]="'heroicons_outline:document-magnifying-glass'"></mat-icon>
+            <span>Relatório não disponível ou em processamento.</span>
+        </div>
+
+        <div *ngIf="relatorio">
+            <!-- Resumo -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <div class="text-xs font-bold text-secondary uppercase tracking-wider">Total Itens</div>
+                    <div class="text-2xl font-extrabold">{{relatorio.totalItens}}</div>
+                </div>
+                <div class="bg-green-50 p-4 rounded-xl border border-green-200">
+                    <div class="text-xs font-bold text-green-700 uppercase tracking-wider">Sucesso</div>
+                    <div class="text-2xl font-extrabold text-green-700">{{relatorio.processadosSucesso}}</div>
+                </div>
+                <div class="bg-orange-50 p-4 rounded-xl border border-orange-200">
+                    <div class="text-xs font-bold text-orange-700 uppercase tracking-wider">Pendências</div>
+                    <div class="text-2xl font-extrabold text-orange-700">{{relatorio.comPendencia}}</div>
+                </div>
+                <div class="bg-red-50 p-4 rounded-xl border border-red-200">
+                    <div class="text-xs font-bold text-red-700 uppercase tracking-wider">Falhas</div>
+                    <div class="text-2xl font-extrabold text-red-700">{{relatorio.falhasTecnicas}}</div>
+                </div>
+            </div>
+
+            <!-- Tabela de Itens -->
+            <div class="bg-card rounded-xl shadow overflow-hidden border border-gray-200">
+                <table mat-table [dataSource]="relatorio.itens" class="w-full">
+
+                    <ng-container mat-column-id="item">
+                        <th mat-header-cell *matHeaderCellDef class="bg-gray-50 font-bold w-16">Item</th>
+                        <td mat-cell *matCellDef="let item"> {{item.itemNf}} </td>
+                    </ng-container>
+
+                    <ng-container mat-column-id="produto">
+                        <th mat-header-cell *matHeaderCellDef class="bg-gray-50 font-bold">Produto</th>
+                        <td mat-cell *matCellDef="let item">
+                            <div class="flex flex-col py-2">
+                                <span class="text-xs font-mono text-secondary">{{item.cProd}}</span>
+                                <span class="font-medium leading-tight">{{item.xProd}}</span>
+                            </div>
+                        </td>
+                    </ng-container>
+
+                    <ng-container mat-column-id="status">
+                        <th mat-header-cell *matHeaderCellDef class="bg-gray-50 font-bold w-32">Status</th>
+                        <td mat-cell *matCellDef="let item">
+                            <span class="font-bold text-xs uppercase" [ngClass]="getStatusColor(item.status)">
+                                {{item.status}}
+                            </span>
+                        </td>
+                    </ng-container>
+
+                    <ng-container mat-column-id="mensagem">
+                        <th mat-header-cell *matHeaderCellDef class="bg-gray-50 font-bold">Mensagem</th>
+                        <td mat-cell *matCellDef="let item" class="text-xs text-secondary"> {{item.mensagem}} </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex justify-end p-4 border-t bg-gray-50">
+        <button mat-flat-button color="primary" (click)="fechar()">Fechar</button>
+    </div>
+</div>

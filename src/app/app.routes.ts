@@ -87,6 +87,7 @@ export const appRoutes: Route[] = [
             { path: 'metas', loadChildren: () => import('app/modules/admin/lotes/metas.routes') },
             { path: 'movimentacoes', loadChildren: () => import('app/modules/admin/movimentacoes/movimentacoes.routes') },
             { path: 'alertas', loadChildren: () => import('app/modules/admin/alertas/alertas.routes') },
+            { path: 'importacao-nfe', loadChildren: () => import('app/modules/admin/importacao-nfe/importacao-nfe.routes') },
             { path: 'entradas', component: EntradaComponent },
             { path: 'saidas', component: SaidaComponent },
             {

@@ -13,6 +13,7 @@ export * from './almoxarifado-catalog.types';
 export * from './setor.catalog.types';
 export * from './unidade-medida.catalog.types';
 export * from './empresa.catalog.types';
+export * from './importacao-nfe.types';
 // Tipos utilitários
 export interface PageableResponse<T> {
   content: T[];

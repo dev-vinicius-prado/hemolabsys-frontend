@@ -17,6 +17,13 @@ export const defaultNavigation: FuseNavigationItem[] = [
         link: '/entradas',
     },
     {
+        id: 'importacao-nfe',
+        title: 'Importação NF-e',
+        type: 'basic',
+        icon: 'heroicons_outline:cloud-arrow-up',
+        link: '/importacao-nfe',
+    },
+    {
         id: 'saidas',
         title: 'Saídas',
         type: 'basic',

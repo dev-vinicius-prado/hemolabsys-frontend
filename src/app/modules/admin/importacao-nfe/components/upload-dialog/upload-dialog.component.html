@@ -1,0 +1,70 @@
+<div class="flex flex-col max-w-160">
+    <div class="flex items-center justify-between px-6 py-4 bg-primary text-on-primary">
+        <div class="text-lg font-bold">Importar XML de NF-e</div>
+        <button mat-icon-button (click)="cancelar()" [disabled]="isLoading">
+            <mat-icon class="text-current" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+        </button>
+    </div>
+
+    <form [formGroup]="uploadForm" class="p-6 flex flex-col gap-4">
+        
+        <!-- Seleção de Arquivo -->
+        <div class="flex flex-col gap-2">
+            <label class="font-bold text-secondary">Arquivo XML (SEFAZ)</label>
+            <div class="flex items-center gap-3">
+                <input type="file" #fileInput (change)="onFileSelected($event)" accept=".xml" class="hidden">
+                <button mat-stroked-button type="button" (click)="fileInput.click()" [disabled]="isLoading">
+                    <mat-icon [svgIcon]="'heroicons_outline:document-plus'"></mat-icon>
+                    <span class="ml-2">Selecionar Arquivo</span>
+                </button>
+                <span class="text-sm truncate flex-1" *ngIf="selectedFileName">{{selectedFileName}}</span>
+                <span class="text-sm text-red-500" *ngIf="!selectedFileName && uploadForm.get('file').touched">
+                    Arquivo obrigatório
+                </span>
+            </div>
+        </div>
+
+        <!-- Seleção de Almoxarifado -->
+        <mat-form-field class="w-full" subscriptSizing="dynamic">
+            <mat-label>Almoxarifado de Destino</mat-label>
+            <mat-select formControlName="idAlmoxarifado" [disabled]="isLoading">
+                <mat-option *ngFor="let a of (almoxarifados$ | async)" [value]="a.id">
+                    {{a.descricao}}
+                </mat-option>
+            </mat-select>
+            <mat-error *ngIf="uploadForm.get('idAlmoxarifado').hasError('required')">
+                Almoxarifado é obrigatório
+            </mat-error>
+        </mat-form-field>
+
+        <!-- Confirmação de Conferência Física -->
+        <div class="bg-amber-50 border border-amber-200 p-4 rounded-lg flex flex-col gap-2 mt-2">
+            <div class="flex items-center gap-2 text-amber-800 font-bold">
+                <mat-icon class="icon-size-5 text-current" [svgIcon]="'heroicons_outline:exclamation-triangle'"></mat-icon>
+                <span>Atenção</span>
+            </div>
+            <p class="text-sm text-amber-800">
+                A importação da NF-e gera movimentações automáticas de entrada no estoque. 
+                Certifique-se de que os itens físicos foram conferidos e estão de acordo com o XML.
+            </p>
+            <mat-checkbox formControlName="confirmacaoConferencia" color="primary" [disabled]="isLoading">
+                <span class="text-sm font-bold">Confirmo que a conferência física foi realizada</span>
+            </mat-checkbox>
+            <mat-error class="text-xs" *ngIf="uploadForm.get('confirmacaoConferencia').hasError('required') && uploadForm.get('confirmacaoConferencia').touched">
+                Você deve confirmar a conferência para prosseguir.
+            </mat-error>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-4">
+            <button mat-button (click)="cancelar()" [disabled]="isLoading">Cancelar</button>
+            <button mat-flat-button color="primary" (click)="upload()" 
+                [disabled]="uploadForm.invalid || isLoading">
+                <span *ngIf="!isLoading">Iniciar Importação</span>
+                <span *ngIf="isLoading" class="flex items-center gap-2">
+                    <mat-icon class="animate-spin" [svgIcon]="'heroicons_outline:arrow-path'"></mat-icon>
+                    Processando...
+                </span>
+            </button>
+        </div>
+    </form>
+</div>
