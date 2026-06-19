@@ -7,7 +7,7 @@
     </div>
 
     <form [formGroup]="uploadForm" class="p-6 flex flex-col gap-4">
-        
+
         <!-- Seleção de Arquivo -->
         <div class="flex flex-col gap-2">
             <label class="font-bold text-secondary">Arquivo XML (SEFAZ)</label>
@@ -18,7 +18,7 @@
                     <span class="ml-2">Selecionar Arquivo</span>
                 </button>
                 <span class="text-sm truncate flex-1" *ngIf="selectedFileName">{{selectedFileName}}</span>
-                <span class="text-sm text-red-500" *ngIf="!selectedFileName && uploadForm.get('file').touched">
+                <span class="text-sm text-red-500" *ngIf="!selectedFileName && uploadForm.get('file')?.touched">
                     Arquivo obrigatório
                 </span>
             </div>
@@ -32,7 +32,7 @@
                     {{a.descricao}}
                 </mat-option>
             </mat-select>
-            <mat-error *ngIf="uploadForm.get('idAlmoxarifado').hasError('required')">
+            <mat-error *ngIf="uploadForm.get('idAlmoxarifado')?.hasError('required')">
                 Almoxarifado é obrigatório
             </mat-error>
         </mat-form-field>
@@ -44,20 +44,20 @@
                 <span>Atenção</span>
             </div>
             <p class="text-sm text-amber-800">
-                A importação da NF-e gera movimentações automáticas de entrada no estoque. 
+                A importação da NF-e gera movimentações automáticas de entrada no estoque.
                 Certifique-se de que os itens físicos foram conferidos e estão de acordo com o XML.
             </p>
             <mat-checkbox formControlName="confirmacaoConferencia" color="primary" [disabled]="isLoading">
-                <span class="text-sm font-bold">Confirmo que a conferência física foi realizada</span>
+                <span class="text-sm font-bold">Confirmo que a conferência física foi realizada.</span>
             </mat-checkbox>
-            <mat-error class="text-xs" *ngIf="uploadForm.get('confirmacaoConferencia').hasError('required') && uploadForm.get('confirmacaoConferencia').touched">
+            <mat-error class="text-xs" *ngIf="uploadForm.get('confirmacaoConferencia')?.hasError('required') && uploadForm.get('confirmacaoConferencia')?.touched">
                 Você deve confirmar a conferência para prosseguir.
             </mat-error>
         </div>
 
         <div class="flex justify-end gap-3 mt-4">
             <button mat-button (click)="cancelar()" [disabled]="isLoading">Cancelar</button>
-            <button mat-flat-button color="primary" (click)="upload()" 
+            <button mat-flat-button color="primary" (click)="upload()"
                 [disabled]="uploadForm.invalid || isLoading">
                 <span *ngIf="!isLoading">Iniciar Importação</span>
                 <span *ngIf="isLoading" class="flex items-center gap-2">
