@@ -11,6 +11,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatInputModule } from '@angular/material/input';
+import { Router } from '@angular/router';
 import { FuseAlertComponent } from '@fuse/components/alert';
 import { ImportacaoNfeService } from './services/importacao-nfe.service';
 import { ImportacaoNfeResponseDTO, StatusImportacao } from 'app/core/models';
@@ -18,7 +19,6 @@ import { Observable } from 'rxjs';
 import { AlmoxarifadoDataService } from '../almoxarifado/services/almoxarifado-data.service';
 import { UploadDialogComponent } from './components/upload-dialog/upload-dialog.component';
 import { RelatorioDialogComponent } from './components/relatorio-dialog/relatorio-dialog.component';
-import { PendenciasDialogComponent } from './components/pendencias-dialog/pendencias-dialog.component';
 
 @Component({
     selector: 'app-importacao-nfe',
@@ -46,6 +46,7 @@ export class ImportacaoNfeComponent implements OnInit {
     private readonly _almoxarifadoService = inject(AlmoxarifadoDataService);
     private readonly _dialog = inject(MatDialog);
     private readonly _snackBar = inject(MatSnackBar);
+    private readonly _router = inject(Router);
 
     importacoes$: Observable<ImportacaoNfeResponseDTO[]> = this._importacaoNfeService.importacoes$;
     almoxarifados$ = this._almoxarifadoService.almoxarifados$;
@@ -63,8 +64,11 @@ export class ImportacaoNfeComponent implements OnInit {
     statusOptions = Object.values(StatusImportacao);
 
     ngOnInit(): void {
-        this._importacaoNfeService.listarHistorico().subscribe();
-        this._almoxarifadoService.loadAlmoxarifados();
+        // Delay the initial data load to avoid NG0100 error with the global loading bar
+        setTimeout(() => {
+            this._importacaoNfeService.listarHistorico().subscribe();
+            this._almoxarifadoService.loadAlmoxarifados();
+        });
     }
 
     aplicarFiltros(): void {
@@ -98,12 +102,7 @@ export class ImportacaoNfeComponent implements OnInit {
     }
 
     verPendencias(id: number): void {
-        this._dialog.open(PendenciasDialogComponent, {
-            width: '900px',
-            data: { importacaoId: id }
-        }).afterClosed().subscribe(() => {
-            this._importacaoNfeService.listarHistorico().subscribe();
-        });
+        this._router.navigate(['/importacao-nfe', id, 'pendencias']);
     }
 
     getStatusColor(status: StatusImportacao): string {

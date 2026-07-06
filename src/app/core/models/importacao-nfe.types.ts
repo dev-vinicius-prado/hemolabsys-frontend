@@ -36,12 +36,13 @@ export interface ImportacaoNfeResponseDTO {
 export interface PendenciaImportacaoResponseDTO {
     id: number;
     itemNf: number;
-    cProd: string;
-    xProd: string;
+    cprod: string;
+    xprod: string;
     motivo: MotivoPendencia;
     status: StatusPendencia;
     dataResolucao?: string;
     usuarioResolucao?: string;
+    fornecedorId: number;
 }
 
 export interface ResolucaoPendenciaDTO {

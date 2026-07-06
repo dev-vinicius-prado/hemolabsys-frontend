@@ -1,0 +1,131 @@
+<div class="absolute inset-0 flex flex-col min-w-0 overflow-hidden">
+    <!-- Header -->
+    <div class="relative flex flex-col flex-0 lg:flex-row lg:items-center lg:justify-between px-6 pt-6 pb-4 lg:pr-8 lg:pl-7 sm:pt-10 sm:pb-6 bg-primary-700 dark:bg-transparent">
+        <div class="flex flex-col items-start flex-auto min-w-0">
+            <!-- Breadcrumbs -->
+            <div class="flex items-center text-on-primary/60 text-sm font-medium mb-2">
+                <a class="hover:underline cursor-pointer" (click)="voltar()">Importação NF-e</a>
+                <mat-icon class="icon-size-4 mx-1 text-current" [svgIcon]="'heroicons_mini:chevron-right'"></mat-icon>
+                <span class="text-on-primary">Pendências</span>
+            </div>
+            <div class="text-2xl sm:text-4xl font-extrabold tracking-tight leading-none text-on-primary dark:text-white">
+                Pendências de Importação
+            </div>
+            <div class="text-on-primary/80 mt-2">Resolva as divergências da NF-e ID: {{importacaoId}} para concluir a entrada de estoque.</div>
+        </div>
+        <div class="mt-4 lg:mt-0 flex items-center gap-3">
+            <button mat-flat-button class="bg-white text-primary rounded-xl p-2 flex items-center" (click)="voltar()">
+                <mat-icon [svgIcon]="'heroicons_outline:arrow-left'"></mat-icon>
+                <span class="ml-2">Voltar ao Histórico</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex flex-auto overflow-hidden">
+        <div class="flex flex-col flex-auto overflow-y-auto -webkit-overflow-scrolling-touch">
+            <div class="flex-auto p-6 sm:p-10">
+
+                <!-- Alert se não houver pendências -->
+                <fuse-alert *ngIf="!loading && pendencias.length === 0" [type]="'success'" [appearance]="'soft'" class="mb-8">
+                    <span fuseAlertTitle>Tudo pronto!</span>
+                    Nenhuma pendência encontrada para esta importação. Você já pode conferir o estoque.
+                </fuse-alert>
+
+                <!-- Tabela de Pendências -->
+                <div class="bg-card rounded-2xl shadow overflow-hidden border border-gray-200">
+                    <table mat-table [dataSource]="pendencias" class="w-full">
+
+                        <!-- Item Column -->
+                        <ng-container matColumnDef="item">
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 font-bold w-16">Item</th>
+                            <td mat-cell *matCellDef="let p"> {{p.itemNf}} </td>
+                        </ng-container>
+
+                        <!-- Produto Column -->
+                        <ng-container matColumnDef="produto">
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 font-bold">Produto na NF-e</th>
+                            <td mat-cell *matCellDef="let p">
+                                <div class="flex flex-col py-3">
+                                    <span class="text-xs font-mono text-secondary mb-1">CÓD: {{ p.cprod }}</span>
+                                    <span class="font-semibold text-md leading-tight">{{ p.xprod }}</span>
+                                </div>
+                            </td>
+                        </ng-container>
+
+                        <!-- Motivo Column -->
+                        <ng-container matColumnDef="motivo">
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 font-bold">Motivo da Pendência</th>
+                            <td mat-cell *matCellDef="let p">
+                                <div class="flex items-center text-orange-700 bg-orange-50 px-3 py-1 rounded-full border border-orange-100 w-fit">
+                                    <mat-icon class="icon-size-4 mr-2 text-current" [svgIcon]="'heroicons_mini:exclamation-triangle'"></mat-icon>
+                                    <span class="text-xs font-bold uppercase tracking-wider">{{p.motivo}}</span>
+                                </div>
+                            </td>
+                        </ng-container>
+
+                        <!-- Status Column -->
+                        <ng-container matColumnDef="status">
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 font-bold">Status</th>
+                            <td mat-cell *matCellDef="let p">
+                                <span class="px-2 py-1 rounded text-xs font-bold uppercase"
+                                    [ngClass]="p.status === 'PENDENTE' ? 'text-orange-600 bg-orange-100' : 'text-green-600 bg-green-100'">
+                                    {{p.status}}
+                                </span>
+                            </td>
+                        </ng-container>
+
+                        <!-- Ações Column -->
+                        <ng-container matColumnDef="acoes">
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 font-bold text-center">Ações</th>
+                            <td mat-cell *matCellDef="let p" class="text-center py-4">
+                                <div *ngIf="p.status === 'PENDENTE' && associandoItemId !== p.id" class="flex items-center justify-center gap-2">
+                                    <button mat-flat-button class="bg-orange-600 text-white rounded-lg px-4" (click)="iniciarAssociacao(p)">
+                                        <mat-icon class="icon-size-4 mr-2" [svgIcon]="'heroicons_mini:link'"></mat-icon>
+                                        Associar à Insumo
+                                    </button>
+                                    <button mat-stroked-button color="primary" class="rounded-lg px-4" (click)="resolverNovoInsumo(p)">
+                                        <mat-icon class="icon-size-4 mr-2" [svgIcon]="'heroicons_mini:plus'"></mat-icon>
+                                        Cadastrar Novo
+                                    </button>
+                                </div>
+
+                                <!-- UI de Associação Direta -->
+                                <div *ngIf="associandoItemId === p.id" class="flex items-center justify-center gap-2 animate-in fade-in slide-in-from-right-4 duration-300">
+                                    <mat-form-field class="fuse-mat-dense w-64 mb-[-1.25rem]">
+                                        <mat-select [(ngModel)]="insumoSelecionadoId" placeholder="Selecione o insumo...">
+                                            <mat-option *ngFor="let insumo of insumos$ | async" [value]="insumo.id">
+                                                {{insumo.codigo}} - {{insumo.descricao}}
+                                            </mat-option>
+                                        </mat-select>
+                                    </mat-form-field>
+                                    <button mat-icon-button color="primary" [disabled]="!insumoSelecionadoId" (click)="confirmarAssociacao(p)" matTooltip="Confirmar">
+                                        <mat-icon [svgIcon]="'heroicons_mini:check'"></mat-icon>
+                                    </button>
+                                    <button mat-icon-button color="warn" (click)="cancelarAssociacao()" matTooltip="Cancelar">
+                                        <mat-icon [svgIcon]="'heroicons_mini:x-mark'"></mat-icon>
+                                    </button>
+                                </div>
+
+                                <div *ngIf="p.status === 'RESOLVIDA'" class="text-green-600 font-bold flex items-center justify-center">
+                                    <mat-icon class="icon-size-5 mr-1" [svgIcon]="'heroicons_outline:check-circle'"></mat-icon>
+                                    <span>Resolvido</span>
+                                </div>
+                            </td>
+                        </ng-container>
+
+                        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                        <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="hover:bg-gray-50 transition-colors duration-150"></tr>
+                    </table>
+
+                    <!-- Empty State -->
+                    <div *ngIf="!loading && pendencias.length === 0" class="p-12 text-center text-secondary">
+                        <mat-icon class="icon-size-16 mb-4 opacity-20" [svgIcon]="'heroicons_outline:clipboard-document-check'"></mat-icon>
+                        <div class="text-xl font-semibold">Nenhuma pendência pendente</div>
+                        <div class="mt-1">Esta NF-e está com todos os itens devidamente vinculados.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

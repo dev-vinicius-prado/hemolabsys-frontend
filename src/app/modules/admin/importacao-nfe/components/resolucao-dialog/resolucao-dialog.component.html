@@ -1,67 +1,97 @@
-<div class="flex flex-col max-w-160">
+<div class="flex flex-col max-w-180">
     <div class="flex items-center justify-between px-6 py-4 bg-primary text-on-primary">
-        <div class="text-lg font-bold">Resolver Pendência (De/Para)</div>
+        <div class="text-lg font-bold">Cadastrar Novo Insumo e Resolver Pendência</div>
         <button mat-icon-button (click)="cancelar()" [disabled]="isLoading">
             <mat-icon class="text-current" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
         </button>
     </div>
 
     <div class="p-6 bg-gray-50 border-b">
-        <div class="text-xs font-bold text-secondary uppercase tracking-wider mb-1">Dados do Item no XML</div>
-        <div class="flex flex-col gap-1">
+        <div class="text-xs font-bold text-secondary uppercase tracking-wider mb-1">Dados do Item no XML (Referência)</div>
+        <div class="grid grid-cols-2 gap-4">
             <div class="text-sm font-mono bg-white p-2 rounded border border-gray-200">
-                <span class="text-secondary mr-2">Cód:</span> {{data.pendencia.cProd}}
+                <span class="text-secondary mr-2 text-[10px] uppercase">Cód:</span> {{data.pendencia.cprod}}
             </div>
             <div class="text-sm font-medium bg-white p-2 rounded border border-gray-200">
-                {{data.pendencia.xProd}}
+                <span class="text-secondary mr-2 text-[10px] uppercase">Desc:</span> {{data.pendencia.xprod}}
             </div>
         </div>
     </div>
 
-    <form [formGroup]="resolucaoForm" class="p-6 flex flex-col gap-4">
+    <form [formGroup]="resolucaoForm" class="p-6 flex flex-col gap-6">
 
-        <!-- Associação de Insumo -->
-        <mat-form-field class="w-full" subscriptSizing="dynamic">
-            <mat-label>Insumo no Sistema</mat-label>
-            <mat-select formControlName="idInsumo" [disabled]="isLoading">
-                <mat-option *ngFor="let i of (insumos$ | async)" [value]="i.id">
-                    {{i.descricao}} ({{i.codigo}})
-                </mat-option>
-            </mat-select>
-            <mat-error *ngIf="resolucaoForm.get('idInsumo')?.hasError('required')">
-                Associação com insumo é obrigatória
-            </mat-error>
-        </mat-form-field>
+        <!-- Seção: Dados do Insumo -->
+        <div class="flex flex-col gap-4">
+            <div class="flex items-center gap-2 text-primary font-bold border-b pb-1">
+                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_mini:plus-circle'"></mat-icon>
+                <span>Novo Insumo</span>
+            </div>
 
-        <div class="grid grid-cols-2 gap-4">
-            <!-- Unidade no Fornecedor -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <mat-form-field class="w-full" subscriptSizing="dynamic">
+                    <mat-label>Código Interno</mat-label>
+                    <input matInput formControlName="codigo">
+                </mat-form-field>
+
+                <mat-form-field class="w-full" subscriptSizing="dynamic">
+                    <mat-label>Categoria</mat-label>
+                    <mat-select formControlName="categoria">
+                        <mat-option *ngFor="let cat of categorias" [value]="cat">{{cat}}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+
             <mat-form-field class="w-full" subscriptSizing="dynamic">
-                <mat-label>Unidade no XML (Ex: CX, UN)</mat-label>
-                <input matInput formControlName="unidadeComercialFornecedor" [readonly]="isLoading">
-                <mat-error *ngIf="resolucaoForm.get('unidadeComercialFornecedor')?.hasError('required')">
-                    Obrigatório
-                </mat-error>
+                <mat-label>Descrição Completa</mat-label>
+                <input matInput formControlName="descricao">
             </mat-form-field>
 
-            <!-- Fator de Conversão -->
-            <mat-form-field class="w-full" subscriptSizing="dynamic">
-                <mat-label>Fator de Conversão</mat-label>
-                <input matInput type="number" formControlName="fatorConversao" [readonly]="isLoading">
-                <mat-hint>Ex: Se 1 CX = 10 UN, fator é 10</mat-hint>
-                <mat-error *ngIf="resolucaoForm.get('fatorConversao')?.hasError('required')">
-                    Obrigatório
-                </mat-error>
-            </mat-form-field>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+                <mat-form-field class="w-full" subscriptSizing="dynamic">
+                    <mat-label>Unidade de Medida (Estoque)</mat-label>
+                    <mat-select formControlName="unidadeMedidaId">
+                        <mat-option *ngFor="let un of unidadesMedida$ | async" [value]="un.id">
+                            {{un.descricao}} ({{un.simbolo}})
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+
+                <div class="flex gap-4 pb-2">
+                    <mat-checkbox formControlName="loteObrigatorio" color="primary">Lote Obrigatório</mat-checkbox>
+                    <mat-checkbox formControlName="perecivel" color="primary">Perecível</mat-checkbox>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção: Regra de Conversão -->
+        <div class="flex flex-col gap-4 bg-orange-50/50 p-4 rounded-xl border border-orange-100">
+            <div class="flex items-center gap-2 text-orange-700 font-bold border-b border-orange-200 pb-1">
+                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_mini:arrows-right-left'"></mat-icon>
+                <span>Regra de Conversão para esta NF-e</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <mat-form-field class="w-full bg-white" subscriptSizing="dynamic">
+                    <mat-label>Unidade no XML (Ex: CX, UN)</mat-label>
+                    <input matInput formControlName="unidadeComercialFornecedor">
+                </mat-form-field>
+
+                <mat-form-field class="w-full bg-white" subscriptSizing="dynamic">
+                    <mat-label>Fator de Conversão</mat-label>
+                    <input matInput type="number" formControlName="fatorConversao">
+                    <mat-hint>Ex: 1 CX = 10 UN, use 10</mat-hint>
+                </mat-form-field>
+            </div>
         </div>
 
         <div class="flex justify-end gap-3 mt-4">
             <button mat-button (click)="cancelar()" [disabled]="isLoading">Cancelar</button>
             <button mat-flat-button color="primary" (click)="salvar()"
                 [disabled]="resolucaoForm.invalid || isLoading">
-                <span *ngIf="!isLoading">Salvar e Reprocessar</span>
+                <span *ngIf="!isLoading">Salvar e Resolver</span>
                 <span *ngIf="isLoading" class="flex items-center gap-2">
                     <mat-icon class="animate-spin" [svgIcon]="'heroicons_outline:arrow-path'"></mat-icon>
-                    Salvando...
+                    Processando...
                 </span>
             </button>
         </div>
