@@ -6,8 +6,4 @@ export default [
         path: '',
         component: ImportacaoNfeComponent,
     },
-    {
-        path: ':id/pendencias',
-        loadComponent: () => import('./pages/pendencias-list/pendencias-list.component').then(m => m.PendenciasListComponent),
-    },
 ] as Routes;

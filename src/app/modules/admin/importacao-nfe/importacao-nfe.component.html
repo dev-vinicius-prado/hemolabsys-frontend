@@ -1,106 +1,130 @@
-<div class="absolute inset-0 flex flex-col min-w-0 overflow-hidden">
+<div class="flex flex-col flex-auto min-w-0">
     <!-- Header -->
-    <div class="relative flex flex-col flex-0 lg:flex-row lg:items-center lg:justify-between px-6 pt-6 pb-4 lg:pr-8 lg:pl-7 sm:pt-10 sm:pb-6 bg-primary-700 dark:bg-transparent">
-        <div class="flex flex-col items-start flex-auto min-w-0">
-            <div class="text-2xl sm:text-4xl font-extrabold tracking-tight leading-none text-on-primary dark:text-white">
-                Importação NF-e
+    <div class="flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between p-6 sm:py-8 sm:px-10 border-b bg-card dark:bg-transparent">
+        <div class="flex-1 min-w-0">
+            <!-- Breadcrumbs -->
+            <div class="flex flex-wrap items-center font-medium">
+                <div>Almoxarifado</div>
+                <mat-icon class="icon-size-5 text-secondary" [svgIcon]="'heroicons_mini:chevron-right'"></mat-icon>
+                <div class="text-primary">Importação de NF-e</div>
             </div>
-            <div class="text-on-primary/80 mt-2">Importe notas fiscais eletrônicas via XML da SEFAZ para entrada automática de estoque.</div>
+            <!-- Title -->
+            <div class="mt-2">
+                <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
+                    Importação e Mapeamento De/Para
+                </h2>
+            </div>
         </div>
-        <div class="mt-4 lg:mt-0 flex items-center gap-3">
-            <button class="fuse-mat-button-large bg-primary text-on-primary rounded-xl p-2 flex items-center border border-solid border-white"
-                mat-flat-button (click)="abrirUpload()">
-                <mat-icon class="text-white" [svgIcon]="'heroicons_outline:cloud-arrow-up'"></mat-icon>
-                <span class="ml-2">Importar XML</span>
+        <!-- Actions -->
+        <div class="flex shrink-0 items-center mt-6 sm:mt-0 sm:ml-4">
+            <input type="file" #fileInput class="hidden" (change)="onFileUpload($event)" accept=".xml">
+            <button mat-flat-button [color]="'primary'" (click)="fileInput.click()" [disabled]="isLoading()">
+                <mat-icon [svgIcon]="'heroicons_outline:cloud-arrow-up'"></mat-icon>
+                <span class="ml-2">Importar XML da NF-e</span>
             </button>
         </div>
     </div>
 
     <!-- Main -->
-    <div class="flex flex-auto overflow-hidden">
-        <div class="flex flex-col flex-auto overflow-y-auto -webkit-overflow-scrolling-touch">
-            <div class="flex-auto p-6 sm:p-10">
+    <div class="flex-auto p-6 sm:p-10">
 
-                <!-- Filtros -->
-                <div class="flex flex-col sm:flex-row gap-4 items-stretch sm:items-end mb-6 bg-card p-4 rounded-2xl shadow border border-gray-200">
-                    <div class="flex-1">
-                        <label class="block text-sm font-bold text-secondary mb-1">Chave de Acesso</label>
-                        <input class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none"
-                            [(ngModel)]="filters.chaveAcesso" placeholder="Buscar por chave..." (keyup.enter)="aplicarFiltros()"/>
-                    </div>
-                    <div class="w-full sm:w-48">
-                        <label class="block text-sm font-bold text-secondary mb-1">Status</label>
-                        <select class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none"
-                            [(ngModel)]="filters.status" (change)="aplicarFiltros()">
-                            <option [ngValue]="null">Todos</option>
-                            <option *ngFor="let status of statusOptions" [value]="status">{{status}}</option>
-                        </select>
-                    </div>
-                    <button mat-flat-button color="primary" class="h-10 rounded-lg" (click)="aplicarFiltros()">
-                        <mat-icon [svgIcon]="'heroicons_outline:magnifying-glass'"></mat-icon>
-                        <span class="ml-2">Filtrar</span>
-                    </button>
-                </div>
+        <fuse-alert *ngIf="pendencias().length === 0 && !isLoading()" [type]="'info'" [appearance]="'fill'">
+            Nenhuma pendência de mapeamento encontrada. O estoque está 100% sincronizado com as NF-es importadas.
+        </fuse-alert>
 
-                <!-- Tabela de Histórico -->
-                <div class="bg-card rounded-2xl shadow overflow-hidden border border-gray-200">
-                    <table mat-table [dataSource]="importacoes$" class="w-full">
+        <div *ngIf="pendencias().length > 0" class="flex flex-col bg-card shadow rounded-2xl overflow-hidden">
+            <div class="p-6 pb-0">
+                <div class="text-2xl font-semibold leading-tight">Itens Pendentes de Mapeamento</div>
+                <div class="mt-1 text-secondary">Estes itens vieram em NF-es mas não possuem um código interno correspondente para o fornecedor.</div>
+            </div>
 
-                        <!-- Data Column -->
-                        <ng-container matColumnDef="data">
-                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 font-bold">Data Início</th>
-                            <td mat-cell *matCellDef="let row"> {{row.createdAt | date:'dd/MM/yyyy HH:mm'}} </td>
-                        </ng-container>
+            <div class="overflow-x-auto">
+                <table mat-table [dataSource]="pendencias()" class="w-full bg-transparent">
 
-                        <!-- Nota Column -->
-                        <ng-container matColumnDef="nota">
-                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 font-bold">Nota</th>
-                            <td mat-cell *matCellDef="let row"> {{row.numeroNota}} </td>
-                        </ng-container>
+                    <!-- NF-e Column -->
+                    <ng-container matColumnDef="numeroNfe">
+                        <th mat-header-cell *matHeaderCellDef> NF-e </th>
+                        <td mat-cell *matCellDef="let row"> {{row.numeroNfe}} </td>
+                    </ng-container>
 
-                        <!-- Fornecedor Column -->
-                        <ng-container matColumnDef="fornecedor">
-                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 font-bold">Fornecedor</th>
-                            <td mat-cell *matCellDef="let row">
-                                <div class="flex flex-col">
-                                    <span class="font-medium">{{row.nomeFornecedor}}</span>
-                                    <span class="text-xs text-secondary">{{row.cnpjFornecedor}}</span>
-                                </div>
-                            </td>
-                        </ng-container>
+                    <!-- Fornecedor Column -->
+                    <ng-container matColumnDef="fornecedor">
+                        <th mat-header-cell *matHeaderCellDef> Fornecedor </th>
+                        <td mat-cell *matCellDef="let row">
+                            <div class="flex flex-col">
+                                <span class="font-medium">{{row.nomeFornecedor}}</span>
+                                <span class="text-sm text-secondary">{{row.cnpjFornecedor}}</span>
+                            </div>
+                        </td>
+                    </ng-container>
 
-                        <!-- Status Column -->
-                        <ng-container matColumnDef="status">
-                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 font-bold">Status</th>
-                            <td mat-cell *matCellDef="let row">
-                                <span class="px-2 py-1 rounded text-xs font-bold uppercase" [ngClass]="getStatusColor(row.status)">
-                                    {{row.status}}
-                                </span>
-                            </td>
-                        </ng-container>
+                    <!-- Código Externo Column -->
+                    <ng-container matColumnDef="codigoExterno">
+                        <th mat-header-cell *matHeaderCellDef> Cód. Fornecedor </th>
+                        <td mat-cell *matCellDef="let row">
+                            <code class="bg-gray-100 dark:bg-gray-800 px-1 rounded">{{row.codigoExterno}}</code>
+                        </td>
+                    </ng-container>
 
-                        <!-- Ações Column -->
-                        <ng-container matColumnDef="acoes">
-                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 font-bold text-center">Ações</th>
-                            <td mat-cell *matCellDef="let row" class="text-center">
-                                <button mat-icon-button (click)="verRelatorio(row.id)" matTooltip="Ver Relatório">
-                                    <mat-icon [svgIcon]="'heroicons_outline:document-text'"></mat-icon>
+                    <!-- Descrição Column -->
+                    <ng-container matColumnDef="descricaoExterna">
+                        <th mat-header-cell *matHeaderCellDef> Descrição na Nota </th>
+                        <td mat-cell *matCellDef="let row"> {{row.descricaoExterna}} </td>
+                    </ng-container>
+
+                    <!-- Quantidade Column -->
+                    <ng-container matColumnDef="quantidade">
+                        <th mat-header-cell *matHeaderCellDef> Qtd. </th>
+                        <td mat-cell *matCellDef="let row"> {{row.quantidade}} {{row.unidadeMedidaExterna}} </td>
+                    </ng-container>
+
+                    <!-- Validade Column -->
+                    <ng-container matColumnDef="validade">
+                        <th mat-header-cell *matHeaderCellDef> Validade/Lote </th>
+                        <td mat-cell *matCellDef="let row">
+                            <div class="flex flex-col">
+                                <span>{{row.dataValidade | date:'dd/MM/yyyy'}}</span>
+                                <span class="text-sm text-secondary">Lote: {{row.loteExterno}}</span>
+                            </div>
+                        </td>
+                    </ng-container>
+
+                    <!-- Ações Column -->
+                    <ng-container matColumnDef="acoes">
+                        <th mat-header-cell *matHeaderCellDef> Mapear para Insumo Interno </th>
+                        <td mat-cell *matCellDef="let row">
+                            <div class="flex items-center space-x-2 py-2">
+                                <mat-form-field class="fuse-mat-dense w-64" [subscriptSizing]="'dynamic'">
+                                    <mat-select #insumoSelect placeholder="Selecione o insumo...">
+                                        <mat-option *ngFor="let insumo of insumos()" [value]="insumo.id">
+                                            {{insumo.codigo}} - {{insumo.descricao}}
+                                        </mat-option>
+                                    </mat-select>
+                                </mat-form-field>
+
+                                <button mat-icon-button color="primary"
+                                        [disabled]="!insumoSelect.value || isLoading()"
+                                        (click)="resolver(row, insumoSelect.value)"
+                                        matTooltip="Confirmar Mapeamento De/Para">
+                                    <mat-icon [svgIcon]="'heroicons_outline:check-circle'"></mat-icon>
                                 </button>
-                                <button *ngIf="row.status === 'PARCIALMENTE_IMPORTADA' || row.status === 'PROCESSANDO'"
-                                    mat-icon-button (click)="verPendencias(row.id)" matTooltip="Ver Pendências">
-                                    <mat-icon [svgIcon]="'heroicons_outline:exclamation-triangle'" class="text-orange-500"></mat-icon>
+
+                                <div class="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-2"></div>
+
+                                <button mat-stroked-button color="accent"
+                                        [disabled]="isLoading()"
+                                        (click)="cadastrarNovoInsumo(row)"
+                                        matTooltip="Cadastrar como novo insumo no sistema">
+                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                                    <span class="ml-1">Novo</span>
                                 </button>
-                            </td>
-                        </ng-container>
+                            </div>
+                        </td>
+                    </ng-container>
 
-                        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                        <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="hover:bg-gray-50 cursor-pointer"></tr>
-                    </table>
-
-                    <div *ngIf="(importacoes$ | async)?.length === 0" class="p-8 text-center text-secondary">
-                        Nenhuma importação encontrada.
-                    </div>
-                </div>
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                </table>
             </div>
         </div>
     </div>

@@ -1,92 +1,48 @@
-import { inject, Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, tap } from 'rxjs';
+import { Observable } from 'rxjs';
 import { ApiService } from 'app/core/api/api.service';
-import { 
-    ImportacaoNfeResponseDTO, 
-    PendenciaImportacaoResponseDTO, 
-    ResolucaoPendenciaDTO,
-    StatusImportacao
-} from 'app/core/models';
-import { environment } from 'app/environments/environment';
+import { ImportacaoNfePendencia, ImportacaoNfeResumo, NfePreValidationResponse, ResolverPendenciaRequest } from 'app/core/models/importacao-nfe.types';
 
-@Injectable({
-    providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class ImportacaoNfeService {
-    private readonly _api = inject(ApiService);
+    private readonly _apiService = inject(ApiService);
     private readonly _http = inject(HttpClient);
-    private readonly _baseUrl = environment.apiUrl;
-
-    private readonly _importacoesSubject = new BehaviorSubject<ImportacaoNfeResponseDTO[]>([]);
-    readonly importacoes$: Observable<ImportacaoNfeResponseDTO[]> = this._importacoesSubject.asObservable();
+    private readonly _basePath = 'v1/estoque/importacao-nfe';
 
     /**
-     * Inicia a importação de uma NF-e via upload de XML
+     * Pré-validação de arquivo XML de NF-e
      */
-    upload(file: File, confirmacaoConferencia: boolean, idAlmoxarifado: number): Observable<ImportacaoNfeResponseDTO> {
+    validarNfe(file: File): Observable<NfePreValidationResponse> {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('confirmacaoConferencia', String(confirmacaoConferencia));
-        formData.append('idAlmoxarifado', String(idAlmoxarifado));
-
-        return this._http.post<ImportacaoNfeResponseDTO>(`${this._baseUrl}/importacao-nfe/upload`, formData).pipe(
-            tap(response => {
-                const current = this._importacoesSubject.getValue();
-                this._importacoesSubject.next([response, ...current]);
-            })
-        );
+        return this._apiService.post<NfePreValidationResponse>(`${this._basePath}/validate`, formData);
     }
 
     /**
-     * Lista o histórico de importações com filtros
+     * Upload de arquivo XML de NF-e
      */
-    listarHistorico(filters: {
-        chaveAcesso?: string,
-        status?: StatusImportacao,
-        idFornecedor?: number,
-        dataInicio?: string,
-        dataFim?: string
-    } = {}): Observable<ImportacaoNfeResponseDTO[]> {
-        return this._api.list<ImportacaoNfeResponseDTO>('importacao-nfe/historico', filters).pipe(
-            tap(importacoes => this._importacoesSubject.next(importacoes))
-        );
+    uploadNfe(file: File): Observable<ImportacaoNfeResumo> {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        // Usamos HttpClient diretamente para lidar com FormData se necessário,
+        // ou ApiService se ele suportar. O ApiService atual não tem helper para FormData.
+        return this._apiService.post<ImportacaoNfeResumo>(`${this._basePath}/upload`, formData);
     }
 
     /**
-     * Obtém o relatório JSON detalhado de uma importação
+     * Lista pendências de importação
      */
-    obterRelatorio(id: number): Observable<string> {
-        return this._api.get<string>(`importacao-nfe/${id}/relatorio`);
+    listarPendencias(): Observable<ImportacaoNfePendencia[]> {
+        return this._apiService.list<ImportacaoNfePendencia>(`${this._basePath}/pendencias`);
     }
 
     /**
-     * Lista as pendências de uma importação
+     * Resolve uma pendência associando a um insumo interno
      */
-    listarPendencias(id: number): Observable<PendenciaImportacaoResponseDTO[]> {
-        return this._api.get<PendenciaImportacaoResponseDTO[]>(`importacao-nfe/${id}/pendencias`);
-    }
-
-    /**
-     * Resolve uma pendência específica
-     */
-    resolverPendencia(idPendencia: number, resolucao: ResolucaoPendenciaDTO): Observable<ImportacaoNfeResponseDTO> {
-        return this._api.post<ImportacaoNfeResponseDTO>(`importacao-nfe/pendencias/${idPendencia}/resolver`, resolucao).pipe(
-            tap(updatedImportacao => {
-                const current = this._importacoesSubject.getValue();
-                const index = current.findIndex(i => i.id === updatedImportacao.id);
-                if (index !== -1) {
-                    current[index] = updatedImportacao;
-                    this._importacoesSubject.next([...current]);
-                }
-            })
-        );
-    }
-
-    /**
-     * Reprocessa um item em Dead Letter
-     */
-    reprocessarDeadLetter(idDeadLetter: number): Observable<void> {
-        return this._api.post<void>(`importacao-nfe/dead-letter/${idDeadLetter}/reprocessar`, {});
+    resolverPendencia(id: number, insumoId: number): Observable<void> {
+        const request: ResolverPendenciaRequest = { insumoId };
+        return this._apiService.post<void>(`${this._basePath}/pendencias/${id}/resolver`, request);
     }
 }

@@ -18,7 +18,7 @@ export const defaultNavigation: FuseNavigationItem[] = [
     },
     {
         id: 'importacao-nfe',
-        title: 'Importação NF-e',
+        title: 'Importar NF-e',
         type: 'basic',
         icon: 'heroicons_outline:cloud-arrow-up',
         link: '/importacao-nfe',
