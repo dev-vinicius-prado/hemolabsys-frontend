@@ -6,7 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -15,6 +15,7 @@ import { InsumosDataService } from 'app/modules/admin/insumos/services/insumos-d
 import { PendenciaImportacaoResponseDTO } from 'app/core/models';
 import { ResolucaoDialogComponent } from '../../components/resolucao-dialog/resolucao-dialog.component';
 import { FuseAlertComponent } from '@fuse/components/alert';
+import { NotificationService } from 'app/core/services/notification.service';
 
 @Component({
     selector: 'app-pendencias-list',
@@ -42,7 +43,7 @@ export class PendenciasListComponent implements OnInit {
     private readonly _importacaoNfeService = inject(ImportacaoNfeService);
     private readonly _insumosService = inject(InsumosDataService);
     private readonly _dialog = inject(MatDialog);
-    private readonly _snackBar = inject(MatSnackBar);
+    private readonly _notificationService = inject(NotificationService);
     private readonly _changeDetectorRef = inject(ChangeDetectorRef);
 
     importacaoId: number;
@@ -78,7 +79,7 @@ export class PendenciasListComponent implements OnInit {
             },
             error: () => {
                 this.loading = false;
-                this._snackBar.open('Erro ao carregar pendências.', 'OK', { duration: 3000 });
+                this._notificationService.error('Erro ao carregar pendências.');
             }
         });
     }
@@ -106,13 +107,13 @@ export class PendenciasListComponent implements OnInit {
 
         this._importacaoNfeService.resolverPendencia(pendencia.id, resolucao).subscribe({
             next: () => {
-                this._snackBar.open('Insumo associado com sucesso!', 'OK', { duration: 3000 });
+                this._notificationService.success('Insumo associado com sucesso!');
                 this.associandoItemId = null;
                 this.carregarPendencias();
             },
             error: () => {
                 this.loading = false;
-                this._snackBar.open('Erro ao associar insumo.', 'OK', { duration: 3000 });
+                this._notificationService.error('Erro ao associar insumo.');
             }
         });
     }
@@ -127,7 +128,7 @@ export class PendenciasListComponent implements OnInit {
         }).afterClosed().subscribe(result => {
             if (result) {
                 this.carregarPendencias();
-                this._snackBar.open('Novo insumo cadastrado e pendência resolvida!', 'OK', { duration: 3000 });
+                this._notificationService.success('Novo insumo cadastrado e pendência resolvida!');
             }
         });
     }

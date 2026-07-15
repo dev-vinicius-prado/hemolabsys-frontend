@@ -18,6 +18,21 @@
     }
 }
 
+.warn-snackbar {
+    background-color: #f59e0b !important;
+    --mdc-snackbar-container-color: #f59e0b !important;
+    --mdc-snackbar-label-text-color: #ffffff !important;
+    --mat-snack-bar-button-color: #ffffff !important;
+
+    .mdc-snackbar__surface {
+        background-color: #f59e0b !important;
+    }
+
+    .mdc-snackbar__label {
+        color: #ffffff !important;
+    }
+}
+
 .error-snackbar {
     background-color: #dc2626 !important;
     --mdc-snackbar-container-color: #dc2626 !important;

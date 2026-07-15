@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BehaviorSubject, combineLatest, map, Observable, startWith, Subject, tap } from 'rxjs';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatIconModule } from "@angular/material/icon";
 
 import {
@@ -21,6 +21,7 @@ import {
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { EmpresaDataService } from './services/empresa-data.service';
 import { HasRoleDirective } from 'app/shared/directives/has-role.directive';
+import { NotificationService } from 'app/core/services/notification.service';
 
 @Component({
     selector: 'empresa',
@@ -39,7 +40,7 @@ import { HasRoleDirective } from 'app/shared/directives/has-role.directive';
 export class EmpresaComponent implements OnInit, OnDestroy {
     private _changeDetectorRef = inject(ChangeDetectorRef);
     private empresaDataService = inject(EmpresaDataService);
-    private _snackBar = inject(MatSnackBar);
+    private _notificationService = inject(NotificationService);
     private _fuseConfirmationService = inject(FuseConfirmationService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -188,17 +189,11 @@ export class EmpresaComponent implements OnInit, OnDestroy {
             if (result === 'confirmed') {
                 this.empresaDataService.deleteEmpresa(empresa.id).subscribe({
                     next: () => {
-                        this._snackBar.open('Empresa excluída com sucesso!', 'OK', {
-                            duration: 5000,
-                            panelClass: ['success-snackbar'],
-                        });
+                        this._notificationService.success('Empresa excluída com sucesso!');
                         this.selectedIds.delete(empresa.id);
                     },
                     error: (err) => {
-                        this._snackBar.open(`Erro ao excluir empresa: ${err.message}`, 'Fechar', {
-                            duration: 5000,
-                            panelClass: ['error-snackbar'],
-                        });
+                        this._notificationService.error(`Erro ao excluir empresa: ${err.message}`);
                     }
                 });
             }
@@ -234,33 +229,21 @@ export class EmpresaComponent implements OnInit, OnDestroy {
                 .updateEmpresa(this.editingId!, updateDto)
                 .subscribe({
                     next: () => {
-                        this._snackBar.open('Empresa atualizada com sucesso!', 'OK', {
-                            duration: 5000,
-                            panelClass: ['success-snackbar'],
-                        });
+                        this._notificationService.success('Empresa atualizada com sucesso!');
                         this.cancelar();
                     },
                     error: (err) => {
-                        this._snackBar.open(`Erro ao atualizar empresa: ${err.message}`, 'Fechar', {
-                            duration: 5000,
-                            panelClass: ['error-snackbar'],
-                        });
+                        this._notificationService.error(`Erro ao atualizar empresa: ${err.message}`);
                     }
                 });
         } else {
             this.empresaDataService.createEmpresa(createDto).subscribe({
                 next: () => {
-                    this._snackBar.open('Empresa criada com sucesso!', 'OK', {
-                        duration: 5000,
-                        panelClass: ['success-snackbar'],
-                    });
+                    this._notificationService.success('Empresa criada com sucesso!');
                     this.cancelar();
                 },
                 error: (err) => {
-                    this._snackBar.open(`Erro ao criar empresa: ${err.message}`, 'Fechar', {
-                        duration: 5000,
-                        panelClass: ['error-snackbar'],
-                    });
+                    this._notificationService.error(`Erro ao criar empresa: ${err.message}`);
                 }
             });
         }
@@ -282,6 +265,6 @@ export class EmpresaComponent implements OnInit, OnDestroy {
     }
 
     exportCsv(): void {
-        this._snackBar.open('Funcionalidade de exportação em desenvolvimento', 'OK', { duration: 3000, panelClass: ["success-snackbar"]});
+        this._notificationService.info('Funcionalidade de exportação em desenvolvimento');
     }
 }

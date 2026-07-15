@@ -11,8 +11,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatStepperModule } from '@angular/material/stepper';
+import { NotificationService } from 'app/core/services/notification.service';
 import { SaidaDataService } from './saida-data.service';
 import { InsumoLoteSaidaResponseDTO, SetorOptionDTO } from './types/saida.types';
 import { Observable, combineLatest, filter, shareReplay, startWith, switchMap, tap } from 'rxjs';
@@ -45,7 +46,7 @@ export class SaidaComponent implements OnInit {
     private dependenciesService = inject(DependenciesService);
     private insumosDataService = inject(InsumosDataService);
     private formBuilder = inject(FormBuilder);
-    private snackBar = inject(MatSnackBar);
+    private _notificationService = inject(NotificationService);
     private router = inject(Router);
 
     saidaForm!: FormGroup;
@@ -93,7 +94,7 @@ export class SaidaComponent implements OnInit {
 
     submitSaida(): void {
         if (this.saidaForm.invalid) {
-            this.snackBar.open('Formulário inválido. Verifique os campos.', 'Fechar', { duration: 3000 });
+            this._notificationService.warn('Formulário inválido. Verifique os campos.');
             return;
         }
 
@@ -111,17 +112,11 @@ export class SaidaComponent implements OnInit {
         this.saidaDataService.createSaida(saidaDTO)
             .subscribe({
                 next: () => {
-                    this.snackBar.open('Saída registrada com sucesso!', 'OK', {
-                        duration: 5000,
-                        panelClass: ['success-snackbar'],
-                    });
+                    this._notificationService.success('Saída registrada com sucesso!');
                     this.router.navigate(['/movimentacoes']);
                 },
                 error: (err) => {
-                    this.snackBar.open(`Erro ao registrar saída: ${err.message}`, 'Fechar', {
-                        duration: 5000,
-                        panelClass: ['error-snackbar']
-                    });
+                    this._notificationService.error(`Erro ao registrar saída: ${err.message}`);
                 }
             });
     }

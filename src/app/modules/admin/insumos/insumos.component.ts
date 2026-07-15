@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BehaviorSubject, combineLatest, map, Observable, startWith, Subject, tap } from 'rxjs';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 import {
     InsumoResponseDTO,
@@ -27,6 +27,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { HasRoleDirective } from 'app/shared/directives/has-role.directive';
 import { AuditLog, AuditTimelineComponent } from 'app/shared/components/audit-timeline/audit-timeline.component';
 import { ApiService } from 'app/core/api/api.service';
+import { NotificationService } from 'app/core/services/notification.service';
 
 @Component({
     selector: 'insumos',
@@ -42,7 +43,7 @@ export class InsumosComponent implements OnInit, OnDestroy {
     private insumosDataService = inject(InsumosDataService);
     private dependenciesService = inject(DependenciesService);
     private _apiService = inject(ApiService);
-    private _snackBar = inject(MatSnackBar);
+    private _notificationService = inject(NotificationService);
     private _fuseConfirmationService = inject(FuseConfirmationService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -222,17 +223,11 @@ export class InsumosComponent implements OnInit, OnDestroy {
             if (result === 'confirmed') {
                 this.insumosDataService.deleteInsumo(insumo.id).subscribe({
                     next: () => {
-                        this._snackBar.open('Insumo excluído com sucesso!', 'OK', {
-                            duration: 5000,
-                            panelClass: ['success-snackbar'],
-                        });
+                        this._notificationService.success('Insumo excluído com sucesso!');
                         this.selectedIds.delete(insumo.id);
                     },
                     error: (err) => {
-                        this._snackBar.open(`Erro ao excluir insumo: ${err.message}`, 'Fechar', {
-                            duration: 5000,
-                            panelClass: ['error-snackbar'],
-                        });
+                        this._notificationService.error(`Erro ao excluir insumo: ${err.message}`);
                     }
                 });
             }
@@ -251,10 +246,7 @@ export class InsumosComponent implements OnInit, OnDestroy {
                 this._changeDetectorRef.markForCheck();
             },
             error: (err) => {
-                this._snackBar.open('Erro ao carregar logs de auditoria', 'Fechar', {
-                    duration: 5000,
-                    panelClass: ['error-snackbar'],
-                });
+                this._notificationService.error('Erro ao carregar logs de auditoria');
                 this.auditVisible = false;
                 this._changeDetectorRef.markForCheck();
             }
@@ -298,37 +290,25 @@ export class InsumosComponent implements OnInit, OnDestroy {
             .updateInsumo(this.editingId!, updateDto)
             .subscribe({
                 next: () => {
-                    this._snackBar.open('Insumo atualizado com sucesso!', 'OK', {
-                        duration: 5000,
-                        panelClass: ['success-snackbar'],
-                    });
+                    this._notificationService.success('Insumo atualizado com sucesso!');
                     this.formVisible = false;
                     this._changeDetectorRef.markForCheck();
                     this.cancelar();
                 },
                 error: (err) => {
-                    this._snackBar.open(`Erro ao atualizar insumo: ${err.message}`, 'Fechar', {
-                        duration: 5000,
-                        panelClass: ['error-snackbar'],
-                    });
+                    this._notificationService.error(`Erro ao atualizar insumo: ${err.message}`);
                 },
             });
         } else {
             this.insumosDataService.createInsumo(baseDto).subscribe({
                 next: () => {
-                    this._snackBar.open('Insumo criado com sucesso!', 'OK', {
-                        duration: 5000,
-                        panelClass: ['success-snackbar'],
-                    });
+                    this._notificationService.success('Insumo criado com sucesso!');
                     this.formVisible = false;
                     this._changeDetectorRef.markForCheck();
                     this.cancelar();
                 },
                 error: (err) => {
-                    this._snackBar.open(`Erro ao criar insumo: ${err.message}`, 'Fechar', {
-                        duration: 5000,
-                        panelClass: ['error-snackbar'],
-                    });
+                    this._notificationService.error(`Erro ao criar insumo: ${err.message}`);
                 },
             });
         }

@@ -5,13 +5,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { TranslocoModule } from '@ngneat/transloco';
 import { ApiService } from 'app/core/api/api.service';
 import { UserService } from 'app/core/user/user.service';
 import { User } from 'app/core/user/user.types';
 import { take } from 'rxjs';
 import { Router } from '@angular/router';
+import { NotificationService } from 'app/core/services/notification.service';
 
 @Component({
     selector       : 'app-profile',
@@ -35,7 +36,7 @@ export class ProfileComponent implements OnInit
 {
     private _apiService = inject(ApiService);
     private _formBuilder = inject(UntypedFormBuilder);
-    private _snackBar = inject(MatSnackBar);
+    private _notificationService = inject(NotificationService);
     private _userService = inject(UserService);
     private _changeDetectorRef = inject(ChangeDetectorRef);
     private _router = inject(Router);
@@ -101,19 +102,13 @@ export class ProfileComponent implements OnInit
 
         this._apiService.update('users/me', this.user.id, formData).subscribe({
             next: (response: any) => {
-                this._snackBar.open('Perfil atualizado com sucesso!', 'OK', {
-                    duration: 5000,
-                    panelClass: ['success-snackbar'],
-                });
+                this._notificationService.success('Perfil atualizado com sucesso!');
 
                 // Update the user service data
                 this._userService.user = response;
             },
             error: (error) => {
-                this._snackBar.open(`Erro ao atualizar perfil: ${error.message}`, 'Fechar', {
-                    duration: 5000,
-                    panelClass: ['error-snackbar'],
-                });
+                this._notificationService.error(`Erro ao atualizar perfil: ${error.message}`);
             }
         });
     }

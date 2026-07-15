@@ -5,10 +5,11 @@ import { BehaviorSubject, combineLatest, map, Observable, Subject, takeUntil } f
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { ApiService } from '../../../core/api/api.service';
 import { PageableResponse, SetorCreateDTO, SetorResponseDTO, SetorUpdateDTO } from 'app/core/models';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatIconModule } from "@angular/material/icon";
 import { PaginationComponent } from 'app/shared/components/pagination/pagination.component';
 import { HasRoleDirective } from 'app/shared/directives/has-role.directive';
+import { NotificationService } from 'app/core/services/notification.service';
 
 @Component({
     selector: 'setor',
@@ -43,7 +44,7 @@ export class SetorComponent implements OnInit, OnDestroy {
         })
     );
 
-    private readonly _snackBar = inject(MatSnackBar);
+    private readonly _notificationService = inject(NotificationService);
     private _fuseConfirmationService = inject(FuseConfirmationService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -124,18 +125,12 @@ export class SetorComponent implements OnInit, OnDestroy {
             if (result === 'confirmed') {
                 this.api.remove('setores', s.id).subscribe({
                     next: () => {
-                        this._snackBar.open('Setor excluído com sucesso!', 'OK', {
-                            duration: 5000,
-                            panelClass: ['success-snackbar'],
-                        });
+                        this._notificationService.success('Setor excluído com sucesso!');
                         this.loadSetores();
                         this.selectedIds.delete(s.id);
                     },
                     error: (err) => {
-                        this._snackBar.open(`Erro ao excluir setor: ${err.message}`, 'Fechar', {
-                            duration: 5000,
-                            panelClass: ['error-snackbar'],
-                        });
+                        this._notificationService.error(`Erro ao excluir setor: ${err.message}`);
                     }
                 });
             }
@@ -164,18 +159,12 @@ export class SetorComponent implements OnInit, OnDestroy {
 
         op$.subscribe({
             next: () => {
-                this._snackBar.open(`Setor ${isEdit ? 'atualizado' : 'criado'} com sucesso!`, 'OK', {
-                    duration: 5000,
-                    panelClass: ['success-snackbar'],
-                });
+                this._notificationService.success(`Setor ${isEdit ? 'atualizado' : 'criado'} com sucesso!`);
                 this.loadSetores();
                 this.cancelar();
             },
             error: (err) => {
-                this._snackBar.open(`Erro ao salvar setor: ${err.message}`, 'Fechar', {
-                    duration: 5000,
-                    panelClass: ['error-snackbar'],
-                });
+                this._notificationService.error(`Erro ao salvar setor: ${err.message}`);
             }
         });
     }

@@ -12,12 +12,13 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { TranslocoModule } from '@ngneat/transloco';
 import { PageableResponse, UsuarioResponseDTO, UsuarioCreateDTO, UsuarioUpdateDTO, Role } from 'app/core/models';
 import { PaginationComponent } from 'app/shared/components/pagination/pagination.component';
 import { HasRoleDirective } from 'app/shared/directives/has-role.directive';
 import { AuditLog, AuditTimelineComponent } from 'app/shared/components/audit-timeline/audit-timeline.component';
+import { NotificationService } from 'app/core/services/notification.service';
 
 @Component({
     selector       : 'app-users',
@@ -48,7 +49,7 @@ export class UsersComponent implements OnInit, OnDestroy
     private _apiService = inject(ApiService);
     private _userService = inject(UserService);
     private _formBuilder = inject(UntypedFormBuilder);
-    private _snackBar = inject(MatSnackBar);
+    private _notificationService = inject(NotificationService);
     private _fuseConfirmationService = inject(FuseConfirmationService);
     private _dialog = inject(MatDialog);
     private _changeDetectorRef = inject(ChangeDetectorRef);
@@ -205,18 +206,12 @@ export class UsersComponent implements OnInit, OnDestroy
         if (this.mode === 'create') {
             this._apiService.post('users', formData).subscribe({
                 next: () => {
-                    this._snackBar.open('Usuário criado com sucesso!', 'OK', {
-                        duration: 5000,
-                        panelClass: ['success-snackbar'],
-                    });
+                    this._notificationService.success('Usuário criado com sucesso!');
                     this.cancel();
                     this.loadUsers();
                 },
                 error: (err) => {
-                    this._snackBar.open(`Erro ao criar usuário: ${err.message}`, 'Fechar', {
-                        duration: 5000,
-                        panelClass: ['error-snackbar'],
-                    });
+                    this._notificationService.error(`Erro ao criar usuário: ${err.message}`);
                 }
             });
         } else {
@@ -227,18 +222,12 @@ export class UsersComponent implements OnInit, OnDestroy
 
             this._apiService.update('users', this.selectedUser.id, formData).subscribe({
                 next: () => {
-                    this._snackBar.open('Usuário atualizado com sucesso!', 'OK', {
-                        duration: 5000,
-                        panelClass: ['success-snackbar'],
-                    });
+                    this._notificationService.success('Usuário atualizado com sucesso!');
                     this.cancel();
                     this.loadUsers();
                 },
                 error: (err) => {
-                    this._snackBar.open(`Erro ao atualizar usuário: ${err.message}`, 'Fechar', {
-                        duration: 5000,
-                        panelClass: ['error-snackbar'],
-                    });
+                    this._notificationService.error(`Erro ao atualizar usuário: ${err.message}`);
                 }
             });
         }
@@ -267,17 +256,11 @@ export class UsersComponent implements OnInit, OnDestroy
             if (result === 'confirmed') {
                 this._apiService.remove('users', user.id).subscribe({
                     next: () => {
-                        this._snackBar.open('Usuário excluído com sucesso!', 'OK', {
-                            duration: 5000,
-                            panelClass: ['success-snackbar'],
-                        });
+                        this._notificationService.success('Usuário excluído com sucesso!');
                         this.loadUsers();
                     },
                     error: (err) => {
-                        this._snackBar.open(`Erro ao excluir usuário: ${err.message}`, 'Fechar', {
-                            duration: 5000,
-                            panelClass: ['error-snackbar'],
-                        });
+                        this._notificationService.error(`Erro ao excluir usuário: ${err.message}`);
                     }
                 });
             }
@@ -300,10 +283,7 @@ export class UsersComponent implements OnInit, OnDestroy
                 this._changeDetectorRef.markForCheck();
             },
             error: (err) => {
-                this._snackBar.open('Erro ao carregar logs de auditoria', 'Fechar', {
-                    duration: 5000,
-                    panelClass: ['error-snackbar'],
-                });
+                this._notificationService.error('Erro ao carregar logs de auditoria');
                 this.mode = 'list';
                 this._changeDetectorRef.markForCheck();
             }

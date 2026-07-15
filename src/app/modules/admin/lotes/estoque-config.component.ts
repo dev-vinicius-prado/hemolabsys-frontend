@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
 import { EstoqueInsumoConfigDTO, EstoqueInsumoResponseDTO } from 'app/core/models';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
@@ -11,6 +11,7 @@ import { PaginationComponent } from 'app/shared/components/pagination/pagination
 import { HasRoleDirective } from 'app/shared/directives/has-role.directive';
 import { DependenciesService } from '../insumos/services/dependencies.service';
 import { InsumosDataService } from '../insumos/services/insumos-data.service';
+import { NotificationService } from 'app/core/services/notification.service';
 
 @Component({
     selector: 'app-estoque-config',
@@ -32,7 +33,7 @@ export class EstoqueConfigComponent implements OnInit, OnDestroy {
     private _estoqueConfigService = inject(EstoqueConfigService);
     private _dependenciesService = inject(DependenciesService);
     private _insumosDataService = inject(InsumosDataService);
-    private _snackBar = inject(MatSnackBar);
+    private _notificationService = inject(NotificationService);
     private _fuseConfirmationService = inject(FuseConfirmationService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -104,26 +105,17 @@ export class EstoqueConfigComponent implements OnInit, OnDestroy {
 
     salvar(): void {
         if (!this.form.almoxarifadoId || !this.form.insumoId || this.form.estoqueMinimo === null) {
-            this._snackBar.open('Preencha os campos obrigatórios', 'OK', {
-                duration: 3000,
-                panelClass: ['error-snackbar'],
-            });
+            this._notificationService.warn('Preencha os campos obrigatórios');
             return;
         }
 
         this._estoqueConfigService.saveConfig(this.form).subscribe({
             next: () => {
-                this._snackBar.open('Meta de estoque salva com sucesso!', 'OK', {
-                    duration: 3000,
-                    panelClass: ['success-snackbar'],
-                });
+                this._notificationService.success('Meta de estoque salva com sucesso!');
                 this.cancelar();
             },
             error: (err) => {
-                this._snackBar.open('Erro ao salvar meta: ' + (err.error?.message || err.message), 'OK', {
-                    duration: 5000,
-                    panelClass: ['error-snackbar'],
-                });
+                this._notificationService.error('Erro ao salvar meta: ' + (err.error?.message || err.message));
             }
         });
     }
@@ -147,10 +139,7 @@ export class EstoqueConfigComponent implements OnInit, OnDestroy {
             if (result === 'confirmed') {
                 this._estoqueConfigService.deleteConfig(config.id).subscribe({
                     next: () => {
-                        this._snackBar.open('Meta excluída com sucesso!', 'OK', {
-                            duration: 3000,
-                            panelClass: ['success-snackbar'],
-                        });
+                        this._notificationService.success('Meta excluída com sucesso!');
                     }
                 });
             }

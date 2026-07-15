@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BehaviorSubject, combineLatest, map, Observable, startWith, Subject, tap } from 'rxjs';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatIconModule } from "@angular/material/icon";
 
 import {
@@ -26,6 +26,7 @@ import { PageableResponse } from 'app/core/models';
 import { HasRoleDirective } from 'app/shared/directives/has-role.directive';
 import { AuditLog, AuditTimelineComponent } from 'app/shared/components/audit-timeline/audit-timeline.component';
 import { ApiService } from 'app/core/api/api.service';
+import { NotificationService } from 'app/core/services/notification.service';
 
 @Component({
     selector: 'almoxarifado',
@@ -47,7 +48,7 @@ export class AlmoxarifadoComponent implements OnInit, OnDestroy {
     private _changeDetectorRef = inject(ChangeDetectorRef);
     private almoxarifadoDataService = inject(AlmoxarifadoDataService);
     private _apiService = inject(ApiService);
-    private _snackBar = inject(MatSnackBar);
+    private _notificationService = inject(NotificationService);
     private _fuseConfirmationService = inject(FuseConfirmationService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -204,17 +205,11 @@ export class AlmoxarifadoComponent implements OnInit, OnDestroy {
             if (result === 'confirmed') {
                 this.almoxarifadoDataService.deleteAlmoxarifado(almoxarifado.id).subscribe({
                     next: () => {
-                        this._snackBar.open('Almoxarifado excluído com sucesso!', 'OK', {
-                            duration: 5000,
-                            panelClass: ['success-snackbar'],
-                        });
+                        this._notificationService.success('Almoxarifado excluído com sucesso!');
                         this.selectedIds.delete(almoxarifado.id);
                     },
                     error: (err) => {
-                        this._snackBar.open(`Erro ao excluir almoxarifado: ${err.message}`, 'Fechar', {
-                            duration: 5000,
-                            panelClass: ['error-snackbar'],
-                        });
+                        this._notificationService.error(`Erro ao excluir almoxarifado: ${err.message}`);
                     }
                 });
             }
@@ -233,10 +228,7 @@ export class AlmoxarifadoComponent implements OnInit, OnDestroy {
                 this._changeDetectorRef.markForCheck();
             },
             error: (err) => {
-                this._snackBar.open('Erro ao carregar logs de auditoria', 'Fechar', {
-                    duration: 5000,
-                    panelClass: ['error-snackbar'],
-                });
+                this._notificationService.error('Erro ao carregar logs de auditoria');
                 this.auditVisible = false;
                 this._changeDetectorRef.markForCheck();
             }
@@ -278,33 +270,21 @@ export class AlmoxarifadoComponent implements OnInit, OnDestroy {
                 .updateAlmoxarifado(this.editingId!, updateDto)
                 .subscribe({
                     next: () => {
-                        this._snackBar.open('Almoxarifado atualizado com sucesso!', 'OK', {
-                            duration: 5000,
-                            panelClass: ['success-snackbar'],
-                        });
+                        this._notificationService.success('Almoxarifado atualizado com sucesso!');
                         this.cancelar();
                     },
                     error: (err) => {
-                        this._snackBar.open(`Erro ao atualizar almoxarifado: ${err.message}`, 'Fechar', {
-                            duration: 5000,
-                            panelClass: ['error-snackbar'],
-                        });
+                        this._notificationService.error(`Erro ao atualizar almoxarifado: ${err.message}`);
                     }
                 });
         } else {
             this.almoxarifadoDataService.createAlmoxarifado(createDto).subscribe({
                 next: () => {
-                    this._snackBar.open('Almoxarifado criado com sucesso!', 'OK', {
-                        duration: 5000,
-                        panelClass: ['success-snackbar'],
-                    });
+                    this._notificationService.success('Almoxarifado criado com sucesso!');
                     this.cancelar();
                 },
                 error: (err) => {
-                    this._snackBar.open(`Erro ao criar almoxarifado: ${err.message}`, 'Fechar', {
-                        duration: 5000,
-                        panelClass: ['error-snackbar'],
-                    });
+                    this._notificationService.error(`Erro ao criar almoxarifado: ${err.message}`);
                 }
             });
         }
@@ -325,6 +305,6 @@ export class AlmoxarifadoComponent implements OnInit, OnDestroy {
 
     exportCsv(): void {
         // Implementar exportação se necessário
-        this._snackBar.open('Funcionalidade de exportação em desenvolvimento', 'OK', { duration: 3000, panelClass: ["success-snackbar"]});
+        this._notificationService.info('Funcionalidade de exportação em desenvolvimento');
     }
 }

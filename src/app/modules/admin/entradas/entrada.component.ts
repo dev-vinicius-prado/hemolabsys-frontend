@@ -16,8 +16,9 @@ import {
 } from './types/entrada.types';
 import { Observable, shareReplay, tap } from 'rxjs';
 import { MatSelectModule } from '@angular/material/select';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatStepperModule } from '@angular/material/stepper';
+import { NotificationService } from 'app/core/services/notification.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -43,7 +44,7 @@ import { MatButtonModule } from '@angular/material/button';
 export class EntradaComponent implements OnInit {
     private entradaDataService = inject(EntradaDataService);
     private formBuilder = inject(FormBuilder);
-    private snackBar = inject(MatSnackBar);
+    private _notificationService = inject(NotificationService);
     private router = inject(Router);
 
     insumos$!: Observable<InsumoOptionDTO[]>;
@@ -82,7 +83,7 @@ export class EntradaComponent implements OnInit {
 
     submitEntrada(): void {
         if (this.entradaForm.invalid) {
-            this.snackBar.open('Formulário inválido. Verifique os campos.', 'Fechar', { duration: 3000 });
+            this._notificationService.warn('Formulário inválido. Verifique os campos.');
             return;
         }
 
@@ -106,17 +107,11 @@ export class EntradaComponent implements OnInit {
         this.entradaDataService.createEntrada(payload)
             .subscribe({
                 next: () => {
-                    this.snackBar.open('Entrada registrada com sucesso!', 'OK', {
-                        duration: 5000,
-                        panelClass: ['success-snackbar'],
-                    });
+                    this._notificationService.success('Entrada registrada com sucesso!');
                     this.router.navigate(['/movimentacoes']);
                 },
                 error: (err) => {
-                    this.snackBar.open(`Erro ao registrar entrada: ${err.message}`, 'Fechar', {
-                        duration: 5000,
-                        panelClass: ['error-snackbar']
-                    });
+                    this._notificationService.error(`Erro ao registrar entrada: ${err.message}`);
                 }
             });
     }

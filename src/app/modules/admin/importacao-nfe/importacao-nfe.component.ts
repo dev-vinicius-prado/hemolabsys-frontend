@@ -19,6 +19,7 @@ import { Observable } from 'rxjs';
 import { AlmoxarifadoDataService } from '../almoxarifado/services/almoxarifado-data.service';
 import { UploadDialogComponent } from './components/upload-dialog/upload-dialog.component';
 import { RelatorioDialogComponent } from './components/relatorio-dialog/relatorio-dialog.component';
+import { NotificationService } from 'app/core/services/notification.service';
 
 @Component({
     selector: 'app-importacao-nfe',
@@ -45,7 +46,7 @@ export class ImportacaoNfeComponent implements OnInit {
     private readonly _importacaoNfeService = inject(ImportacaoNfeService);
     private readonly _almoxarifadoService = inject(AlmoxarifadoDataService);
     private readonly _dialog = inject(MatDialog);
-    private readonly _snackBar = inject(MatSnackBar);
+    private readonly _notificationService = inject(NotificationService);
     private readonly _router = inject(Router);
 
     importacoes$: Observable<ImportacaoNfeResponseDTO[]> = this._importacaoNfeService.importacoes$;
@@ -81,7 +82,7 @@ export class ImportacaoNfeComponent implements OnInit {
             disableClose: true
         }).afterClosed().subscribe(result => {
             if (result) {
-                this._snackBar.open('Importação iniciada com sucesso! O processamento ocorre em segundo plano.', 'OK', { duration: 5000 });
+                this._notificationService.success('Importação iniciada com sucesso! O processamento ocorre em segundo plano.');
                 this._importacaoNfeService.listarHistorico().subscribe();
             }
         });
@@ -96,7 +97,7 @@ export class ImportacaoNfeComponent implements OnInit {
                 });
             },
             error: () => {
-                this._snackBar.open('Não foi possível carregar o relatório.', 'OK', { duration: 3000 });
+                this._notificationService.error('Não foi possível carregar o relatório.');
             }
         });
     }

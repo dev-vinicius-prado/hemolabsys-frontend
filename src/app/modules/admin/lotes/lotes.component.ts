@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { Subject, takeUntil } from 'rxjs';
 import { LoteResponseDTO, LoteCreateDTO } from 'app/core/models/lote.types';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
@@ -11,6 +11,7 @@ import { PaginationComponent } from 'app/shared/components/pagination/pagination
 import { HasRoleDirective } from 'app/shared/directives/has-role.directive';
 import { DependenciesService } from '../insumos/services/dependencies.service';
 import { InsumosDataService } from '../insumos/services/insumos-data.service';
+import { NotificationService } from 'app/core/services/notification.service';
 
 @Component({
     selector: 'app-lotes',
@@ -32,7 +33,7 @@ export class LotesComponent implements OnInit, OnDestroy {
     private _lotesDataService = inject(LotesDataService);
     private _dependenciesService = inject(DependenciesService);
     private _insumosDataService = inject(InsumosDataService);
-    private _snackBar = inject(MatSnackBar);
+    private _notificationService = inject(NotificationService);
     private _fuseConfirmationService = inject(FuseConfirmationService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -125,10 +126,7 @@ export class LotesComponent implements OnInit, OnDestroy {
 
     salvar(): void {
         if (!this.form.codigoLote || !this.form.insumoId || !this.form.fornecedorId) {
-            this._snackBar.open('Preencha os campos obrigatórios', 'OK', {
-                duration: 3000,
-                panelClass: ['error-snackbar'],
-            });
+            this._notificationService.warn('Preencha os campos obrigatórios');
             return;
         }
 
@@ -138,17 +136,11 @@ export class LotesComponent implements OnInit, OnDestroy {
 
         request.subscribe({
             next: () => {
-                this._snackBar.open(this.mode === 'create' ? 'Lote criado com sucesso!' : 'Lote atualizado com sucesso!', 'OK', {
-                    duration: 3000,
-                    panelClass: ['success-snackbar'],
-                });
+                this._notificationService.success(this.mode === 'create' ? 'Lote criado com sucesso!' : 'Lote atualizado com sucesso!');
                 this.cancelar();
             },
             error: (err) => {
-                this._snackBar.open('Erro ao salvar lote: ' + (err.error?.message || err.message), 'OK', {
-                    duration: 5000,
-                    panelClass: ['error-snackbar'],
-                });
+                this._notificationService.error('Erro ao salvar lote: ' + (err.error?.message || err.message));
             }
         });
     }
@@ -156,10 +148,7 @@ export class LotesComponent implements OnInit, OnDestroy {
     toggleStatus(lote: LoteResponseDTO): void {
         this._lotesDataService.toggleStatus(lote.id).subscribe({
             next: () => {
-                this._snackBar.open('Status do lote atualizado!', 'OK', {
-                    duration: 3000,
-                    panelClass: ['success-snackbar'],
-                });
+                this._notificationService.success('Status do lote atualizado!');
             }
         });
     }
@@ -183,10 +172,7 @@ export class LotesComponent implements OnInit, OnDestroy {
             if (result === 'confirmed') {
                 this._lotesDataService.deleteLote(lote.id).subscribe({
                     next: () => {
-                        this._snackBar.open('Lote excluído com sucesso!', 'OK', {
-                            duration: 3000,
-                            panelClass: ['success-snackbar'],
-                        });
+                        this._notificationService.success('Lote excluído com sucesso!');
                     }
                 });
             }

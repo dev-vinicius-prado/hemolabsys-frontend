@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BehaviorSubject, combineLatest, map, Observable, startWith, Subject, tap } from 'rxjs';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { NgxMaskDirective, NgxMaskPipe } from 'ngx-mask';
 
@@ -20,6 +20,7 @@ import { FornecedorDataService } from './services/fornecedor-data.service';
 import { HasRoleDirective } from 'app/shared/directives/has-role.directive';
 import { AuditLog, AuditTimelineComponent } from 'app/shared/components/audit-timeline/audit-timeline.component';
 import { ApiService } from 'app/core/api/api.service';
+import { NotificationService } from 'app/core/services/notification.service';
 
 @Component({
     selector: 'fornecedores',
@@ -43,7 +44,7 @@ export class FornecedoresComponent implements OnInit, OnDestroy {
     private _changeDetectorRef = inject(ChangeDetectorRef);
     private _fornecedorDataService = inject(FornecedorDataService);
     private _apiService = inject(ApiService);
-    private _snackBar = inject(MatSnackBar);
+    private _notificationService = inject(NotificationService);
     private _fuseConfirmationService = inject(FuseConfirmationService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -166,17 +167,11 @@ export class FornecedoresComponent implements OnInit, OnDestroy {
 
             this._fornecedorDataService.updateFornecedor(this.editingId, updateDTO).subscribe({
                 next: () => {
-                    this._snackBar.open('Fornecedor atualizado com sucesso!', 'OK', {
-                        duration: 3000,
-                        panelClass: ['success-snackbar']
-                    });
+                    this._notificationService.success('Fornecedor atualizado com sucesso!');
                     this.formVisible = false;
                 },
                 error: (err) => {
-                    this._snackBar.open('Erro ao atualizar fornecedor: ' + (err.error?.message || err.message), 'Fechar', {
-                        duration: 5000,
-                        panelClass: ['error-snackbar']
-                    });
+                    this._notificationService.error('Erro ao atualizar fornecedor: ' + (err.error?.message || err.message));
                 }
             });
         } else {
@@ -187,17 +182,11 @@ export class FornecedoresComponent implements OnInit, OnDestroy {
 
             this._fornecedorDataService.createFornecedor(createDTO).subscribe({
                 next: () => {
-                    this._snackBar.open('Fornecedor criado com sucesso!', 'OK', {
-                        duration: 3000,
-                        panelClass: ['success-snackbar']
-                    });
+                    this._notificationService.success('Fornecedor criado com sucesso!');
                     this.formVisible = false;
                 },
                 error: (err) => {
-                    this._snackBar.open('Erro ao criar fornecedor: ' + (err.error?.message || err.message), 'Fechar', {
-                        duration: 5000,
-                        panelClass: ['error-snackbar']
-                    });
+                    this._notificationService.error('Erro ao criar fornecedor: ' + (err.error?.message || err.message));
                 }
             });
         }
@@ -222,16 +211,10 @@ export class FornecedoresComponent implements OnInit, OnDestroy {
             if (result === 'confirmed') {
                 this._fornecedorDataService.deleteFornecedor(fornecedor.id).subscribe({
                     next: () => {
-                        this._snackBar.open('Fornecedor excluído com sucesso!', 'OK', {
-                            duration: 3000,
-                            panelClass: ['success-snackbar']
-                        });
+                        this._notificationService.success('Fornecedor excluído com sucesso!');
                     },
                     error: (err) => {
-                        this._snackBar.open('Erro ao excluir fornecedor: ' + (err.error?.message || err.message), 'Fechar', {
-                            duration: 5000,
-                            panelClass: ['error-snackbar']
-                        });
+                        this._notificationService.error('Erro ao excluir fornecedor: ' + (err.error?.message || err.message));
                     }
                 });
             }
@@ -251,10 +234,7 @@ export class FornecedoresComponent implements OnInit, OnDestroy {
             },
             error: (err) => {
                 console.error('Erro ao carregar auditoria', err);
-                this._snackBar.open('Erro ao carregar histórico de auditoria', 'Fechar', {
-                    duration: 3000,
-                    panelClass: ['error-snackbar']
-                });
+                this._notificationService.error('Erro ao carregar histórico de auditoria');
             }
         });
     }

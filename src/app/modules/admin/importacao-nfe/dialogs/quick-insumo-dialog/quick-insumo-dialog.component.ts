@@ -12,7 +12,7 @@ import { DependenciesService } from '../../../insumos/services/dependencies.serv
 import { InsumosDataService } from '../../../insumos/services/insumos-data.service';
 import { Categoria } from 'app/core/models/insumo.catalog.types';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { NotificationService } from 'app/core/services/notification.service';
 
 @Component({
     selector: 'quick-insumo-dialog',
@@ -96,7 +96,7 @@ export class QuickInsumoDialogComponent implements OnInit {
     private _fb = inject(FormBuilder);
     private _dependenciesService = inject(DependenciesService);
     private _insumosDataService = inject(InsumosDataService);
-    private _snackBar = inject(MatSnackBar);
+    private _notificationService = inject(NotificationService);
     private _dialogRef = inject(MatDialogRef<QuickInsumoDialogComponent>);
 
     form: FormGroup;
@@ -147,12 +147,12 @@ export class QuickInsumoDialogComponent implements OnInit {
 
             this._insumosDataService.createInsumo(payload).subscribe({
                 next: (insumo) => {
-                    this._snackBar.open('Insumo cadastrado com sucesso!', 'OK', { duration: 3000 });
+                    this._notificationService.success('Insumo cadastrado com sucesso!');
                     this._dialogRef.close(insumo.id);
                 },
                 error: (err) => {
                     this.isLoading = false;
-                    this._snackBar.open('Erro ao cadastrar insumo: ' + (err.error?.message || 'Erro desconhecido'), 'Fechar');
+                    this._notificationService.error('Erro ao cadastrar insumo: ' + (err.error?.message || 'Erro desconhecido'));
                 }
             });
         });
