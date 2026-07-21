@@ -2,5 +2,5 @@
 export const environment = {
   production: true,
   apiUrl: 'http://localhost:8083/api',
-  wsUrl: 'ws://localhost:8083/ws'
+  wsUrl: 'http://localhost:8083/ws'
 };
