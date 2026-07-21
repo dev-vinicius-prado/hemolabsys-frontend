@@ -23,7 +23,7 @@ export class WebSocketService implements OnDestroy {
     }
 
     private _initWebSocket(): void {
-        const url = environment.wsUrl;
+        const url = this._normalizeSockJsUrl(environment.wsUrl);
 
         this.stompClient = new Client({
             webSocketFactory: () => new SockJS(url),
@@ -55,8 +55,20 @@ export class WebSocketService implements OnDestroy {
         this.stompClient.activate();
     }
 
+    private _normalizeSockJsUrl(url: string): string {
+        if (url.startsWith('ws://')) {
+            return url.replace('ws://', 'http://');
+        }
+
+        if (url.startsWith('wss://')) {
+            return url.replace('wss://', 'https://');
+        }
+
+        return url;
+    }
+
     private _subscribeToNotifications(): void {
-        // Subscreve ao tópico de notificações do usuário
+        // Subscreve ao topico de notificacoes do usuario
         // O backend envia para /user/{email}/queue/notifications
         // O STOMP converte para /user/queue/notifications para o cliente logado
         this.stompClient.subscribe('/user/queue/notifications', (message: IMessage) => {
@@ -68,7 +80,7 @@ export class WebSocketService implements OnDestroy {
     }
 
     private _handleNewNotification(notification: Notification): void {
-        // Adiciona a nova notificação ao NotificationsService de forma segura
+        // Adiciona a nova notificacao ao NotificationsService de forma segura
         this._notificationsService.addLocal(notification);
     }
 
