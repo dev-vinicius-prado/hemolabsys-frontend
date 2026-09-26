@@ -26,6 +26,7 @@ import { PageableResponse } from 'app/core/models';
 import { HasRoleDirective } from 'app/shared/directives/has-role.directive';
 import { AuditLog, AuditTimelineComponent } from 'app/shared/components/audit-timeline/audit-timeline.component';
 import { ApiService } from 'app/core/api/api.service';
+import { TipoServicoLabelPipe } from '../../../core/pipes/tipo-servico-label.pipe';
 
 @Component({
     selector: 'almoxarifado',
@@ -40,7 +41,8 @@ import { ApiService } from 'app/core/api/api.service';
         PaginationComponent,
         MatIconModule,
         HasRoleDirective,
-        AuditTimelineComponent
+        AuditTimelineComponent,
+        TipoServicoLabelPipe,
     ],
 })
 export class AlmoxarifadoComponent implements OnInit, OnDestroy {
@@ -86,14 +88,15 @@ export class AlmoxarifadoComponent implements OnInit, OnDestroy {
     } = {
         codigo: '',
         descricao: '',
-        tipo: 'ALMOXARIFADO',
+        tipo: TipoServico.ALMOXARIFADO,
         empresaId: 1, // Default para a empresa do usuário (deve ser dinâmico no futuro)
     };
 
     constructor() {}
 
     ngOnInit(): void {
-        this.almoxarifadoDataService.loadAlmoxarifados(this.currentPage, this.pageSize);
+        const almoxarifados = this.almoxarifadoDataService.loadAlmoxarifados(this.currentPage, this.pageSize);
+
     }
 
     onPageChange(page: number): void {
@@ -156,7 +159,7 @@ export class AlmoxarifadoComponent implements OnInit, OnDestroy {
         this.form = {
             codigo: '',
             descricao: '',
-            tipo: 'ALMOXARIFADO',
+            tipo: TipoServico.ALMOXARIFADO,
             empresaId: 1,
         };
     }
@@ -317,7 +320,7 @@ export class AlmoxarifadoComponent implements OnInit, OnDestroy {
         this.form = {
             codigo: '',
             descricao: '',
-            tipo: 'ALMOXARIFADO',
+            tipo: TipoServico.ALMOXARIFADO,
             empresaId: 1,
         };
         this._changeDetectorRef.markForCheck();

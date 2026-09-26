@@ -79,6 +79,7 @@ export const appRoutes: Route[] = [
         },
         children: [
             { path: 'dashboard', loadChildren: () => import('app/modules/admin/dashboard/dashboard.routes') },
+            { path: 'kit-coleta', loadChildren: () => import('app/modules/admin/kit-coleta/kit-coleta.routes') },
             { path: 'insumos', loadChildren: () => import('app/modules/admin/insumos/insumos.routes') },
             { path: 'fornecedores', loadChildren: () => import('app/modules/admin/fornecedores/fornecedores.routes') },
             { path: 'almoxarifado', loadChildren: () => import('app/modules/admin/almoxarifado/almoxarifado.routes') },

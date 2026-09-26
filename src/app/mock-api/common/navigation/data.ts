@@ -31,6 +31,20 @@ export const defaultNavigation: FuseNavigationItem[] = [
         link: '/saidas',
     },
     {
+        id: 'kit-coleta',
+        title: 'Baixa Assistida (Kits)',
+        type: 'basic',
+        icon: 'heroicons_outline:check-badge',
+        link: '/kit-coleta',
+    },
+    {
+        id: 'exames-master-data',
+        title: 'Gestão de Kits (Exames)',
+        type: 'basic',
+        icon: 'heroicons_outline:beaker',
+        link: '/kit-coleta/exames',
+    },
+    {
         id: 'movimentacao',
         title: 'Movimentações',
         type: 'basic',

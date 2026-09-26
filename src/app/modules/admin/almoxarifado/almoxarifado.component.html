@@ -48,10 +48,10 @@
             <div>
               <label class="block text-sm text-secondary mb-1">Tipo de Serviço</label>
               <select class="w-full px-3 py-2 rounded-lg border" [(ngModel)]="form.tipo" [disabled]="viewOnly">
-                <option value="ALMOXARIFADO">ALMOXARIFADO</option>
-                <option value="SERVICO_EAC">SERVICO_EAC</option>
-                <option value="SERVICO_POSTO_COLETA">SERVICO_POSTO_COLETA</option>
-                <option value="SERVICO_LABORATORIO_CENTRAL">SERVICO_LABORATORIO_CENTRAL</option>
+                <option value="ALMOXARIFADO">Almoxarifado</option>
+                <option value="SERVICO_EAC">Serviço EAC</option>
+                <option value="SERVICO_POSTO_COLETA">Posto de coleta</option>
+                <option value="SERVICO_LABORATORIO_CENTRAL">Laboratório central</option>
               </select>
             </div>
             <!-- EmpresaId fixo por enquanto, como no padrão do projeto -->
@@ -103,7 +103,7 @@
                 <td class="px-4 py-3 border-b"><input type="checkbox" [checked]="selectedIds.has(a.id)" (change)="toggleSelect(a.id)" /></td>
                 <td class="px-4 py-3 border-b">{{ a.codigo }}</td>
                 <td class="px-4 py-3 border-b">{{ a.descricao }}</td>
-                <td class="px-4 py-3 border-b">{{ a.tipo }}</td>
+                <td class="px-4 py-3 border-b">{{ a.tipo | tipoServicoLabel }}</td>
                 <td class="px-4 py-3 border-b">
                   <div class="flex gap-2">
                     <button class="px-2 py-1 rounded bg-gray-100 hover:bg-gray-200" (click)="viewAudit(a)" title="Ver Histórico" *hasRole="['ADMIN', 'GERENTE']">
