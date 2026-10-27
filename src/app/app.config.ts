@@ -13,6 +13,8 @@ import { provideAuth } from 'app/core/auth/auth.provider';
 import { provideIcons } from 'app/core/icons/icons.provider';
 import { mockApiServices } from 'app/mock-api';
 import { TranslocoHttpLoader } from './core/transloco/transloco.http-loader';
+import { TranslocoMatPaginatorIntl } from './core/transloco/transloco-mat-paginator-intl';
+import { MatPaginatorIntl } from '@angular/material/paginator';
 import { mockApiInterceptor } from '@fuse/lib/mock-api';
 import { fuseLoadingInterceptor } from '@fuse/services/loading';
 
@@ -50,6 +52,10 @@ export const appConfig: ApplicationConfig = {
                     monthYearA11yLabel: 'LLLL yyyy',
                 },
             },
+        },
+        {
+            provide: MatPaginatorIntl,
+            useClass: TranslocoMatPaginatorIntl
         },
 
         // Transloco Config

@@ -1,4 +1,13 @@
 {
+    "paginator": {
+        "itemsPerPage": "Itens por página:",
+        "nextPage": "Próxima página",
+        "previousPage": "Página anterior",
+        "firstPage": "Primeira página",
+        "lastPage": "Última página",
+        "rangeEmpty": "0 de {{length}}",
+        "rangeLabel": "{{startIndex}} - {{endIndex}} de {{length}}"
+    },
     "abrange-alimentacao": "Abrange alimentação",
     "abrange-transporte": "Abrange transporte",
     "adicionar": "Adicionar",

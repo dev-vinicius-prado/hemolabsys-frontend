@@ -1,137 +1,144 @@
-<div class="flex flex-col flex-auto min-w-0">
+<div class="absolute inset-0 flex flex-col min-w-0 overflow-hidden">
   <!-- Header -->
-  <div class="flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between p-6 sm:pb-8 sm:px-10 border-b bg-card dark:bg-transparent">
-    <div class="flex-1 min-w-0">
-      <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
+  <div class="relative flex flex-col flex-0 lg:flex-row lg:items-center lg:justify-between px-6 pt-6 pb-4 lg:pr-8 lg:pl-7 sm:pt-10 sm:pb-6 bg-primary-700 dark:bg-transparent">
+    <div class="flex flex-col items-start flex-auto min-w-0">
+      <div class="text-2xl sm:text-4xl font-extrabold tracking-tight leading-none text-on-primary dark:text-white">
         Catálogo de Exames (Kits)
-      </h2>
-      <div class="mt-1 text-secondary">
-        Gerencie os exames e defina os insumos necessários para coleta
       </div>
+      <div class="text-on-primary/80 mt-2">Gerencie os exames e defina os insumos necessários para coleta.</div>
     </div>
-    <div class="mt-4 sm:mt-0 sm:ml-4 flex items-center">
-      <button mat-flat-button color="primary" (click)="mostrarFormNovoExame.set(true)">
-        <mat-icon class="mr-2">add</mat-icon>
-        Novo Exame
-      </button>
+    <div class="mt-4 lg:mt-0 flex items-center gap-3">
+       <button class="fuse-mat-button-large bg-primary text-on-primary rounded-xl p-2 flex items-center border border-solid border-white"
+               mat-flat-button (click)="mostrarFormNovoExame.set(true)">
+          <mat-icon class="text-white" [svgIcon]="'heroicons_outline:plus-circle'"></mat-icon>
+          <span class="ml-2">Novo Exame</span>
+       </button>
     </div>
   </div>
 
-  <div class="flex-auto p-6 sm:p-10">
-    <div class="max-w-5xl mx-auto">
+  <!-- Main -->
+  <div class="flex flex-auto overflow-hidden">
+    <div class="flex flex-col flex-auto overflow-y-auto -webkit-overflow-scrolling-touch">
+      <div class="flex-auto p-6 sm:p-10">
 
-      <!-- Form Novo Exame (Inline) -->
-      <div *ngIf="mostrarFormNovoExame()" class="bg-card shadow rounded-2xl p-6 mb-8 border-l-4 border-primary">
-        <h3 class="text-lg font-bold mb-4">Cadastrar Novo Exame</h3>
-        <div class="flex flex-col sm:flex-row gap-4">
-          <mat-form-field class="flex-1">
-            <mat-label>Nome do Exame</mat-label>
-            <input matInput [(ngModel)]="novoExameModel.nome" required>
-          </mat-form-field>
-          <mat-form-field class="w-full sm:w-32">
-            <mat-label>Sigla</mat-label>
-            <input matInput [(ngModel)]="novoExameModel.sigla">
-          </mat-form-field>
-          <mat-form-field class="w-full sm:w-48">
-            <mat-label>Cód Integração</mat-label>
-            <input matInput [(ngModel)]="novoExameModel.codigoIntegracao">
-          </mat-form-field>
-        </div>
-        <div class="flex justify-end gap-2 mt-2">
-          <button mat-button (click)="mostrarFormNovoExame.set(false)">Cancelar</button>
-          <button mat-flat-button color="primary" (click)="salvarNovoExame()" [disabled]="isLoading() || !novoExameModel.nome">Salvar</button>
-        </div>
-      </div>
-
-      <!-- Form Vincular Insumo (Inline) -->
-      <div *ngIf="mostrarFormVinculo()" class="bg-blue-50 dark:bg-blue-900/20 shadow rounded-2xl p-6 mb-8 border-l-4 border-blue-500">
-        <h3 class="text-lg font-bold mb-1">Vincular Insumo ao Kit</h3>
-        <p class="text-secondary text-sm mb-4">Exame: <b>{{exameEmEdicao()?.nome}}</b></p>
-
-        <div class="flex flex-col sm:flex-row gap-4 items-center">
-          <mat-form-field class="flex-1">
-            <mat-label>Insumo</mat-label>
-            <mat-select [(ngModel)]="novoVinculoModel.idInsumo" required>
-              <mat-option *ngFor="let insumo of insumosDisponiveis()" [value]="insumo.id">
-                {{insumo.descricao}}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <mat-form-field class="w-32">
-            <mat-label>Qtd Padrão</mat-label>
-            <input matInput type="number" [(ngModel)]="novoVinculoModel.quantidadePadrao" min="1" required>
-          </mat-form-field>
-
-          <mat-checkbox [(ngModel)]="novoVinculoModel.obrigatorio" color="primary">Obrigatório?</mat-checkbox>
-        </div>
-
-        <div class="flex justify-end gap-2 mt-2">
-          <button mat-button (click)="mostrarFormVinculo.set(false); exameEmEdicao.set(null)">Cancelar</button>
-          <button mat-flat-button color="primary" (click)="salvarVinculo()" [disabled]="isLoading() || !novoVinculoModel.idInsumo">Vincular</button>
-        </div>
-      </div>
-
-      <!-- Lista de Exames -->
-      <div class="grid grid-cols-1 gap-6">
-        <div *ngFor="let exame of exames()" class="bg-card shadow rounded-2xl overflow-hidden">
-          <!-- Exame Header -->
-          <div class="flex items-center justify-between p-6 border-b bg-gray-50 dark:bg-gray-800/50">
+        <!-- Form Novo Exame -->
+        <div *ngIf="mostrarFormNovoExame()" class="mb-6 p-6 bg-card rounded-2xl shadow border border-gray-200">
+          <div class="text-lg font-semibold mb-4">Novo Exame</div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <div class="text-xl font-bold flex items-center">
-                ID:
-                <span class="ml-2 px-2 py-1 text-xs bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300 rounded-md font-mono">{{exame.id}}</span>
-              </div>
+              <label class="block text-sm text-secondary mb-1">Nome do Exame</label>
+              <input class="w-full px-3 py-2 rounded-lg border" [(ngModel)]="novoExameModel.nome" required />
             </div>
             <div>
-              <div class="text-xl font-bold flex items-center">
-                {{exame.nome}}
-                <span *ngIf="exame.sigla" class="ml-2 px-2 py-1 text-xs bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300 rounded-md font-mono">{{exame.sigla}}</span>
-              </div>
-              <div class="text-sm text-secondary mt-1">Integração: {{exame.codigoIntegracao || 'N/A'}}</div>
+              <label class="block text-sm text-secondary mb-1">Sigla</label>
+              <input class="w-full px-3 py-2 rounded-lg border" [(ngModel)]="novoExameModel.sigla" />
             </div>
-            <button mat-stroked-button color="primary" (click)="abrirVinculo(exame)">
-              <mat-icon class="icon-size-4 mr-2">link</mat-icon>
-              Adicionar Insumo
-            </button>
+            <div>
+              <label class="block text-sm text-secondary mb-1">Cód Integração</label>
+              <input class="w-full px-3 py-2 rounded-lg border" [(ngModel)]="novoExameModel.codigoIntegracao" />
+            </div>
           </div>
-
-          <!-- Insumos do Kit -->
-          <div class="p-0">
-            <table class="w-full text-left text-sm">
-              <thead class="bg-gray-50/50 dark:bg-gray-800/20 text-secondary font-medium border-b">
-                <tr>
-                  <th class="px-6 py-3">Insumo Físico</th>
-                  <th class="px-6 py-3 w-32 text-center">Quantidade</th>
-                  <th class="px-6 py-3 w-32 text-center">Obrigatório</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y">
-                <tr *ngFor="let insumo of exame.insumos" class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                  <td class="px-6 py-4 font-medium">{{insumo.insumoNome}}</td>
-                  <td class="px-6 py-4 text-center">{{insumo.quantidadePadrao}}</td>
-                  <td class="px-6 py-4 text-center">
-                    <mat-icon class="icon-size-5" [ngClass]="insumo.obrigatorio ? 'text-green-500' : 'text-gray-400'">
-                      {{insumo.obrigatorio ? 'check_circle' : 'remove_circle_outline'}}
-                    </mat-icon>
-                  </td>
-                </tr>
-                <tr *ngIf="exame.insumos.length === 0">
-                  <td colspan="3" class="px-6 py-8 text-center text-secondary italic">
-                    Nenhum insumo vinculado a este exame.
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="mt-6 flex gap-3">
+            <button class="px-4 py-2 rounded-lg bg-primary-500 text-white hover:bg-primary-600" (click)="salvarNovoExame()" [disabled]="isLoading() || !novoExameModel.nome">Salvar</button>
+            <button class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200" (click)="mostrarFormNovoExame.set(false)">Cancelar</button>
           </div>
         </div>
 
-        <div *ngIf="exames().length === 0 && !isLoading()" class="text-center p-12 text-secondary bg-card shadow rounded-2xl">
-          <mat-icon class="icon-size-12 mb-4 opacity-50">biotech</mat-icon>
-          <div class="text-lg">Nenhum exame cadastrado.</div>
+        <!-- Form Vincular Insumo -->
+        <div *ngIf="mostrarFormVinculo()" class="mb-6 p-6 bg-card rounded-2xl shadow border border-gray-200">
+          <div class="text-lg font-semibold mb-1">Vincular Insumo ao Kit</div>
+          <p class="text-secondary text-sm mb-4">Exame: <b>{{exameEmEdicao()?.nome}}</b></p>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+            <div>
+              <label class="block text-sm text-secondary mb-1">Insumo</label>
+              <select class="w-full px-3 py-2 rounded-lg border" [(ngModel)]="novoVinculoModel.idInsumo" required>
+                <option *ngFor="let insumo of insumosDisponiveis()" [value]="insumo.id">{{insumo.descricao}}</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm text-secondary mb-1">Qtd Padrão</label>
+              <input class="w-full px-3 py-2 rounded-lg border" type="number" [(ngModel)]="novoVinculoModel.quantidadePadrao" min="1" required />
+            </div>
+            <div class="flex items-center gap-2 mb-2">
+              <input type="checkbox" [(ngModel)]="novoVinculoModel.obrigatorio" />
+              <span class="text-sm text-secondary">Obrigatório?</span>
+            </div>
+          </div>
+          <div class="mt-6 flex gap-3">
+            <button class="px-4 py-2 rounded-lg bg-primary-500 text-white hover:bg-primary-600" (click)="salvarVinculo()" [disabled]="isLoading() || !novoVinculoModel.idInsumo">Vincular</button>
+            <button class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200" (click)="mostrarFormVinculo.set(false); exameEmEdicao.set(null)">Cancelar</button>
+          </div>
+        </div>
+          <mat-paginator *ngIf="exames().length > 0"
+                         class="bg-card shadow rounded-2xl border border-gray-200 mb-2"
+                         [length]="totalElements()"
+                         [pageSize]="pageSize()"
+                         [pageIndex]="pageIndex()"
+                         [pageSizeOptions]="[5, 10, 25, 100]"
+                         (page)="onPageChange($event)">
+          </mat-paginator>
+        <!-- Lista de Exames -->
+        <div *ngIf="!mostrarFormNovoExame() && !mostrarFormVinculo()" class="grid grid-cols-1 gap-6">
+          <div *ngFor="let exame of exames()" class="bg-card shadow rounded-2xl border border-gray-200 overflow-hidden">
+            <div class="flex items-center justify-between p-6 border-b bg-gray-50 dark:bg-gray-800/50">
+              <div>
+                <div class="text-lg font-bold flex items-center">
+                  {{exame.nome}}
+                  <span *ngIf="exame.sigla" class="ml-2 px-2 py-1 text-xs bg-gray-200 text-gray-800 rounded-md font-mono">{{exame.sigla}}</span>
+                </div>
+                <div class="text-sm text-secondary mt-1">ID: {{exame.id}} | Integração: {{exame.codigoIntegracao || 'N/A'}}</div>
+              </div>
+              <button class="px-3 py-2 rounded-lg bg-primary-50 text-primary-700 hover:bg-primary-100 flex items-center text-sm font-semibold" (click)="abrirVinculo(exame)">
+                <mat-icon class="icon-size-4 mr-2" [svgIcon]="'heroicons_outline:link'"></mat-icon>
+                Adicionar Insumo
+              </button>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm">
+                <thead class="bg-white text-secondary font-medium border-b">
+                  <tr>
+                    <th class="px-6 py-3">Insumo Físico</th>
+                    <th class="px-6 py-3 w-32 text-center">Quantidade</th>
+                    <th class="px-6 py-3 w-32 text-center">Obrigatório</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y">
+                  <tr *ngFor="let insumo of exame.insumos" class="hover:bg-gray-50">
+                    <td class="px-6 py-4 font-medium">{{insumo.insumoNome}}</td>
+                    <td class="px-6 py-4 text-center">{{insumo.quantidadePadrao}}</td>
+                    <td class="px-6 py-4 text-center">
+                      <span class="px-2 py-1 rounded-full text-xs font-semibold"
+                            [ngClass]="insumo.obrigatorio ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'">
+                        {{insumo.obrigatorio ? 'Sim' : 'Não'}}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr *ngIf="exame.insumos.length === 0">
+                    <td colspan="3" class="px-6 py-8 text-center text-secondary italic">
+                      Nenhum insumo vinculado a este exame.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div *ngIf="exames().length === 0 && !isLoading()" class="text-center p-12 text-secondary bg-card shadow rounded-2xl border border-gray-200">
+            <mat-icon class="icon-size-12 mb-4 opacity-50" [svgIcon]="'heroicons_outline:beaker'"></mat-icon>
+            <div class="text-lg">Nenhum exame cadastrado.</div>
+          </div>
+
+          <mat-paginator *ngIf="exames().length > 0"
+                         class="bg-card shadow rounded-2xl border border-gray-200"
+                         [length]="totalElements()"
+                         [pageSize]="pageSize()"
+                         [pageIndex]="pageIndex()"
+                         [pageSizeOptions]="[5, 10, 25, 100]"
+                         (page)="onPageChange($event)">
+          </mat-paginator>
         </div>
       </div>
-
     </div>
   </div>
 </div>

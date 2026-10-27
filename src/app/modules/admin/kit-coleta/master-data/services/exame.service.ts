@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { ApiService } from 'app/core/api/api.service';
 import { Observable } from 'rxjs';
 import { ExameCreateDTO, ExameResponseDTO, KitExameInsumoCreateDTO } from '../types/exame.types';
+import { PageableResponse } from 'app/core/models';
 
 @Injectable({
   providedIn: 'root'
@@ -9,8 +10,12 @@ import { ExameCreateDTO, ExameResponseDTO, KitExameInsumoCreateDTO } from '../ty
 export class ExameService {
   private readonly _api = inject(ApiService);
 
-  listarExames(): Observable<ExameResponseDTO[]> {
-    return this._api.get<ExameResponseDTO[]>('v1/exames');
+  listarExames(page: number = 0, size: number = 10, nome?: string): Observable<PageableResponse<ExameResponseDTO>> {
+    const params: any = { page, size };
+    if (nome) {
+      params.nome = nome;
+    }
+    return this._api.get<PageableResponse<ExameResponseDTO>>('v1/exames', params);
   }
 
   criarExame(exame: ExameCreateDTO): Observable<ExameResponseDTO> {

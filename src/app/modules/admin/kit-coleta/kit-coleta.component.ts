@@ -8,9 +8,13 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { KitColetaService } from './services/kit-coleta.service';
+import { ExameService } from './master-data/services/exame.service';
 import { KitColetaSugerido, BaixaAssistidaRequest } from './types/kit-coleta.types';
-import { finalize } from 'rxjs';
+import { ExameResponseDTO } from './master-data/types/exame.types';
+import { debounceTime, distinctUntilChanged, filter, finalize, switchMap } from 'rxjs';
+import { FormControl } from '@angular/forms';
 
 interface KitItemUi extends KitColetaSugerido {
   validado: boolean;
@@ -32,22 +36,49 @@ interface KitItemUi extends KitColetaSugerido {
     MatFormFieldModule,
     MatSelectModule,
     MatSnackBarModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatAutocompleteModule
   ],
   templateUrl: './kit-coleta.component.html',
 })
 export class KitColetaComponent implements OnInit {
   private readonly _kitColetaService = inject(KitColetaService);
+  private readonly _exameService = inject(ExameService);
   private readonly _snackBar = inject(MatSnackBar);
 
   idAtendimento = signal<number | null>(10543);
-  idExame = signal<number | null>(1); // Simulating an exam id for MVP
+  idExame = signal<number | null>(null);
+
+  exameControl = new FormControl<string | ExameResponseDTO>('');
+  examesFiltrados = signal<ExameResponseDTO[]>([]);
 
   isLoading = signal<boolean>(false);
   kitSugerido = signal<KitItemUi[]>([]);
 
   ngOnInit(): void {
     // In a real flow, idAtendimento would come from the route or previous screen
+    this.exameControl.valueChanges
+      .pipe(
+        filter(val => typeof val === 'string' && val.length >= 3),
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap(val => this._exameService.listarExames(0, 50, val as string))
+      )
+      .subscribe({
+        next: (page) => this.examesFiltrados.set(page.content),
+        error: (err) => console.error('Erro ao buscar exames', err)
+      });
+  }
+
+  displayFn(exame: ExameResponseDTO): string {
+    return exame && exame.nome ? exame.nome : '';
+  }
+
+  onExameSelected(event: any): void {
+    const exame = event.option.value as ExameResponseDTO;
+    if (exame && exame.id) {
+      this.idExame.set(exame.id);
+    }
   }
 
   buscarSugestao(): void {

@@ -7,8 +7,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatDialogModule } from '@angular/material/dialog';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { ExameService } from './services/exame.service';
 import { ExameResponseDTO, ExameCreateDTO, KitExameInsumoCreateDTO } from './types/exame.types';
 import { finalize } from 'rxjs';
@@ -29,7 +30,8 @@ import { InsumoResponseDTO } from 'app/core/models/insumo.catalog.types';
     MatSelectModule,
     MatSnackBarModule,
     MatDialogModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    MatPaginatorModule
   ],
   templateUrl: './exames-list.component.html',
 })
@@ -47,6 +49,11 @@ export class ExamesListComponent implements OnInit {
   mostrarFormNovoExame = signal<boolean>(false);
   mostrarFormVinculo = signal<boolean>(false);
 
+  // Paginação
+  pageIndex = signal<number>(0);
+  pageSize = signal<number>(10);
+  totalElements = signal<number>(0);
+
   // Models para os forms (simplificado para MVP)
   novoExameModel: ExameCreateDTO = { nome: '', sigla: '', codigoIntegracao: '' };
   novoVinculoModel: KitExameInsumoCreateDTO = { idInsumo: 0, quantidadePadrao: 1, obrigatorio: true };
@@ -58,12 +65,21 @@ export class ExamesListComponent implements OnInit {
 
   carregarExames(): void {
     this.isLoading.set(true);
-    this._exameService.listarExames()
+    this._exameService.listarExames(this.pageIndex(), this.pageSize())
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
-        next: (data) => this.exames.set(data),
+        next: (page) => {
+          this.exames.set(page.content);
+          this.totalElements.set(page.totalElements);
+        },
         error: (err) => this._snackBar.open('Erro ao carregar exames', 'OK', { duration: 3000 })
       });
+  }
+
+  onPageChange(event: PageEvent): void {
+    this.pageIndex.set(event.pageIndex);
+    this.pageSize.set(event.pageSize);
+    this.carregarExames();
   }
 
   carregarInsumos(): void {
@@ -80,8 +96,8 @@ export class ExamesListComponent implements OnInit {
     this._exameService.criarExame(this.novoExameModel)
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
-        next: (novo) => {
-          this.exames.update(list => [...list, novo]);
+        next: () => {
+          this.carregarExames();
           this.mostrarFormNovoExame.set(false);
           this.novoExameModel = { nome: '', sigla: '', codigoIntegracao: '' };
           this._snackBar.open('Exame criado com sucesso!', 'OK', { duration: 3000 });
